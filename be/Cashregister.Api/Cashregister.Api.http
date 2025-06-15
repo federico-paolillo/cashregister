@@ -1,0 +1,6 @@
+@Cashregister.Api_HostAddress = http://localhost:5122
+
+GET {{Cashregister.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
