@@ -1,3 +1,5 @@
+using CashRegister.Application.Orders.Extensions;
+using CashRegister.Application.Receipts.Extensions;
 using CashRegister.Database;
 using CashRegister.Database.Extensions;
 
@@ -28,7 +30,9 @@ public abstract class IntegrationTest(
 
         var serviceCollection = new ServiceCollection()
             .AddLogging(bld => bld.AddProvider(new XUnitLoggerProvider(testOutputHelper)))
-            .AddCashregisterDatabase(configuration);
+            .AddCashregisterDatabase(configuration)
+            .AddCashregisterOrders()
+            .AddCashregisterReceipts();
 
         _serviceProvider = serviceCollection.BuildServiceProvider();
 

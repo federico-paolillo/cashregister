@@ -8,4 +8,11 @@ public sealed record TimeStamp(long Value)
         
         return new TimeStamp(nowstamp);
     }
+
+    public static TimeStamp From(long rawTimestamp)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(rawTimestamp);
+
+        return new TimeStamp(rawTimestamp);
+    }
 }

@@ -19,12 +19,12 @@
       <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.5" />
       <PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.5" />
       <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="9.0.5" />
-      <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.5" />
+      <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.6" />
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\CashRegister.Application\CashRegister.Application.csproj" />
-      <ProjectReference Include="..\CashRegister.Domain\CashRegister.Domain.csproj" />
+      <ProjectReference Include="..\Cashregister.Application\Cashregister.Application.csproj" />
+      <ProjectReference Include="..\Cashregister.Domain\Cashregister.Domain.csproj" />
     </ItemGroup>
 
 </Project>

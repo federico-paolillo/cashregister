@@ -1,17 +1,17 @@
 using CashRegister.Application.Orders.Commands;
+using CashRegister.Application.Orders.Models.Input;
 using CashRegister.Application.Orders.Queries;
-using CashRegister.Application.Orders.Transactions.Models.Input;
 using CashRegister.Domain;
 
 namespace CashRegister.Application.Orders.Transactions.Defaults;
 
-public sealed class PlacePlaceOrderTransaction(
+public sealed class PlaceOrderTransaction(
     IFetchArticlesQuery fetchArticlesQuery,
     ISaveOrderCommand saveOrderCommand,
     IUnitOfWork unitOfWork
 ) : IPlaceOrderTransaction
 {
-    public async Task<Order> PlaceOrderAsync(OrderRequest orderRequest)
+    public async Task<Identifier> PlaceOrderAsync(OrderRequest orderRequest)
     {
         var articlesRequested = orderRequest.Items
             .Select(item => item.Article)
@@ -30,17 +30,17 @@ public sealed class PlacePlaceOrderTransaction(
             })
             .ToArray();
 
-        var orderToPersist = new Order
+        var pendingOrder = new Order
         {
             Id = Identifier.New(),
             Date = TimeStamp.Now(),
             Items = orderItems
         };
 
-        await saveOrderCommand.SaveAsync(orderToPersist);
+        await saveOrderCommand.SaveAsync(pendingOrder);
 
         await unitOfWork.SaveChangesAsync();
 
-        return orderToPersist;
+        return pendingOrder.Id;
     }
 }

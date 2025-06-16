@@ -1,4 +1,10 @@
+using CashRegister.Application;
+using CashRegister.Application.Orders.Commands;
+using CashRegister.Application.Orders.Queries;
+using CashRegister.Database.Commands;
 using CashRegister.Database.Interceptors;
+using CashRegister.Database.Mappers;
+using CashRegister.Database.Queries;
 
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
@@ -13,6 +19,15 @@ public static class ServiceCollectionExtensions
         this IServiceCollection services,
         IConfiguration configuration
     )
+    {
+        AddDbContext(services, configuration);
+        AddMappers(services);
+        AddQueriesAndCommands(services);
+
+        return services;
+    }
+
+    private static void AddDbContext(IServiceCollection services, IConfiguration configuration)
     {
         var dataSource = configuration.GetValue<string>("DataSource");
 
@@ -44,7 +59,21 @@ public static class ServiceCollectionExtensions
                 .EnableDetailedErrors()
                 .EnableSensitiveDataLogging()
         );
+        
+        services.AddScoped<IUnitOfWork>(x => x.GetRequiredService<ApplicationDbContext>());
+        services.AddScoped<IApplicationDbContext>(x => x.GetRequiredService<ApplicationDbContext>());
+    }
 
-        return services;
+    private static void AddQueriesAndCommands(IServiceCollection services)
+    {
+        services.AddScoped<ISaveOrderCommand, SaveOrderCommand>();
+        services.AddScoped<IFetchArticlesQuery, FetchArticlesQuery>();
+        services.AddScoped<IFetchOrderSummaryQuery, FetchOrderSummaryQuery>();
+    }
+
+    private static void AddMappers(IServiceCollection services)
+    {
+        services.AddSingleton<OrderEntityMapper>();
+        services.AddSingleton<ArticleEntityMapper>();
     }
 }

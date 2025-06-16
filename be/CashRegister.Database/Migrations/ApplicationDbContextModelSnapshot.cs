@@ -30,7 +30,7 @@ namespace CashRegister.Database.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Articles");
+                    b.ToTable("Articles", (string)null);
                 });
 
             modelBuilder.Entity("CashRegister.Database.Entities.OrderEntity", b =>
@@ -43,7 +43,7 @@ namespace CashRegister.Database.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Orders");
+                    b.ToTable("Orders", (string)null);
                 });
 
             modelBuilder.Entity("CashRegister.Database.Entities.OrderItemEntity", b =>
@@ -77,7 +77,7 @@ namespace CashRegister.Database.Migrations
 
                     b.HasIndex("OrderId");
 
-                    b.ToTable("OrderItems");
+                    b.ToTable("OrderItems", (string)null);
                 });
 
             modelBuilder.Entity("CashRegister.Database.Entities.OrderItemEntity", b =>

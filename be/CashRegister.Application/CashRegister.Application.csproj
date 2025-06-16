@@ -7,13 +7,11 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\CashRegister.Domain\CashRegister.Domain.csproj" />
+      <ProjectReference Include="..\Cashregister.Domain\Cashregister.Domain.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Orders\Extensions\" />
-      <Folder Include="Receipts\Extensions\" />
-      <Folder Include="Receipts\Services\Defaults\" />
+      <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.6" />
     </ItemGroup>
 
 </Project>

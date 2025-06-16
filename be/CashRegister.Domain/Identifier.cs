@@ -9,4 +9,11 @@ public sealed record Identifier(string Value)
         
         return new Identifier(ulidString);
     }
+
+    public static Identifier From(string rawIdentifier)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(rawIdentifier);
+
+        return new Identifier(rawIdentifier);
+    }
 }

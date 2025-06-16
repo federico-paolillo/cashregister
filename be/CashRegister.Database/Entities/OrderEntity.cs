@@ -10,7 +10,7 @@ public sealed class OrderEntity
     public required long Date { get; init; }
 
     public required List<OrderItemEntity> Items { get; init; } = [];
-
+    
     public sealed class OrderEntityTypeConfiguration : IEntityTypeConfiguration<OrderEntity>
     {
         public void Configure(EntityTypeBuilder<OrderEntity> builder)

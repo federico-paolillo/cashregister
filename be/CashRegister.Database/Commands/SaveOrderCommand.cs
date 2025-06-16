@@ -9,9 +9,9 @@ public sealed class SaveOrderCommand(
     OrderEntityMapper orderEntityMapper
 ) : ISaveOrderCommand
 {
-    public async Task SaveAsync(Order order)
+    public async Task SaveAsync(Order newOrder)
     {
-        var orderEntity = orderEntityMapper.ToEntity(order);
+        var orderEntity = orderEntityMapper.ToEntity(newOrder);
         
         await applicationDbContext.Orders.AddAsync(orderEntity);
     }

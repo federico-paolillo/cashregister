@@ -1,8 +1,9 @@
+using CashRegister.Application.Receipts.Queries;
 using CashRegister.Domain;
 
 namespace CashRegister.Application.Receipts.Services;
 
 public interface IPrintReceiptTransaction
 {
-    Task PrintReceiptAsync(Order order); 
+    Task PrintReceiptAsync(Identifier orderId);
 }

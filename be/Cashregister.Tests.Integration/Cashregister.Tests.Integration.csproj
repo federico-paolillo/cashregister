@@ -23,7 +23,11 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\CashRegister.Database\CashRegister.Database.csproj" />
+      <ProjectReference Include="..\Cashregister.Database\Cashregister.Database.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Activities\" />
     </ItemGroup>
 
 </Project>

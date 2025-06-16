@@ -4,12 +4,15 @@
         <TargetFramework>net9.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <RootNamespace>Cashregister.UseCases</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\CashRegister.Application\CashRegister.Application.csproj" />
+      <ProjectReference Include="..\Cashregister.Application\Cashregister.Application.csproj" />
       <ProjectReference Include="..\Cashregister.Factories\Cashregister.Factories.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.6" />
     </ItemGroup>
 
 </Project>

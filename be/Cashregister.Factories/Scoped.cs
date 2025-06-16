@@ -2,7 +2,7 @@
 
 namespace Cashregister.Factories;
 
-public sealed class ScopeAwareFactory<TService>(IServiceProvider serviceProvider) where TService : notnull
+public sealed class Scoped<TService>(IServiceProvider serviceProvider) where TService : notnull
 {
     private readonly struct Nothing;
 
