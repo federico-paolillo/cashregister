@@ -7,6 +7,8 @@ public sealed class OrderEntity
 {
     public required string Id { get; init; }
     
+    public long RowId { get; private set; }
+    
     public required long Date { get; init; }
 
     public required List<OrderItemEntity> Items { get; init; } = [];
@@ -26,6 +28,11 @@ public sealed class OrderEntity
             builder.HasMany(p => p.Items)
                 .WithOne()
                 .HasForeignKey(p => p.OrderId);
+
+            builder.Property(x => x.RowId)
+                .HasColumnName("_rowid_")
+                .IsRowVersion()
+                .IsRequired();
         }
     }
 }

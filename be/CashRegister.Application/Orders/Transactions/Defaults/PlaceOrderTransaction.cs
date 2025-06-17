@@ -30,7 +30,7 @@ public sealed class PlaceOrderTransaction(
             })
             .ToArray();
 
-        var pendingOrder = new Order
+        var pendingOrder = new PendingOrder
         {
             Id = Identifier.New(),
             Date = TimeStamp.Now(),

@@ -72,6 +72,11 @@ public abstract class IntegrationTest(
 
     public void Dispose()
     {
+        if (_dataSource is not null)
+        {
+            File.Delete(Path.Combine(".", _dataSource));
+        }
+
         _serviceProvider?.Dispose();
     }
 }

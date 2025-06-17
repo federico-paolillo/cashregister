@@ -5,14 +5,14 @@ namespace CashRegister.Database.Mappers;
 
 public sealed class OrderEntityMapper
 {
-    public OrderEntity ToEntity(Order order)
+    public OrderEntity ToEntity(PendingOrder pendingOrder)
     {
-        var itemEntities = order.Items
+        var itemEntities = pendingOrder.Items
             .Select(i => new OrderItemEntity
             {
                 Id = i.Id.Value,
                 ArticleId = i.Article.Value,
-                OrderId = order.Id.Value,
+                OrderId = pendingOrder.Id.Value,
                 Description = i.Description,
                 Price = i.Price.Value
             })
@@ -20,9 +20,9 @@ public sealed class OrderEntityMapper
 
         return new OrderEntity
         {
-            Id = order.Id.Value,
-            Date = order.Date.Value,
-            Items = itemEntities
+            Id = pendingOrder.Id.Value,
+            Date = pendingOrder.Date.Value,
+            Items = itemEntities,
         };
     }
 }

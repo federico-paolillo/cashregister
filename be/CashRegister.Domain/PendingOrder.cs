@@ -1,10 +1,8 @@
 namespace CashRegister.Domain;
 
-public class Order
+public sealed class PendingOrder
 {
     public required Identifier Id { get; init; }
-    
-    public required OrderNumber Number { get; init; }
     
     public required TimeStamp Date { get; init; }
 

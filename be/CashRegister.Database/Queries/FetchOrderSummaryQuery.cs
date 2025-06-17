@@ -22,6 +22,7 @@ public sealed class FetchOrderSummaryQuery(
             {
                 o.Id,
                 o.Date,
+                o.RowId,
                 Total = o.Items.Sum(x => x.Price)
             })
             .SingleOrDefaultAsync();
@@ -35,7 +36,8 @@ public sealed class FetchOrderSummaryQuery(
         {
             Id = Identifier.From(rawOrderSummary.Id),
             Date = TimeStamp.From(rawOrderSummary.Date),
-            Total = Cents.From(rawOrderSummary.Total)
+            Total = Cents.From(rawOrderSummary.Total),
+            Number = OrderNumber.From(rawOrderSummary.RowId)
         };
     }
 }

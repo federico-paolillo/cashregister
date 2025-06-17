@@ -20,7 +20,7 @@ public sealed class PlaceOrderTransactionTests(
     {
         await PrepareEnvironmentAsync();
 
-        var articleId = "bla-bla";
+        const string articleId = "bla-bla";
 
         var testArticle = new ArticleEntity
         {
@@ -64,6 +64,8 @@ public sealed class PlaceOrderTransactionTests(
         var orderSummary = await orderSummaryQuery.FetchAsync(orderId);
         
         Assert.NotNull(orderSummary);
+        
         Assert.Equal(orderId, orderSummary.Id);
+        Assert.Equal(20, orderSummary.Number.Value.Length);
     }
 }

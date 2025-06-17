@@ -19,16 +19,17 @@ public sealed class OrderEntityTests(
 
         var wArticleEntity = new ArticleEntity
         {
-            Id = "some-article-id", 
-            Description = "Test Article", 
+            Id = "some-article-id",
+            Description = "Test Article",
             Price = 1200
         };
-        
+
         var wOrderEntity = new OrderEntity
         {
-            Id = "some-id", 
+            Id = "some-id",
             Date = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
-            Items = [
+            Items =
+            [
                 new OrderItemEntity
                 {
                     Id = "some-order-item-id",
@@ -41,24 +42,26 @@ public sealed class OrderEntityTests(
         };
 
         using var wScope = NewServiceScope();
-        
+
         var wDbContext = wScope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        
+
         wDbContext.Articles.Add(wArticleEntity);
         wDbContext.Orders.Add(wOrderEntity);
-        
+
         await wDbContext.SaveChangesAsync();
-        
+
         using var rScope = NewServiceScope();
-        
+
         var rDbContext = rScope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
         var rOrderEntity = await rDbContext.Orders
             .Include(orderEntity => orderEntity.Items)
             .SingleOrDefaultAsync(a => a.Id == "some-id");
-        
+
         Assert.NotNull(rOrderEntity);
-        
+
         Assert.Single(rOrderEntity.Items);
+
+        Assert.NotEqual(0L, rOrderEntity.RowId);
     }
 }

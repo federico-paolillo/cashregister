@@ -4,5 +4,5 @@ namespace CashRegister.Application.Orders.Commands;
 
 public interface ISaveOrderCommand
 {
-    Task SaveAsync(Order newOrder);
+    Task SaveAsync(PendingOrder newPendingOrder);
 }
