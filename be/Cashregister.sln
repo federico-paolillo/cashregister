@@ -14,6 +14,15 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cashregister.Activities", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cashregister.Tests.Integration", "Cashregister.Tests.Integration\Cashregister.Tests.Integration.csproj", "{C2511118-A536-4FD6-9DFA-B967D2BA4F9A}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Miscellaneous", "Miscellaneous", "{98115F5B-9B3F-4D3A-9FFF-F3EC15C97C39}"
+	ProjectSection(SolutionItems) = preProject
+		..\.editorconfig = ..\.editorconfig
+		..\.gitignore = ..\.gitignore
+		Directory.Build.props = Directory.Build.props
+		global.json = global.json
+		.config\dotnet-tools.json = .config\dotnet-tools.json
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

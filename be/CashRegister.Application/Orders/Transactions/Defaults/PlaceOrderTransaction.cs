@@ -1,9 +1,11 @@
-using CashRegister.Application.Orders.Commands;
-using CashRegister.Application.Orders.Models.Input;
-using CashRegister.Application.Orders.Queries;
-using CashRegister.Domain;
+using System.Collections.Immutable;
 
-namespace CashRegister.Application.Orders.Transactions.Defaults;
+using Cashregister.Application.Orders.Commands;
+using Cashregister.Application.Orders.Models.Input;
+using Cashregister.Application.Orders.Queries;
+using Cashregister.Domain;
+
+namespace Cashregister.Application.Orders.Transactions.Defaults;
 
 public sealed class PlaceOrderTransaction(
     IFetchArticlesQuery fetchArticlesQuery,
@@ -13,13 +15,15 @@ public sealed class PlaceOrderTransaction(
 {
     public async Task<Identifier> PlaceOrderAsync(OrderRequest orderRequest)
     {
-        var articlesRequested = orderRequest.Items
+        ArgumentNullException.ThrowIfNull(orderRequest);
+
+        Identifier[] articlesRequested = orderRequest.Items
             .Select(item => item.Article)
             .ToArray();
 
-        var articles = await fetchArticlesQuery.FetchAsync(articlesRequested);
+        Article[] articles = await fetchArticlesQuery.FetchAsync(articlesRequested);
 
-        var orderItems = articles
+        ImmutableArray<Item> orderItems = articles
             .Select(a => new Item
             {
                 Id = Identifier.New(),
@@ -28,9 +32,9 @@ public sealed class PlaceOrderTransaction(
                 Price = a.Price,
                 Quantity = 0 // TODO
             })
-            .ToArray();
+            .ToImmutableArray();
 
-        var pendingOrder = new PendingOrder
+        PendingOrder pendingOrder = new()
         {
             Id = Identifier.New(),
             Date = TimeStamp.Now(),

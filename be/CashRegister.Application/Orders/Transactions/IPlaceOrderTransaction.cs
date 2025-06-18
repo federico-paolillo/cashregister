@@ -1,9 +1,9 @@
-using CashRegister.Application.Orders.Models.Input;
-using CashRegister.Domain;
+using Cashregister.Application.Orders.Models.Input;
+using Cashregister.Domain;
 
-namespace CashRegister.Application.Orders.Transactions;
+namespace Cashregister.Application.Orders.Transactions;
 
 public interface IPlaceOrderTransaction
 {
-    Task<Identifier> PlaceOrderAsync(OrderRequest orderRequest); 
+    Task<Identifier> PlaceOrderAsync(OrderRequest orderRequest);
 }

@@ -1,10 +1,9 @@
-using CashRegister.Application;
-using CashRegister.Database.Entities;
-using CashRegister.Domain;
+using Cashregister.Application;
+using Cashregister.Database.Entities;
 
 using Microsoft.EntityFrameworkCore;
 
-namespace CashRegister.Database;
+namespace Cashregister.Database;
 
 public sealed class ApplicationDbContext(
     DbContextOptions<ApplicationDbContext> options
@@ -18,6 +17,8 @@ public sealed class ApplicationDbContext(
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        ArgumentNullException.ThrowIfNull(modelBuilder);
+
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
     }
 }

@@ -1,8 +1,8 @@
-using CashRegister.Database.Entities;
+using Cashregister.Database.Entities;
 
 using Microsoft.EntityFrameworkCore;
 
-namespace CashRegister.Database;
+namespace Cashregister.Database;
 
 public interface IApplicationDbContext
 {

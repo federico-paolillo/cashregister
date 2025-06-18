@@ -1,8 +1,9 @@
-using CashRegister.Application.Orders.Commands;
-using CashRegister.Database.Mappers;
-using CashRegister.Domain;
+using Cashregister.Application.Orders.Commands;
+using Cashregister.Database.Entities;
+using Cashregister.Database.Mappers;
+using Cashregister.Domain;
 
-namespace CashRegister.Database.Commands;
+namespace Cashregister.Database.Commands;
 
 public sealed class SaveOrderCommand(
     IApplicationDbContext applicationDbContext,
@@ -11,8 +12,8 @@ public sealed class SaveOrderCommand(
 {
     public async Task SaveAsync(PendingOrder newPendingOrder)
     {
-        var orderEntity = orderEntityMapper.ToEntity(newPendingOrder);
-        
+        OrderEntity? orderEntity = orderEntityMapper.ToEntity(newPendingOrder);
+
         await applicationDbContext.Orders.AddAsync(orderEntity);
     }
 }

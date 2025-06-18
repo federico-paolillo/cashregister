@@ -1,4 +1,4 @@
-namespace Cashregister.UseCases.Exceptions;
+namespace Cashregister.Activities.Exceptions;
 
 public sealed class BrokenRealityException : Exception
 {

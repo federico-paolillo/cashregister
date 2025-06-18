@@ -1,9 +1,10 @@
-using CashRegister.Application.Orders.Models.Input;
-using CashRegister.Application.Orders.Queries;
-using CashRegister.Application.Orders.Transactions;
-using CashRegister.Database;
-using CashRegister.Database.Entities;
-using CashRegister.Domain;
+using Cashregister.Application.Orders.Models.Input;
+using Cashregister.Application.Orders.Models.Output;
+using Cashregister.Application.Orders.Queries;
+using Cashregister.Application.Orders.Transactions;
+using Cashregister.Database;
+using Cashregister.Database.Entities;
+using Cashregister.Domain;
 
 using Microsoft.Extensions.DependencyInjection;
 
@@ -22,26 +23,26 @@ public sealed class PlaceOrderTransactionTests(
 
         const string articleId = "bla-bla";
 
-        var testArticle = new ArticleEntity
+        ArticleEntity testArticle = new()
         {
             Id = articleId,
             Description = "Some test article",
             Price = 100L
         };
-        
-        using var setupScope = NewServiceScope();
 
-        var dbCtx = setupScope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        using IServiceScope setupScope = NewServiceScope();
+
+        ApplicationDbContext dbCtx = setupScope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
         dbCtx.Articles.Add(testArticle);
-        
+
         await dbCtx.SaveChangesAsync();
 
-        using var wScope = NewServiceScope();
+        using IServiceScope wScope = NewServiceScope();
 
-        var tx = wScope.ServiceProvider.GetRequiredService<IPlaceOrderTransaction>();
-        
-        var orderRequest = new OrderRequest
+        IPlaceOrderTransaction tx = wScope.ServiceProvider.GetRequiredService<IPlaceOrderTransaction>();
+
+        OrderRequest orderRequest = new()
         {
             Items =
             [
@@ -53,18 +54,19 @@ public sealed class PlaceOrderTransactionTests(
             ]
         };
 
-        var orderId = await tx.PlaceOrderAsync(orderRequest);
-        
+        Identifier orderId = await tx.PlaceOrderAsync(orderRequest);
+
         Assert.NotNull(orderId);
-        
-        using var rScope = NewServiceScope();
 
-        var orderSummaryQuery = rScope.ServiceProvider.GetRequiredService<IFetchOrderSummaryQuery>();
+        using IServiceScope rScope = NewServiceScope();
 
-        var orderSummary = await orderSummaryQuery.FetchAsync(orderId);
-        
+        IFetchOrderSummaryQuery orderSummaryQuery =
+            rScope.ServiceProvider.GetRequiredService<IFetchOrderSummaryQuery>();
+
+        OrderSummary? orderSummary = await orderSummaryQuery.FetchAsync(orderId);
+
         Assert.NotNull(orderSummary);
-        
+
         Assert.Equal(orderId, orderSummary.Id);
         Assert.Equal(20, orderSummary.Number.Value.Length);
     }

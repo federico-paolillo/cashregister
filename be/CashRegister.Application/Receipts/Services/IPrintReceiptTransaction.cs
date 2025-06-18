@@ -1,7 +1,6 @@
-using CashRegister.Application.Receipts.Queries;
-using CashRegister.Domain;
+using Cashregister.Domain;
 
-namespace CashRegister.Application.Receipts.Services;
+namespace Cashregister.Application.Receipts.Services;
 
 public interface IPrintReceiptTransaction
 {

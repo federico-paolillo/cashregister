@@ -1,7 +1,8 @@
-using CashRegister.Application.Receipts.Queries;
-using CashRegister.Domain;
+using Cashregister.Application.Receipts.Models.Output;
+using Cashregister.Application.Receipts.Queries;
+using Cashregister.Domain;
 
-namespace CashRegister.Application.Receipts.Services.Defaults;
+namespace Cashregister.Application.Receipts.Services.Defaults;
 
 public sealed class PrintReceiptTransaction(
     IFetchOrderPrintDataQuery fetchOrderPrintDataQuery
@@ -9,6 +10,6 @@ public sealed class PrintReceiptTransaction(
 {
     public async Task PrintReceiptAsync(Identifier orderId)
     {
-        var printData = await fetchOrderPrintDataQuery.Fetch(orderId);
+        OrderPrintData? printData = await fetchOrderPrintDataQuery.Fetch(orderId);
     }
 }

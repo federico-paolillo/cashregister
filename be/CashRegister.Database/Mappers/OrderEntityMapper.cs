@@ -1,13 +1,15 @@
-using CashRegister.Database.Entities;
-using CashRegister.Domain;
+using Cashregister.Database.Entities;
+using Cashregister.Domain;
 
-namespace CashRegister.Database.Mappers;
+namespace Cashregister.Database.Mappers;
 
 public sealed class OrderEntityMapper
 {
     public OrderEntity ToEntity(PendingOrder pendingOrder)
     {
-        var itemEntities = pendingOrder.Items
+        ArgumentNullException.ThrowIfNull(pendingOrder);
+
+        List<OrderItemEntity> itemEntities = pendingOrder.Items
             .Select(i => new OrderItemEntity
             {
                 Id = i.Id.Value,
@@ -22,7 +24,7 @@ public sealed class OrderEntityMapper
         {
             Id = pendingOrder.Id.Value,
             Date = pendingOrder.Date.Value,
-            Items = itemEntities,
+            Items = itemEntities
         };
     }
 }

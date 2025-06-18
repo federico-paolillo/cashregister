@@ -1,7 +1,9 @@
-using CashRegister.Application.Orders.Extensions;
-using CashRegister.Application.Receipts.Extensions;
-using CashRegister.Database;
-using CashRegister.Database.Extensions;
+using System.Globalization;
+
+using Cashregister.Application.Orders.Extensions;
+using Cashregister.Application.Receipts.Extensions;
+using Cashregister.Database;
+using Cashregister.Database.Extensions;
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -16,19 +18,31 @@ public abstract class IntegrationTest(
     ITestOutputHelper testOutputHelper
 ) : IDisposable
 {
-    private ServiceProvider? _serviceProvider;
-    
     private string? _dataSource;
+    private ServiceProvider? _serviceProvider;
+
+    public void Dispose()
+    {
+        if (_dataSource is not null)
+        {
+            File.Delete(Path.Combine(".", _dataSource));
+        }
+
+        _serviceProvider?.Dispose();
+    }
 
     protected async Task PrepareEnvironmentAsync()
     {
         _dataSource = GenerateDatabaseName();
 
-        var configuration = new ConfigurationBuilder()
-            .AddInMemoryCollection(new Dictionary<string, string?> { ["DataSource"] = _dataSource })
+        IConfigurationRoot configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["DataSource"] = _dataSource
+            })
             .Build();
 
-        var serviceCollection = new ServiceCollection()
+        IServiceCollection serviceCollection = new ServiceCollection()
             .AddLogging(bld => bld.AddProvider(new XUnitLoggerProvider(testOutputHelper)))
             .AddCashregisterDatabase(configuration)
             .AddCashregisterOrders()
@@ -45,10 +59,10 @@ public abstract class IntegrationTest(
         {
             throw new InvalidOperationException("No service provider. Did you call PrepareEnvironmentAsync()?");
         }
-        
-        using var scope = _serviceProvider.CreateScope();
 
-        await using var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        using IServiceScope scope = _serviceProvider.CreateScope();
+
+        await using ApplicationDbContext dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
         await dbContext.Database.MigrateAsync();
     }
@@ -59,24 +73,14 @@ public abstract class IntegrationTest(
         {
             throw new InvalidOperationException("No service provider. Did you call PrepareEnvironmentAsync()?");
         }
-        
+
         return _serviceProvider.CreateScope();
     }
 
     private static string GenerateDatabaseName()
     {
-        var now = DateTime.UtcNow.ToString("yyyy-MM-dd");
+        string now = DateTime.UtcNow.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
 
         return $"{Ulid.NewUlid()}-{now}.sqlite3";
-    }
-
-    public void Dispose()
-    {
-        if (_dataSource is not null)
-        {
-            File.Delete(Path.Combine(".", _dataSource));
-        }
-
-        _serviceProvider?.Dispose();
     }
 }

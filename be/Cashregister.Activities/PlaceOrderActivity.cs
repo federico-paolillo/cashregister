@@ -1,13 +1,13 @@
-﻿using CashRegister.Application.Orders.Models.Input;
-using CashRegister.Application.Orders.Models.Output;
-using CashRegister.Application.Orders.Queries;
-using CashRegister.Application.Orders.Transactions;
-using CashRegister.Application.Receipts.Services;
-
+﻿using Cashregister.Activities.Exceptions;
+using Cashregister.Application.Orders.Models.Input;
+using Cashregister.Application.Orders.Models.Output;
+using Cashregister.Application.Orders.Queries;
+using Cashregister.Application.Orders.Transactions;
+using Cashregister.Application.Receipts.Services;
+using Cashregister.Domain;
 using Cashregister.Factories;
-using Cashregister.UseCases.Exceptions;
 
-namespace Cashregister.UseCases;
+namespace Cashregister.Activities;
 
 public sealed class PlaceOrderActivity(
     Scoped<IPlaceOrderTransaction> placeOrderTx,
@@ -17,15 +17,16 @@ public sealed class PlaceOrderActivity(
 {
     public async Task<OrderSummary> PlaceOrderAsync(OrderRequest orderRequest)
     {
-        var newOrderId = await placeOrderTx.ExecuteAsync(svc => svc.PlaceOrderAsync(orderRequest));
+        Identifier newOrderId = await placeOrderTx.ExecuteAsync(svc => svc.PlaceOrderAsync(orderRequest));
 
         await printReceiptTx.ExecuteAsync(prnt => prnt.PrintReceiptAsync(newOrderId));
 
-        var orderSummary = await fetchOrderSummaryQuery.ExecuteAsync(tx => tx.FetchAsync(newOrderId));
+        OrderSummary? orderSummary = await fetchOrderSummaryQuery.ExecuteAsync(tx => tx.FetchAsync(newOrderId));
 
         if (orderSummary is null)
         {
-            throw new BrokenRealityException("We placed the order, thne printed it but we were not able to retrieve it");
+            throw new BrokenRealityException(
+                "We placed the order, then printed it but we were not able to retrieve it");
         }
 
         return orderSummary;

@@ -4,13 +4,13 @@ namespace Cashregister.Factories;
 
 public sealed class Scoped<TService>(IServiceProvider serviceProvider) where TService : notnull
 {
-    private readonly struct Nothing;
-
     public async Task<TResult> ExecuteAsync<TResult>(Func<TService, Task<TResult>> action)
     {
-        using var scope = serviceProvider.CreateScope();
+        ArgumentNullException.ThrowIfNull(action);
 
-        var service = scope.ServiceProvider.GetRequiredService<TService>();
+        using IServiceScope? scope = serviceProvider.CreateScope();
+
+        TService? service = scope.ServiceProvider.GetRequiredService<TService>();
 
         return await action(service);
     }
@@ -24,6 +24,8 @@ public sealed class Scoped<TService>(IServiceProvider serviceProvider) where TSe
             return default;
         }
 
-        _ = await this.ExecuteAsync(ExecuteReturningNothingAsync);
+        _ = await ExecuteAsync(ExecuteReturningNothingAsync);
     }
+
+    private readonly struct Nothing;
 }

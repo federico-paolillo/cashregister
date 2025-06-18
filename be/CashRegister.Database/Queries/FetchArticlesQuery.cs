@@ -1,11 +1,11 @@
-using CashRegister.Application.Orders.Queries;
-using CashRegister.Database.Entities;
-using CashRegister.Database.Mappers;
-using CashRegister.Domain;
+using Cashregister.Application.Orders.Queries;
+using Cashregister.Database.Entities;
+using Cashregister.Database.Mappers;
+using Cashregister.Domain;
 
 using Microsoft.EntityFrameworkCore;
 
-namespace CashRegister.Database.Queries;
+namespace Cashregister.Database.Queries;
 
 public sealed class FetchArticlesQuery(
     IApplicationDbContext dbContext,
@@ -14,16 +14,16 @@ public sealed class FetchArticlesQuery(
 {
     public async Task<Article[]> FetchAsync(params Identifier[] identifiers)
     {
-        var rawIdentifiers = identifiers
+        string[]? rawIdentifiers = identifiers
             .Select(x => x.Value)
             .ToArray();
 
-        var articleEntities = await dbContext.Articles
+        ArticleEntity[]? articleEntities = await dbContext.Articles
             .Where(a => rawIdentifiers.Contains(a.Id))
             .AsNoTracking()
             .ToArrayAsync();
 
-        var articles = articleEntities
+        Article[]? articles = articleEntities
             .Select(articleEntityMapper.FromEntity)
             .ToArray();
 

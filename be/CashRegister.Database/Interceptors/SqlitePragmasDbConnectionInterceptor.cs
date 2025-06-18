@@ -1,10 +1,12 @@
 using System.Data;
 using System.Data.Common;
 
+using Cashregister.Database.Extensions;
+
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Logging;
 
-namespace CashRegister.Database.Interceptors;
+namespace Cashregister.Database.Interceptors;
 
 public sealed class SqlitePragmasDbConnectionInterceptor(
     ILogger<SqlitePragmasDbConnectionInterceptor> logger
@@ -16,7 +18,9 @@ public sealed class SqlitePragmasDbConnectionInterceptor(
         CancellationToken cancellationToken = default
     )
     {
-        var pragmaCommand = connection.CreateCommand();
+        ArgumentNullException.ThrowIfNull(connection);
+
+        DbCommand? pragmaCommand = connection.CreateCommand();
 
         pragmaCommand.CommandText =
             """
@@ -29,8 +33,8 @@ public sealed class SqlitePragmasDbConnectionInterceptor(
             """;
 
         pragmaCommand.CommandType = CommandType.Text;
-        
-        logger.LogInformation("Issued PRAGMAs after connection open. Command is {Command}", pragmaCommand.CommandText);
+
+        logger.ConnectionPragmasApplied(pragmaCommand.CommandText);
 
         await pragmaCommand.ExecuteNonQueryAsync(cancellationToken);
     }

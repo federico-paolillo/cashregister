@@ -1,7 +1,7 @@
-using CashRegister.Application.Orders.Models.Output;
-using CashRegister.Domain;
+using Cashregister.Application.Orders.Models.Output;
+using Cashregister.Domain;
 
-namespace CashRegister.Application.Orders.Queries;
+namespace Cashregister.Application.Orders.Queries;
 
 public interface IFetchOrderSummaryQuery
 {

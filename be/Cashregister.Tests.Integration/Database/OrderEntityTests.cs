@@ -1,5 +1,5 @@
-﻿using CashRegister.Database;
-using CashRegister.Database.Entities;
+﻿using Cashregister.Database;
+using Cashregister.Database.Entities;
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,14 +17,14 @@ public sealed class OrderEntityTests(
     {
         await PrepareEnvironmentAsync();
 
-        var wArticleEntity = new ArticleEntity
+        ArticleEntity wArticleEntity = new()
         {
             Id = "some-article-id",
             Description = "Test Article",
             Price = 1200
         };
 
-        var wOrderEntity = new OrderEntity
+        OrderEntity wOrderEntity = new()
         {
             Id = "some-id",
             Date = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
@@ -41,20 +41,20 @@ public sealed class OrderEntityTests(
             ]
         };
 
-        using var wScope = NewServiceScope();
+        using IServiceScope wScope = NewServiceScope();
 
-        var wDbContext = wScope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        ApplicationDbContext wDbContext = wScope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
         wDbContext.Articles.Add(wArticleEntity);
         wDbContext.Orders.Add(wOrderEntity);
 
         await wDbContext.SaveChangesAsync();
 
-        using var rScope = NewServiceScope();
+        using IServiceScope rScope = NewServiceScope();
 
-        var rDbContext = rScope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        ApplicationDbContext rDbContext = rScope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
-        var rOrderEntity = await rDbContext.Orders
+        OrderEntity? rOrderEntity = await rDbContext.Orders
             .Include(orderEntity => orderEntity.Items)
             .SingleOrDefaultAsync(a => a.Id == "some-id");
 

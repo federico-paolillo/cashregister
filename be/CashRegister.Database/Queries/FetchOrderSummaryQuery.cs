@@ -1,10 +1,10 @@
-using CashRegister.Application.Orders.Models.Output;
-using CashRegister.Application.Orders.Queries;
-using CashRegister.Domain;
+using Cashregister.Application.Orders.Models.Output;
+using Cashregister.Application.Orders.Queries;
+using Cashregister.Domain;
 
 using Microsoft.EntityFrameworkCore;
 
-namespace CashRegister.Database.Queries;
+namespace Cashregister.Database.Queries;
 
 public sealed class FetchOrderSummaryQuery(
     IApplicationDbContext applicationDbContext
@@ -12,7 +12,9 @@ public sealed class FetchOrderSummaryQuery(
 {
     public async Task<OrderSummary?> FetchAsync(Identifier orderId)
     {
-        var rawOrderId = orderId.Value;
+        ArgumentNullException.ThrowIfNull(orderId);
+
+        string rawOrderId = orderId.Value;
 
         var rawOrderSummary = await applicationDbContext.Orders
             .Include(x => x.Items)

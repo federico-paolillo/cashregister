@@ -1,6 +1,6 @@
-using CashRegister.Domain;
+using Cashregister.Domain;
 
-namespace CashRegister.Application.Orders.Commands;
+namespace Cashregister.Application.Orders.Commands;
 
 public interface ISaveOrderCommand
 {

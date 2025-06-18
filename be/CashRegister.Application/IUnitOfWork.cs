@@ -1,4 +1,4 @@
-namespace CashRegister.Application;
+namespace Cashregister.Application;
 
 public interface IUnitOfWork
 {

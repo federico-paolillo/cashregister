@@ -1,7 +1,7 @@
-using CashRegister.Application.Receipts.Models.Output;
-using CashRegister.Domain;
+using Cashregister.Application.Receipts.Models.Output;
+using Cashregister.Domain;
 
-namespace CashRegister.Application.Receipts.Queries;
+namespace Cashregister.Application.Receipts.Queries;
 
 public interface IFetchOrderPrintDataQuery
 {

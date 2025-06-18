@@ -1,4 +1,4 @@
-namespace CashRegister.Domain;
+namespace Cashregister.Domain;
 
 public sealed record Cents(long Value)
 {

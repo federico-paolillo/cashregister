@@ -1,5 +1,5 @@
-﻿using CashRegister.Database;
-using CashRegister.Database.Entities;
+﻿using Cashregister.Database;
+using Cashregister.Database.Entities;
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,29 +17,29 @@ public sealed class ArticleEntityTests(
     {
         await PrepareEnvironmentAsync();
 
-        var wArticleEntity = new ArticleEntity
+        ArticleEntity wArticleEntity = new()
         {
-            Id = "some-id", 
-            Description = "Test Article", 
+            Id = "some-id",
+            Description = "Test Article",
             Price = 1200
         };
 
-        using var wScope = NewServiceScope();
-        
-        var wDbContext = wScope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        
-        wDbContext.Articles.Add(wArticleEntity);
-        
-        await wDbContext.SaveChangesAsync();
-        
-        using var rScope = NewServiceScope();
-        
-        var rDbContext = rScope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        using IServiceScope wScope = NewServiceScope();
 
-        var rArticleEntity = await rDbContext.Articles.SingleOrDefaultAsync(a => a.Id == "some-id");
-        
+        ApplicationDbContext wDbContext = wScope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+        wDbContext.Articles.Add(wArticleEntity);
+
+        await wDbContext.SaveChangesAsync();
+
+        using IServiceScope rScope = NewServiceScope();
+
+        ApplicationDbContext rDbContext = rScope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+        ArticleEntity? rArticleEntity = await rDbContext.Articles.SingleOrDefaultAsync(a => a.Id == "some-id");
+
         Assert.NotNull(rArticleEntity);
-        
+
         Assert.Equal("Test Article", rArticleEntity.Description);
         Assert.Equal(1200, rArticleEntity.Price);
         Assert.Equal("some-id", rArticleEntity.Id);
