@@ -25,6 +25,12 @@ FROM php:7.4-cli
 
 RUN apt-get update && \
   apt-get install -y \
+  cups \
+  avahi-daemon \
+  dbus \
+  net-tools \
+  socat \
+  tini \
   libmagickwand-dev \
   libonig5 && \
   pecl install imagick && \
@@ -37,4 +43,32 @@ RUN echo "extension=mbstring.so" > /usr/local/etc/php/conf.d/mbstring.ini
 WORKDIR /app
 COPY --from=builder /src /app
 
-ENTRYPOINT ["php", "esc2html.php"]
+EXPOSE 8631
+
+ENTRYPOINT ["/usr/bin/tini", "--"]
+
+CMD ["/app/entrypoint.sh"]
+
+# FROM ubuntu:22.04
+
+# RUN apt-get update && apt-get install -y \
+#   cups \
+#   cups-ipp-utils \
+#   cups-filters \
+#   avahi-daemon \
+#   dbus \
+#   net-tools \
+#   iptables \
+#   socat \
+#   tini \
+#   && rm -rf /var/lib/apt/lists/*
+
+# RUN mkdir -p /app/jobs /app/bin
+
+# COPY entrypoint.sh /app/entrypoint.sh
+
+# EXPOSE 8631
+
+# ENTRYPOINT ["/usr/bin/tini", "--"]
+
+# CMD ["/app/entrypoint.sh"]
