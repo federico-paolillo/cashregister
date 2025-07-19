@@ -54,9 +54,12 @@ public sealed class PlaceOrderTransactionTests(
             ]
         };
 
-        Identifier orderId = await tx.PlaceOrderAsync(orderRequest);
+        var result = await tx.ExecuteAsync(orderRequest, CancellationToken.None);
 
-        Assert.NotNull(orderId);
+        Assert.True(result.Ok);
+        Assert.NotNull(result.Value);
+
+        var orderId = result.Value;
 
         using IServiceScope rScope = NewServiceScope();
 

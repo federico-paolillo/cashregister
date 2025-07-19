@@ -17,7 +17,7 @@ public sealed class Scoped<TService>(IServiceProvider serviceProvider) where TSe
 
     public async Task ExecuteAsync(Func<TService, Task> action)
     {
-        async Task<Nothing> ExecuteReturningNothingAsync(TService service)
+        async Task<Unit> ExecuteReturningNothingAsync(TService service)
         {
             await action(service);
 
@@ -27,5 +27,4 @@ public sealed class Scoped<TService>(IServiceProvider serviceProvider) where TSe
         _ = await ExecuteAsync(ExecuteReturningNothingAsync);
     }
 
-    private readonly struct Nothing;
 }

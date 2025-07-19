@@ -35,6 +35,7 @@ echo "[entrypoint.sh] Launching ippeveprinter"
 exec ippeveprinter \
     -p 8631 \
     -vvv \
+    -k \
     -d /app/jobs \
     -r off \
     -M "federico-paolillo" \
