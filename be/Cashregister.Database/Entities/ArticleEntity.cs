@@ -10,6 +10,8 @@ public sealed class ArticleEntity
     public required string Description { get; init; }
 
     public required long Price { get; init; }
+    
+    public required bool Retired { get; set; }
 
     public sealed class ArticleEntityTypeConfiguration : IEntityTypeConfiguration<ArticleEntity>
     {
@@ -26,6 +28,9 @@ public sealed class ArticleEntity
                 .IsRequired();
 
             builder.Property(p => p.Description)
+                .IsRequired();
+
+            builder.Property(p => p.Retired)
                 .IsRequired();
 
             builder.HasMany<OrderItemEntity>()

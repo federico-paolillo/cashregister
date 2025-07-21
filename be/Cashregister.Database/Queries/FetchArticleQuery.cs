@@ -14,6 +14,7 @@ public sealed class FetchArticleQuery(
     public async Task<Article?> FetchAsync(Identifier identifier)
     {
         var maybeArticleEntity = await dbContext.Articles
+            .Where(a => a.Retired != false)
             .SingleOrDefaultAsync(x => x.Id == identifier.Value);
 
         if (maybeArticleEntity is null)

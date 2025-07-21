@@ -18,6 +18,6 @@
     <ItemGroup>
         <ProjectReference Include="..\Cashregister.Application\Cashregister.Application.csproj"/>
         <ProjectReference Include="..\Cashregister.Domain\Cashregister.Domain.csproj"/>
-        <ProjectReference Include="..\Cashregister.Factories\Cashregister.Factories.csproj" />
+        <ProjectReference Include="..\Cashregister.Commons\Cashregister.Commons.csproj" />
     </ItemGroup>
 </Project>

@@ -1,10 +1,10 @@
-﻿using Cashregister.Activities.Exceptions;
-using Cashregister.Application.Orders.Models.Input;
+﻿using Cashregister.Application.Orders.Models.Input;
 using Cashregister.Application.Orders.Models.Output;
 using Cashregister.Application.Orders.Queries;
 using Cashregister.Application.Orders.Transactions;
 using Cashregister.Application.Receipts.Transactions;
 using Cashregister.Factories;
+using Cashregister.Factories.Problems;
 
 namespace Cashregister.Activities;
 
@@ -38,8 +38,8 @@ public sealed class PlaceOrderActivity(
 
         if (orderSummary is null)
         {
-            throw new BrokenRealityException(
-                "We placed the order then printed it but we were not able to retrieve it from the database");
+            return Result.Error<OrderSummary>(new BrokenRealityProblem(
+                $"We saved the order and printed the receipt but somehow we could not retrieve the summary. Order is {newOrderId.Value}"));
         }
 
         return Result.Ok(orderSummary);

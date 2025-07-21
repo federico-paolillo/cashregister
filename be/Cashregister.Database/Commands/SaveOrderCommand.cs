@@ -12,7 +12,7 @@ public sealed class SaveOrderCommand(
 {
     public async Task SaveAsync(PendingOrder newPendingOrder)
     {
-        OrderEntity? orderEntity = orderEntityMapper.ToEntity(newPendingOrder);
+        var orderEntity = orderEntityMapper.ToEntity(newPendingOrder);
 
         await applicationDbContext.Orders.AddAsync(orderEntity);
     }

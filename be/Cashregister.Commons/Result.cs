@@ -33,14 +33,14 @@ public sealed class Result<TValue>
 
 public static class Result
 {
-    public static Result<TOutput> Ok<TOutput>(TOutput result) where TOutput : notnull
+    public static Result<TValue> Ok<TValue>(TValue result)
     {
-        return new Result<TOutput>(result);
+        return new Result<TValue>(result);
     }
 
-    public static Result<TOutput> Error<TOutput>(Problem problem) where TOutput : notnull
+    public static Result<TValue> Error<TValue>(Problem problem) 
     {
-        return new Result<TOutput>(problem);
+        return new Result<TValue>(problem);
     }
 
     public static Result<Unit> Void()

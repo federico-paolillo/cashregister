@@ -27,7 +27,8 @@ public sealed class PlaceOrderTransactionTests(
         {
             Id = articleId,
             Description = "Some test article",
-            Price = 100L
+            Price = 100L,
+            Retired = false
         };
 
         using IServiceScope setupScope = NewServiceScope();

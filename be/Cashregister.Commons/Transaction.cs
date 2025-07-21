@@ -1,3 +1,5 @@
+using Cashregister.Factories.Problems;
+
 namespace Cashregister.Factories;
 
 public abstract class Transaction<TInput, TOutput>(
@@ -26,9 +28,14 @@ public abstract class Transaction<TInput, TOutput>(
 
             return result;
         }
-        finally
+#pragma warning disable CA1031 
+        // We want to have a global unhandled exception handler
+        catch(Exception ex)
+#pragma warning restore CA1031
         {
             await unitOfWork.RollbackAsync(cancellationToken);
+
+            return Result.Error<TOutput>(new UnhandledExceptionProblem(ex));
         }
     }
 

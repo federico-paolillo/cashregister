@@ -21,7 +21,8 @@ public sealed class OrderEntityTests(
         {
             Id = "some-article-id",
             Description = "Test Article",
-            Price = 1200
+            Price = 1200,
+            Retired = false
         };
 
         OrderEntity wOrderEntity = new()

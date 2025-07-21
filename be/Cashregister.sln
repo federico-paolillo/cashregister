@@ -8,7 +8,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cashregister.Application", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cashregister.Domain", "Cashregister.Domain\Cashregister.Domain.csproj", "{0BB6F002-D7A5-4858-BA3C-B482AD87AAB7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cashregister.Factories", "Cashregister.Factories\Cashregister.Factories.csproj", "{4193FE4B-3E18-4872-9EE7-14871245AFA0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cashregister.Commons", "Cashregister.Commons\Cashregister.Commons.csproj", "{4193FE4B-3E18-4872-9EE7-14871245AFA0}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cashregister.Activities", "Cashregister.Activities\Cashregister.Activities.csproj", "{27FA39F6-AB30-469F-95B9-56F745A456DF}"
 EndProject

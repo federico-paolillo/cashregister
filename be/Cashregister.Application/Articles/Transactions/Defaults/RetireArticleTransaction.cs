@@ -3,6 +3,7 @@ using Cashregister.Application.Articles.Queries;
 using Cashregister.Application.Common.Problems;
 using Cashregister.Domain;
 using Cashregister.Factories;
+using Cashregister.Factories.Problems;
 
 namespace Cashregister.Application.Articles.Transactions.Defaults;
 
