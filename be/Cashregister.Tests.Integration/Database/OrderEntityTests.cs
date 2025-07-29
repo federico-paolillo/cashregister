@@ -36,8 +36,9 @@ public sealed class OrderEntityTests(
                     Id = "some-order-item-id",
                     ArticleId = "some-article-id",
                     OrderId = "some-id",
-                    Description = "Some description",
-                    Price = 1200
+                    Description = "some description",
+                    Price = 1200,
+                    Quantity = 10
                 }
             ]
         };
@@ -60,9 +61,14 @@ public sealed class OrderEntityTests(
             .SingleOrDefaultAsync(a => a.Id == "some-id");
 
         Assert.NotNull(rOrderEntity);
-
-        Assert.Single(rOrderEntity.Items);
-
         Assert.NotEqual(0L, rOrderEntity.RowId);
+        Assert.Single(rOrderEntity.Items);
+        
+        Assert.Equal("some-order-item-id", rOrderEntity.Items[0].Id);
+        Assert.Equal("some-article-id", rOrderEntity.Items[0].ArticleId);
+        Assert.Equal("some-id", rOrderEntity.Items[0].OrderId);
+        Assert.Equal("some description", rOrderEntity.Items[0].Description);
+        Assert.Equal(1200, rOrderEntity.Items[0].Price);
+        Assert.Equal(10U, rOrderEntity.Items[0].Quantity);
     }
 }

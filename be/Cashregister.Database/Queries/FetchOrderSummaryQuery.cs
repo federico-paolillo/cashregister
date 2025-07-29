@@ -25,7 +25,7 @@ public sealed class FetchOrderSummaryQuery(
                 o.Id,
                 o.Date,
                 o.RowId,
-                Total = o.Items.Sum(x => x.Price)
+                Total = o.Items.Sum(x => x.Quantity * x.Price)
             })
             .SingleOrDefaultAsync();
 

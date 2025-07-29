@@ -6,5 +6,5 @@ namespace Cashregister.Application.Orders.Transactions;
 
 public interface IPlaceOrderTransaction
 {
-    Task<Result<Identifier>> ExecuteAsync(OrderRequest orderRequest, CancellationToken cancellationToken);
+    Task<Result<Identifier>> ExecuteAsync(OrderRequest orderRequest, CancellationToken cancellationToken = default);
 }

@@ -13,5 +13,5 @@ public sealed class OrderRequestItem
 {
     public required Identifier Article { get; init; }
 
-    public required int Quantity { get; init; }
+    public required uint Quantity { get; init; }
 }

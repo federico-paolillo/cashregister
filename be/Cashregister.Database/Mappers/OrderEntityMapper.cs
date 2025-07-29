@@ -16,7 +16,8 @@ public sealed class OrderEntityMapper
                 ArticleId = i.Article.Value,
                 OrderId = pendingOrder.Id.Value,
                 Description = i.Description,
-                Price = i.Price.Value
+                Price = i.Price.Value,
+                Quantity = i.Quantity
             })
             .ToList();
 

@@ -1,9 +1,11 @@
 using System.Globalization;
 
+using Cashregister.Application.Articles.Extensions;
 using Cashregister.Application.Orders.Extensions;
 using Cashregister.Application.Receipts.Extensions;
 using Cashregister.Database;
 using Cashregister.Database.Extensions;
+using Cashregister.Factories;
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -46,7 +48,10 @@ public abstract class IntegrationTest(
             .AddLogging(bld => bld.AddProvider(new XUnitLoggerProvider(testOutputHelper)))
             .AddCashregisterDatabase(configuration)
             .AddCashregisterOrders()
-            .AddCashregisterReceipts();
+            .AddCashregisterReceipts()
+            .AddCashregisterArticles();
+
+        serviceCollection.AddTransient(typeof(Scoped<>), typeof(Scoped<>));
 
         _serviceProvider = serviceCollection.BuildServiceProvider();
 
@@ -75,6 +80,16 @@ public abstract class IntegrationTest(
         }
 
         return _serviceProvider.CreateScope();
+    }
+
+    protected Task<TResult> RunScoped<TService, TResult>(Func<TService, Task<TResult>> action) 
+        where TService : notnull
+    {
+        using var serviceScope = NewServiceScope();
+        
+        var service = serviceScope.ServiceProvider.GetRequiredService<TService>();
+        
+        return action(service);
     }
 
     private static string GenerateDatabaseName()

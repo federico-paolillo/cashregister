@@ -18,7 +18,7 @@ public sealed class OrderEntity
         public void Configure(EntityTypeBuilder<OrderEntity> builder)
         {
             ArgumentNullException.ThrowIfNull(builder);
-
+            
             builder.Property(p => p.Id)
                 .IsRequired();
 

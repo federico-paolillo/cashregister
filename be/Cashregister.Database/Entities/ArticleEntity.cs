@@ -18,6 +18,8 @@ public sealed class ArticleEntity
         public void Configure(EntityTypeBuilder<ArticleEntity> builder)
         {
             ArgumentNullException.ThrowIfNull(builder);
+            
+            builder.HasQueryFilter(x => x.Retired == false);
 
             builder.Property(p => p.Id)
                 .IsRequired();

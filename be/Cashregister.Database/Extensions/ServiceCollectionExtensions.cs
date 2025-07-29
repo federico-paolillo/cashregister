@@ -1,3 +1,4 @@
+using Cashregister.Application.Articles.Commands;
 using Cashregister.Application.Articles.Queries;
 using Cashregister.Application.Orders.Commands;
 using Cashregister.Application.Orders.Queries;
@@ -71,6 +72,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IFetchArticlesQuery, FetchArticlesQuery>();
         services.AddScoped<IFetchOrderSummaryQuery, FetchOrderSummaryQuery>();
         services.AddScoped<IFetchArticleQuery, FetchArticleQuery>();
+        services.AddScoped<ISaveArticleCommand, SaveArticleCommand>();
     }
 
     private static void AddMappers(IServiceCollection services)
