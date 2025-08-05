@@ -1,4 +1,4 @@
-using Cashregister.Application.Articles.Queries;
+using Cashregister.Application.Articles.Data;
 using Cashregister.Database.Mappers;
 using Cashregister.Domain;
 

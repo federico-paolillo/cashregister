@@ -10,6 +10,7 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddCashregisterArticles(this IServiceCollection serviceCollection)
     {
         serviceCollection.AddScoped<IRegisterArticleTransaction, RegisterArticleTransaction>();
+        serviceCollection.AddScoped<IFetchArticlesPageTransaction, FetchArticlesPageTransaction>();
 
         return serviceCollection;
     }

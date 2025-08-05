@@ -1,10 +1,10 @@
 using Cashregister.Domain;
 
-namespace Cashregister.Application.Articles.Commands;
+namespace Cashregister.Application.Articles.Data;
 
 public interface ISaveArticleCommand
 {
-    Task SaveAsync(Article newArticle);
+    Task SaveAsync(Article article);
 
     Task SaveAsync(RetiredArticle retiredArticle);
 }

@@ -1,2 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
+  <ItemGroup>
+    <ProjectReference Include="..\Cashregister.Activities\Cashregister.Activities.csproj" />
+    <ProjectReference Include="..\Cashregister.Application\Cashregister.Application.csproj" />
+    <ProjectReference Include="..\Cashregister.Database\Cashregister.Database.csproj" />
+    <ProjectReference Include="..\Cashregister.Domain\Cashregister.Domain.csproj" />
+    <ProjectReference Include="..\Cashregister.Commons\Cashregister.Commons.csproj" />
+  </ItemGroup>
 </Project>

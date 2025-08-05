@@ -1,6 +1,6 @@
 using Cashregister.Domain;
 
-namespace Cashregister.Application.Orders.Queries;
+namespace Cashregister.Application.Orders.Data;
 
 public interface IFetchArticlesQuery
 {

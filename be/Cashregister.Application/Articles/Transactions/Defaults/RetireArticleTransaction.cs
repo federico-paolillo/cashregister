@@ -1,9 +1,7 @@
-using Cashregister.Application.Articles.Commands;
-using Cashregister.Application.Articles.Queries;
-using Cashregister.Application.Common.Problems;
+using Cashregister.Application.Articles.Data;
+using Cashregister.Application.Articles.Problems;
 using Cashregister.Domain;
 using Cashregister.Factories;
-using Cashregister.Factories.Problems;
 
 namespace Cashregister.Application.Articles.Transactions.Defaults;
 
@@ -21,7 +19,7 @@ public sealed class RetireArticleTransaction(
 
         if (maybeArticle is null)
         {
-            return Result.Error(new NoSuchThingProblem(articleId));
+            return Result.Error(new NoSuchArticleProblem(articleId));
         }
 
         var retiredArticle = maybeArticle.Retire();

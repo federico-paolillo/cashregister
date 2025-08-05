@@ -1,9 +1,8 @@
 using System.Collections.Immutable;
 
-using Cashregister.Application.Orders.Commands;
+using Cashregister.Application.Orders.Data;
 using Cashregister.Application.Orders.Models.Input;
 using Cashregister.Application.Orders.Problems;
-using Cashregister.Application.Orders.Queries;
 using Cashregister.Domain;
 using Cashregister.Factories;
 
@@ -29,10 +28,10 @@ public sealed class PlaceOrderTransaction(
 
         if (articles.Length != orderRequest.Items.Length)
         {
-            return Result.Error<Identifier>(new OrderRequestIsMissingSomeArticles([..articlesRequested]));
+            return Result.Error<Identifier>(new OrderRequestIsMissingSomeArticles([.. articlesRequested]));
         }
 
-        var articlesWithQuantity = 
+        var articlesWithQuantity =
             from item in orderRequest.Items
             join article in articles on item.Article.Value equals article.Id.Value
             select new
@@ -40,7 +39,7 @@ public sealed class PlaceOrderTransaction(
                 Article = article,
                 item.Quantity
             };
-                                    
+
 
         ImmutableArray<Item> orderItems =
         [

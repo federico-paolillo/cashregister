@@ -1,5 +1,5 @@
+using Cashregister.Application.Orders.Data;
 using Cashregister.Application.Orders.Models.Output;
-using Cashregister.Application.Orders.Queries;
 using Cashregister.Domain;
 
 using Microsoft.EntityFrameworkCore;

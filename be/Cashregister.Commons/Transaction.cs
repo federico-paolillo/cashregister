@@ -30,7 +30,7 @@ public abstract class Transaction<TInput, TOutput>(
         }
 #pragma warning disable CA1031 
         // We want to have a global unhandled exception handler
-        catch(Exception ex)
+        catch (Exception ex)
 #pragma warning restore CA1031
         {
             await unitOfWork.RollbackAsync(cancellationToken);

@@ -1,8 +1,8 @@
 using Cashregister.Application.Articles.Models.Input;
 using Cashregister.Application.Articles.Transactions;
+using Cashregister.Application.Orders.Data;
 using Cashregister.Application.Orders.Models.Input;
 using Cashregister.Application.Orders.Models.Output;
-using Cashregister.Application.Orders.Queries;
 using Cashregister.Application.Orders.Transactions;
 using Cashregister.Domain;
 using Cashregister.Factories;
@@ -34,8 +34,8 @@ public sealed class PlaceOrderTransactionTests(
 
         var placeOrderResult = await RunScoped<IPlaceOrderTransaction, Result<Identifier>>(
             tx => tx.ExecuteAsync(new OrderRequest
-                {
-                    Items =
+            {
+                Items =
                     [
                         new OrderRequestItem
                         {
@@ -43,7 +43,7 @@ public sealed class PlaceOrderTransactionTests(
                             Quantity = 21
                         }
                     ]
-                }
+            }
             )
         );
 

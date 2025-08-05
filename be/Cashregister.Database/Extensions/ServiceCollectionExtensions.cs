@@ -1,7 +1,5 @@
-using Cashregister.Application.Articles.Commands;
-using Cashregister.Application.Articles.Queries;
-using Cashregister.Application.Orders.Commands;
-using Cashregister.Application.Orders.Queries;
+using Cashregister.Application.Articles.Data;
+using Cashregister.Application.Orders.Data;
 using Cashregister.Database.Commands;
 using Cashregister.Database.Interceptors;
 using Cashregister.Database.Mappers;
@@ -73,6 +71,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IFetchOrderSummaryQuery, FetchOrderSummaryQuery>();
         services.AddScoped<IFetchArticleQuery, FetchArticleQuery>();
         services.AddScoped<ISaveArticleCommand, SaveArticleCommand>();
+        services.AddScoped<IFetchArticlesListQuery, FetchArticlesListQuery>();
     }
 
     private static void AddMappers(IServiceCollection services)

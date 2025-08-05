@@ -7,10 +7,10 @@ public sealed class ArticleEntity
 {
     public required string Id { get; init; }
 
-    public required string Description { get; init; }
+    public required string Description { get; set; }
 
-    public required long Price { get; init; }
-    
+    public required long Price { get; set; }
+
     public required bool Retired { get; set; }
 
     public sealed class ArticleEntityTypeConfiguration : IEntityTypeConfiguration<ArticleEntity>
@@ -18,7 +18,7 @@ public sealed class ArticleEntity
         public void Configure(EntityTypeBuilder<ArticleEntity> builder)
         {
             ArgumentNullException.ThrowIfNull(builder);
-            
+
             builder.HasQueryFilter(x => x.Retired == false);
 
             builder.Property(p => p.Id)

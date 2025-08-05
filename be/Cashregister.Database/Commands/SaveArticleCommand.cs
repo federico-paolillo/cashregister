@@ -1,8 +1,6 @@
-using Cashregister.Application.Articles.Commands;
+using Cashregister.Application.Articles.Data;
 using Cashregister.Database.Mappers;
 using Cashregister.Domain;
-
-using Microsoft.EntityFrameworkCore;
 
 namespace Cashregister.Database.Commands;
 
@@ -11,11 +9,24 @@ public sealed class SaveArticleCommand(
     ArticleEntityMapper articleEntityMapper
 ) : ISaveArticleCommand
 {
-    public async Task SaveAsync(Article newArticle)
+    public async Task SaveAsync(Article article)
     {
-        var articleEntity = articleEntityMapper.ToEntity(newArticle);
+        ArgumentNullException.ThrowIfNull(article);
 
-        await applicationDbContext.Articles.AddAsync(articleEntity);
+        var maybeArticleEntity = await applicationDbContext.Articles
+            .FindAsync(article.Id.Value);
+
+        if (maybeArticleEntity is null)
+        {
+            var articleEntity = articleEntityMapper.ToEntity(article);
+
+            await applicationDbContext.Articles.AddAsync(articleEntity);
+        }
+        else
+        {
+            maybeArticleEntity.Description = article.Description;
+            maybeArticleEntity.Price = article.Price.Value;
+        }
     }
 
     public async Task SaveAsync(RetiredArticle retiredArticle)

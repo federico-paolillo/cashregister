@@ -1,6 +1,6 @@
-﻿using Cashregister.Application.Orders.Models.Input;
+﻿using Cashregister.Application.Orders.Data;
+using Cashregister.Application.Orders.Models.Input;
 using Cashregister.Application.Orders.Models.Output;
-using Cashregister.Application.Orders.Queries;
 using Cashregister.Application.Orders.Transactions;
 using Cashregister.Application.Receipts.Transactions;
 using Cashregister.Factories;

@@ -1,4 +1,4 @@
-using Cashregister.Application.Articles.Commands;
+using Cashregister.Application.Articles.Data;
 using Cashregister.Application.Articles.Models.Input;
 using Cashregister.Domain;
 using Cashregister.Factories;
