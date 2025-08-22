@@ -45,62 +45,25 @@ public sealed class FetchArticlesListQueryTests(
   }
 
   [Fact]
-  public async Task FetchAsync_WithAfter_ShouldReturnArticlesAfterSpecifiedId()
+  public async Task FetchAsync_WithNext_ShouldReturnArticlesFromSpecifiedNext()
   {
     await PrepareEnvironmentAsync();
 
-    // Create multiple articles
-    var article1Id = await CreateArticleAsync("Article A", 100);
+    _ = await CreateArticleAsync("Article A", 100);
+    
     var article2Id = await CreateArticleAsync("Article B", 200);
     var article3Id = await CreateArticleAsync("Article C", 300);
     var article4Id = await CreateArticleAsync("Article D", 400);
 
-    // Get all articles ordered by ID to find the middle one
-    var allArticles = await RunScoped<IFetchArticlesListQuery, ImmutableArray<ArticleListItem>>(
-        fetcher => fetcher.FetchAsync(10)
-    );
-
-    Assert.True(allArticles.Length >= 3, "Need at least 3 articles for this test");
-    var sortedIds = allArticles.OrderBy(a => a.Id.Value).ToArray();
-    var afterId = sortedIds[1].Id; // Use the second article as the "after" point
-
     var result = await RunScoped<IFetchArticlesListQuery, ImmutableArray<ArticleListItem>>(
-        fetcher => fetcher.FetchAsync(2, afterId)
+        fetcher => fetcher.FetchAsync(3, article2Id)
     );
 
-    Assert.Equal(2, result.Length);
+    Assert.Equal(3, result.Length);
 
-    // Verify all returned articles have IDs greater than the "after" ID
-    foreach (var article in result)
-    {
-      Assert.True(string.Compare(article.Id.Value, afterId.Value, StringComparison.Ordinal) > 0);
-    }
-
-    // Verify articles are returned in ascending order
-    Assert.True(string.Compare(result[0].Id.Value, result[1].Id.Value, StringComparison.Ordinal) < 0);
-  }
-
-  [Fact]
-  public async Task FetchAsync_WithAfterLastArticle_ShouldReturnEmptyArray()
-  {
-    await PrepareEnvironmentAsync();
-
-    var article1Id = await CreateArticleAsync("Article A", 100);
-    var article2Id = await CreateArticleAsync("Article B", 200);
-
-    // Get the last article ID
-    var allArticles = await RunScoped<IFetchArticlesListQuery, ImmutableArray<ArticleListItem>>(
-        fetcher => fetcher.FetchAsync(10)
-    );
-
-    Assert.True(allArticles.Length >= 2, "Need at least 2 articles for this test");
-    var lastArticleId = allArticles.OrderBy(a => a.Id.Value).Last().Id;
-
-    var result = await RunScoped<IFetchArticlesListQuery, ImmutableArray<ArticleListItem>>(
-        fetcher => fetcher.FetchAsync(5, lastArticleId)
-    );
-
-    Assert.Empty(result);
+    Assert.Equal(article2Id.Value, result[0].Id.Value);
+    Assert.Equal(article3Id.Value, result[1].Id.Value);
+    Assert.Equal(article4Id.Value, result[2].Id.Value);
   }
 
   [Fact]

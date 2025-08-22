@@ -8,7 +8,8 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Configuration.Sources.Clear();
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
 
 builder.Configuration.AddEnvironmentVariables("CASHREGISTER_");
 
@@ -23,7 +24,7 @@ app.MapArticles();
 
 using var scope = app.Services.CreateScope();
 
-var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+using var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
 await dbContext.Database.MigrateAsync();
 

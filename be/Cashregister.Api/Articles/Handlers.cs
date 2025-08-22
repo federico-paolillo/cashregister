@@ -1,10 +1,13 @@
 using System.Collections.Immutable;
 
 using Cashregister.Api.Articles.Models;
+using Cashregister.Api.Commons.Models;
 using Cashregister.Application.Articles.Data;
 using Cashregister.Application.Articles.Models.Input;
+using Cashregister.Application.Articles.Problems;
 using Cashregister.Application.Articles.Transactions;
 using Cashregister.Domain;
+using Cashregister.Factories.Problems;
 
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
@@ -13,7 +16,7 @@ namespace Cashregister.Api.Articles;
 
 internal static class Handlers
 {
-  public static async Task<Results<BadRequest, Ok<ArticlePageDto>>> GetArticlesPage(
+  public static async Task<Results<BadRequest, Ok<ArticlesPageDto>>> GetArticlesPage(
     IFetchArticlesPageTransaction fetchArticlesPageTransaction,
     [FromQuery(Name = "pageSize")] uint pageSize = 50,
     [FromQuery(Name = "after")] string? after = null
@@ -40,8 +43,8 @@ internal static class Handlers
       .Select(ArticleListItemDto.From)
       .ToImmutableArray();
 
-    var articlesPageDto = new ArticlePageDto(
-      articlesPage.Next?.ToString(),
+    var articlesPageDto = new ArticlesPageDto(
+      articlesPage.Next?.Value,
       articlesPage.HasNext,
       articlesListItemDto
     );
@@ -49,8 +52,9 @@ internal static class Handlers
     return TypedResults.Ok(articlesPageDto);
   }
 
-  public static async Task<Results<BadRequest, Created<RegisterArticleRequestDto>>> RegisterArticle(
+  public static async Task<Results<BadRequest, Created<EntityPointerDto>>> RegisterArticle(
     IRegisterArticleTransaction registerArticleTransaction,
+    LinkGenerator linkGenerator,
     [FromBody] RegisterArticleRequestDto request
   )
   {
@@ -67,7 +71,16 @@ internal static class Handlers
       return TypedResults.BadRequest();
     }
 
-    return TypedResults.Created($"/articles/{result.Value}", request);
+    var location = linkGenerator.GetPathByName("GetArticle", new { id = result.Value.Value })
+        ?? throw new InvalidOperationException("Failed to generate location for article");
+
+    var orderPointerDto = new EntityPointerDto
+    {
+      Id = result.Value.Value,
+      Location = location
+    };
+
+    return TypedResults.Created(location, orderPointerDto);
   }
 
   public static async Task<Results<BadRequest, NotFound, Ok<ArticleDto>>> GetArticle(
@@ -87,5 +100,25 @@ internal static class Handlers
     var articleDto = ArticleDto.From(article);
 
     return TypedResults.Ok(articleDto);
+  }
+
+  public static async Task<Results<NotFound, NoContent>> DeleteArticle(
+    IRetireArticleTransaction retireArticleTransaction,
+    [FromRoute] string id
+  )
+  {
+    var identifier = Identifier.From(id);
+
+    var result = await retireArticleTransaction.ExecuteAsync(identifier);
+
+    if (result.NotOk)
+    {
+      if (result.Error is NoSuchArticleProblem)
+      {
+        return TypedResults.NotFound();
+      }
+    }
+
+    return TypedResults.NoContent();
   }
 }

@@ -18,7 +18,7 @@ public sealed class FetchArticlesListQuery(
         var afterValue = after?.Value;
 
         var articleListItems = await applicationDbContext.Articles
-            .Where(a => afterValue == null || a.Id.CompareTo(afterValue) > 0)
+            .Where(a => afterValue == null || a.Id.CompareTo(afterValue) >= 0)
             .OrderBy(a => a.Id)
             .Take(integerCount)
             .Select(a => new ArticleListItem

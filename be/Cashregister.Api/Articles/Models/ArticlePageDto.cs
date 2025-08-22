@@ -4,13 +4,13 @@ using Cashregister.Application.Articles.Models.Output;
 
 namespace Cashregister.Api.Articles.Models;
 
-internal sealed record ArticlePageDto(
+public sealed record ArticlesPageDto(
   string? Next,
   bool HasNext,
   ImmutableArray<ArticleListItemDto> Items
 );
 
-internal sealed record ArticleListItemDto(
+public sealed record ArticleListItemDto(
   string Id,
   string Description,
   decimal Price
@@ -18,8 +18,10 @@ internal sealed record ArticleListItemDto(
 {
   public static ArticleListItemDto From(ArticleListItem article)
   {
+    ArgumentNullException.ThrowIfNull(article);
+
     return new ArticleListItemDto(
-      article.Id.ToString(),
+      article.Id.Value,
       article.Description,
       article.Price.AsPayableMoney()
     );

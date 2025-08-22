@@ -21,14 +21,14 @@ public sealed class FetchArticlesPageTransaction(
 
     var hasMore = articleListItemPlusOne.Length > pageRequest.Size;
 
-    var maybeNext = hasMore ? articleListItemPlusOne[^1] : null;
-
     var integerPageSize = (int)pageRequest.Size;
 
+    var maybeNext = hasMore ? articleListItemPlusOne[^1] : null;
+    
     var actualArticleListItems = articleListItemPlusOne
       .Take(integerPageSize)
       .ToImmutableArray();
-
+    
     var articlesPage = new ArticlesPage
     {
       Articles = actualArticleListItems,

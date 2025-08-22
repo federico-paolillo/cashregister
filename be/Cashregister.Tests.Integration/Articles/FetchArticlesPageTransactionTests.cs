@@ -47,14 +47,12 @@ public sealed class FetchArticlesPageTransactionTests(
   {
     await PrepareEnvironmentAsync();
 
-    // Create multiple articles
     await CreateArticleAsync("Article A", 100);
     await CreateArticleAsync("Article B", 200);
     await CreateArticleAsync("Article C", 300);
     await CreateArticleAsync("Article D", 400);
 
-    // Get first page to get the "after" cursor
-    var firstPageResult = await RunScoped<IFetchArticlesPageTransaction, Result<ArticlesPage>>(
+    var page1Result = await RunScoped<IFetchArticlesPageTransaction, Result<ArticlesPage>>(
         tx => tx.ExecuteAsync(new ArticlesPageRequest
         {
           After = null,
@@ -62,12 +60,18 @@ public sealed class FetchArticlesPageTransactionTests(
         })
     );
 
-    Assert.True(firstPageResult.Ok);
-    var firstPage = firstPageResult.Value;
+    Assert.True(page1Result.Ok);
+    
+    var firstPage = page1Result.Value;
+    
+    Assert.Equal(2, firstPage.Size);
+    Assert.True(firstPage.HasNext);
     Assert.NotNull(firstPage.Next);
 
-    // Get second page using the cursor
-    var secondPageResult = await RunScoped<IFetchArticlesPageTransaction, Result<ArticlesPage>>(
+    Assert.Equal("Article A", firstPage.Articles[0].Description);
+    Assert.Equal("Article B", firstPage.Articles[1].Description);
+    
+    var page2Result = await RunScoped<IFetchArticlesPageTransaction, Result<ArticlesPage>>(
         tx => tx.ExecuteAsync(new ArticlesPageRequest
         {
           After = firstPage.Next,
@@ -75,56 +79,16 @@ public sealed class FetchArticlesPageTransactionTests(
         })
     );
 
-    Assert.True(secondPageResult.Ok);
-    var secondPage = secondPageResult.Value;
+    Assert.True(page2Result.Ok);
+    
+    var secondPage = page2Result.Value;
 
-    Assert.Equal(1, secondPage.Size); // Only 1 article left after the cursor
-    Assert.False(secondPage.HasNext); // No more articles after this
+    Assert.Equal(2, secondPage.Size);
+    Assert.False(secondPage.HasNext); 
     Assert.Null(secondPage.Next);
 
-    // Verify that second page articles have IDs greater than the cursor
-    foreach (var article in secondPage.Articles)
-    {
-      Assert.True(string.Compare(article.Id.Value, firstPage.Next.Value, StringComparison.Ordinal) > 0);
-    }
-  }
-
-  [Fact]
-  public async Task FetchAsync_WithAfterLastArticle_ShouldReturnEmptyPage()
-  {
-    await PrepareEnvironmentAsync();
-
-    await CreateArticleAsync("Article A", 100);
-    await CreateArticleAsync("Article B", 200);
-
-    // Get all articles to find the last one
-    var allArticlesResult = await RunScoped<IFetchArticlesPageTransaction, Result<ArticlesPage>>(
-        tx => tx.ExecuteAsync(new ArticlesPageRequest
-        {
-          After = null,
-          Size = 10
-        })
-    );
-
-    Assert.True(allArticlesResult.Ok);
-    var allArticles = allArticlesResult.Value;
-    var lastArticleId = allArticles.Articles.OrderBy(a => a.Id.Value).Last().Id;
-
-    // Try to get page after the last article
-    var result = await RunScoped<IFetchArticlesPageTransaction, Result<ArticlesPage>>(
-        tx => tx.ExecuteAsync(new ArticlesPageRequest
-        {
-          After = lastArticleId,
-          Size = 5
-        })
-    );
-
-    Assert.True(result.Ok);
-    var page = result.Value;
-
-    Assert.Equal(0, page.Size);
-    Assert.False(page.HasNext);
-    Assert.Null(page.Next);
+    Assert.Equal("Article C", secondPage.Articles[0].Description);
+    Assert.Equal("Article D", secondPage.Articles[1].Description);
   }
 
   [Fact]
@@ -227,12 +191,11 @@ public sealed class FetchArticlesPageTransactionTests(
   {
     await PrepareEnvironmentAsync();
 
-    // Create exactly 3 articles
     await CreateArticleAsync("Article A", 100);
     await CreateArticleAsync("Article B", 200);
     await CreateArticleAsync("Article C", 300);
 
-    var result = await RunScoped<IFetchArticlesPageTransaction, Result<ArticlesPage>>(
+    var firstPageResult = await RunScoped<IFetchArticlesPageTransaction, Result<ArticlesPage>>(
         tx => tx.ExecuteAsync(new ArticlesPageRequest
         {
           After = null,
@@ -240,28 +203,34 @@ public sealed class FetchArticlesPageTransactionTests(
         })
     );
 
-    Assert.True(result.Ok);
-    var page = result.Value;
+    Assert.True(firstPageResult.Ok);
+    
+    var firstPage = firstPageResult.Value;
 
-    Assert.Equal(2, page.Size);
-    Assert.True(page.HasNext);
-    Assert.NotNull(page.Next);
+    Assert.Equal(2, firstPage.Size);
+    Assert.True(firstPage.HasNext);
+    Assert.NotNull(firstPage.Next);
+    
+    Assert.Equal("Article A", firstPage.Articles[0].Description);
+    Assert.Equal("Article B", firstPage.Articles[1].Description);
 
-    // Get the next page
-    var nextPageResult = await RunScoped<IFetchArticlesPageTransaction, Result<ArticlesPage>>(
+    var secondPageResult = await RunScoped<IFetchArticlesPageTransaction, Result<ArticlesPage>>(
         tx => tx.ExecuteAsync(new ArticlesPageRequest
         {
-          After = page.Next,
+          After = firstPage.Next,
           Size = 2
         })
     );
 
-    Assert.True(nextPageResult.Ok);
-    var nextPage = nextPageResult.Value;
+    Assert.True(secondPageResult.Ok);
+    
+    var secondPage = secondPageResult.Value;
 
-    Assert.Equal(0, nextPage.Size); // No articles left after the cursor
-    Assert.False(nextPage.HasNext);
-    Assert.Null(nextPage.Next);
+    Assert.Equal(1, secondPage.Size);
+    Assert.False(secondPage.HasNext);
+    Assert.Null(secondPage.Next);
+    
+    Assert.Equal("Article C", secondPage.Articles[0].Description);
   }
 
   [Fact]

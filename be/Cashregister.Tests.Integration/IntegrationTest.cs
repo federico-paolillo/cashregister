@@ -7,10 +7,8 @@ using Cashregister.Database;
 using Cashregister.Database.Extensions;
 using Cashregister.Factories;
 
+using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 
 using Xunit.Abstractions;
 
@@ -21,51 +19,49 @@ public abstract class IntegrationTest(
 ) : IDisposable
 {
     private string? _dataSource;
-    private ServiceProvider? _serviceProvider;
+
+    private WebApplicationFactory<Program>? _webApplicationFactory;
 
     public void Dispose()
     {
+        _webApplicationFactory?.Dispose();
+
         if (_dataSource is not null)
         {
             File.Delete(Path.Combine(".", _dataSource));
         }
-
-        _serviceProvider?.Dispose();
     }
 
     protected async Task PrepareEnvironmentAsync()
     {
         _dataSource = GenerateDatabaseName();
 
-        IConfigurationRoot configuration = new ConfigurationBuilder()
+        var cfg = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
                 ["DataSource"] = _dataSource
             })
             .Build();
 
-        IServiceCollection serviceCollection = new ServiceCollection()
-            .AddLogging(bld => bld.AddProvider(new XUnitLoggerProvider(testOutputHelper)))
-            .AddCashregisterDatabase(configuration)
-            .AddCashregisterOrders()
-            .AddCashregisterReceipts()
-            .AddCashregisterArticles();
-
-        serviceCollection.AddTransient(typeof(Scoped<>), typeof(Scoped<>));
-
-        _serviceProvider = serviceCollection.BuildServiceProvider();
+        _webApplicationFactory = new WebApplicationFactory<Program>()
+            .WithWebHostBuilder(builder =>
+            {
+                builder.ConfigureLogging(l => l.AddProvider(new XUnitLoggerProvider(testOutputHelper)));
+                builder.UseEnvironment(Environments.Development);
+                builder.UseConfiguration(cfg);
+            });
 
         await ApplyMigrationsAsync();
     }
 
     private async Task ApplyMigrationsAsync()
     {
-        if (_serviceProvider is null)
+        if (_webApplicationFactory is null)
         {
-            throw new InvalidOperationException("No service provider. Did you call PrepareEnvironmentAsync()?");
+            throw new InvalidOperationException("No WebApplicationFactory Did you call PrepareEnvironmentAsync()?");
         }
 
-        using IServiceScope scope = _serviceProvider.CreateScope();
+        using IServiceScope scope = NewServiceScope();
 
         await using ApplicationDbContext dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
@@ -74,22 +70,32 @@ public abstract class IntegrationTest(
 
     protected IServiceScope NewServiceScope()
     {
-        if (_serviceProvider is null)
+        if (_webApplicationFactory is null)
         {
-            throw new InvalidOperationException("No service provider. Did you call PrepareEnvironmentAsync()?");
+            throw new InvalidOperationException("No WebApplicationFactory Did you call PrepareEnvironmentAsync()?");
         }
 
-        return _serviceProvider.CreateScope();
+        return _webApplicationFactory.Services.CreateScope();
     }
 
-    protected Task<TResult> RunScoped<TService, TResult>(Func<TService, Task<TResult>> action) 
+    protected Task<TResult> RunScoped<TService, TResult>(Func<TService, Task<TResult>> action)
         where TService : notnull
     {
         using var serviceScope = NewServiceScope();
-        
+
         var service = serviceScope.ServiceProvider.GetRequiredService<TService>();
-        
+
         return action(service);
+    }
+
+    protected HttpClient CreateHttpClient()
+    {
+        if (_webApplicationFactory is null)
+        {
+            throw new InvalidOperationException("No WebApplicationFactory Did you call PrepareEnvironmentAsync()?");
+        }
+
+        return _webApplicationFactory.CreateClient();
     }
 
     private static string GenerateDatabaseName()

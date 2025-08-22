@@ -11,6 +11,7 @@ public static class ServiceCollectionExtensions
     {
         serviceCollection.AddScoped<IRegisterArticleTransaction, RegisterArticleTransaction>();
         serviceCollection.AddScoped<IFetchArticlesPageTransaction, FetchArticlesPageTransaction>();
+        serviceCollection.AddScoped<IRetireArticleTransaction, RetireArticleTransaction>();
 
         return serviceCollection;
     }

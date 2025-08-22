@@ -257,6 +257,7 @@ dotnet_naming_style.s_camelcase.capitalization = camel_case
 
 dotnet_diagnostic.CA1822.severity = suggestion
 dotnet_diagnostic.CA2007.severity = none
+dotnet_diagnostic.CA1515.severity = none
 
 [**/Migrations/*.cs]
 dotnet_diagnostic.CA1062.severity = none
@@ -272,6 +273,13 @@ dotnet_diagnostic.CA1707.severity = none
 dotnet_diagnostic.CA1063.severity = none
 dotnet_diagnostic.CA1725.severity = none
 dotnet_diagnostic.CA1816.severity = none
+dotnet_diagnostic.CA2234.severity = none
 
 [**/*Dto.cs]
 dotnet_diagnostic.CA1812.severity = none
+
+[Program.cs]
+dotnet_diagnostic.CA1515.severity = none
+
+[IntegrationTest.cs]
+dotnet_diagnostic.CA2000.severity = none
