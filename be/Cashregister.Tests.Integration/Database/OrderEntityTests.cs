@@ -63,7 +63,7 @@ public sealed class OrderEntityTests(
         Assert.NotNull(rOrderEntity);
         Assert.NotEqual(0L, rOrderEntity.RowId);
         Assert.Single(rOrderEntity.Items);
-        
+
         Assert.Equal("some-order-item-id", rOrderEntity.Items[0].Id);
         Assert.Equal("some-article-id", rOrderEntity.Items[0].ArticleId);
         Assert.Equal("some-id", rOrderEntity.Items[0].OrderId);

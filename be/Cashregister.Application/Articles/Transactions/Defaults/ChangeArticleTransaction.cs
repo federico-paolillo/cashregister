@@ -14,26 +14,26 @@ public sealed class ChangeArticleTransaction(
   Transaction<ArticleChange, Unit>(unitOfWork),
   IChangeArticleTransaction
 {
-  protected override async Task<Result<Unit>> InternalExecuteAsync(ArticleChange change)
-  {
-    ArgumentNullException.ThrowIfNull(change);
-
-    var maybeArticleToChange = await fetchArticleQuery.FetchAsync(change.Id);
-
-    if (maybeArticleToChange is null)
+    protected override async Task<Result<Unit>> InternalExecuteAsync(ArticleChange change)
     {
-      return Result.Error<Unit>(new NoSuchArticleProblem(change.Id));
+        ArgumentNullException.ThrowIfNull(change);
+
+        var maybeArticleToChange = await fetchArticleQuery.FetchAsync(change.Id);
+
+        if (maybeArticleToChange is null)
+        {
+            return Result.Error<Unit>(new NoSuchArticleProblem(change.Id));
+        }
+
+        var updatedArticle = new Article
+        {
+            Id = change.Id,
+            Description = change.Description,
+            Price = change.Price
+        };
+
+        await saveArticleCommand.SaveAsync(updatedArticle);
+
+        return Result.Void();
     }
-
-    var updatedArticle = new Article
-    {
-      Id = change.Id,
-      Description = change.Description,
-      Price = change.Price
-    };
-
-    await saveArticleCommand.SaveAsync(updatedArticle);
-
-    return Result.Void();
-  }
 }

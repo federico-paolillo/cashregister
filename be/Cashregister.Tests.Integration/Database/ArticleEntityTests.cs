@@ -22,7 +22,7 @@ public sealed class ArticleEntityTests(
             Id = "some-id",
             Description = "Test Article",
             Price = 1200,
-            Retired = false 
+            Retired = false
         };
 
         using IServiceScope wScope = NewServiceScope();

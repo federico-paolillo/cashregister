@@ -14,7 +14,7 @@ public sealed class OrderItemEntity
     public required string Description { get; init; }
 
     public required long Price { get; init; }
-    
+
     public required uint Quantity { get; init; }
 
     public sealed class OrderItemEntityTypeConfiguration : IEntityTypeConfiguration<OrderItemEntity>
@@ -33,7 +33,7 @@ public sealed class OrderItemEntity
 
             builder.Property(p => p.Description)
                 .IsRequired();
-            
+
             builder.Property(p => p.Quantity)
                 .IsRequired();
 

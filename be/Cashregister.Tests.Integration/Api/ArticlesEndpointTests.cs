@@ -183,12 +183,12 @@ public sealed class ArticlesEndpointTests(
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
 
         var entityPointer = await response.Content.ReadFromJsonAsync<EntityPointerDto>();
-        
+
         Assert.NotNull(entityPointer);
-        
+
         Assert.NotEmpty(entityPointer.Id);
         Assert.NotEmpty(entityPointer.Location);
-        
+
         Assert.Equal($"/articles/{entityPointer.Id}", entityPointer.Location);
     }
 }

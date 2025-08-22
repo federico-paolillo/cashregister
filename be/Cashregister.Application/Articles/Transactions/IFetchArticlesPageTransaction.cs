@@ -6,5 +6,5 @@ namespace Cashregister.Application.Articles.Transactions;
 
 public interface IFetchArticlesPageTransaction
 {
-  Task<Result<ArticlesPage>> ExecuteAsync(ArticlesPageRequest pageRequest);
+    Task<Result<ArticlesPage>> ExecuteAsync(ArticlesPageRequest pageRequest);
 }

@@ -16,109 +16,109 @@ namespace Cashregister.Api.Articles;
 
 internal static class Handlers
 {
-  public static async Task<Results<BadRequest, Ok<ArticlesPageDto>>> GetArticlesPage(
-    IFetchArticlesPageTransaction fetchArticlesPageTransaction,
-    [FromQuery(Name = "pageSize")] uint pageSize = 50,
-    [FromQuery(Name = "after")] string? after = null
-  )
-  {
-    var afterIdentifier = after is not null ? Identifier.From(after) : null;
-
-    var pageRequest = new ArticlesPageRequest
+    public static async Task<Results<BadRequest, Ok<ArticlesPageDto>>> GetArticlesPage(
+      IFetchArticlesPageTransaction fetchArticlesPageTransaction,
+      [FromQuery(Name = "pageSize")] uint pageSize = 50,
+      [FromQuery(Name = "after")] string? after = null
+    )
     {
-      After = afterIdentifier,
-      Size = pageSize,
-    };
+        var afterIdentifier = after is not null ? Identifier.From(after) : null;
 
-    var articlesPageResult = await fetchArticlesPageTransaction.ExecuteAsync(pageRequest);
+        var pageRequest = new ArticlesPageRequest
+        {
+            After = afterIdentifier,
+            Size = pageSize,
+        };
 
-    if (articlesPageResult.NotOk)
-    {
-      return TypedResults.BadRequest();
+        var articlesPageResult = await fetchArticlesPageTransaction.ExecuteAsync(pageRequest);
+
+        if (articlesPageResult.NotOk)
+        {
+            return TypedResults.BadRequest();
+        }
+
+        var articlesPage = articlesPageResult.Value;
+
+        var articlesListItemDto = articlesPage.Articles
+          .Select(ArticleListItemDto.From)
+          .ToImmutableArray();
+
+        var articlesPageDto = new ArticlesPageDto(
+          articlesPage.Next?.Value,
+          articlesPage.HasNext,
+          articlesListItemDto
+        );
+
+        return TypedResults.Ok(articlesPageDto);
     }
 
-    var articlesPage = articlesPageResult.Value;
-
-    var articlesListItemDto = articlesPage.Articles
-      .Select(ArticleListItemDto.From)
-      .ToImmutableArray();
-
-    var articlesPageDto = new ArticlesPageDto(
-      articlesPage.Next?.Value,
-      articlesPage.HasNext,
-      articlesListItemDto
-    );
-
-    return TypedResults.Ok(articlesPageDto);
-  }
-
-  public static async Task<Results<BadRequest, Created<EntityPointerDto>>> RegisterArticle(
-    IRegisterArticleTransaction registerArticleTransaction,
-    LinkGenerator linkGenerator,
-    [FromBody] RegisterArticleRequestDto request
-  )
-  {
-    var articleDefinition = new ArticleDefinition
+    public static async Task<Results<BadRequest, Created<EntityPointerDto>>> RegisterArticle(
+      IRegisterArticleTransaction registerArticleTransaction,
+      LinkGenerator linkGenerator,
+      [FromBody] RegisterArticleRequestDto request
+    )
     {
-      Description = request.Description,
-      Price = Cents.From(request.PriceInCents)
-    };
+        var articleDefinition = new ArticleDefinition
+        {
+            Description = request.Description,
+            Price = Cents.From(request.PriceInCents)
+        };
 
-    var result = await registerArticleTransaction.ExecuteAsync(articleDefinition);
+        var result = await registerArticleTransaction.ExecuteAsync(articleDefinition);
 
-    if (result.NotOk)
-    {
-      return TypedResults.BadRequest();
+        if (result.NotOk)
+        {
+            return TypedResults.BadRequest();
+        }
+
+        var location = linkGenerator.GetPathByName("GetArticle", new { id = result.Value.Value })
+            ?? throw new InvalidOperationException("Failed to generate location for article");
+
+        var orderPointerDto = new EntityPointerDto
+        {
+            Id = result.Value.Value,
+            Location = location
+        };
+
+        return TypedResults.Created(location, orderPointerDto);
     }
 
-    var location = linkGenerator.GetPathByName("GetArticle", new { id = result.Value.Value })
-        ?? throw new InvalidOperationException("Failed to generate location for article");
-
-    var orderPointerDto = new EntityPointerDto
+    public static async Task<Results<BadRequest, NotFound, Ok<ArticleDto>>> GetArticle(
+      IFetchArticleQuery fetchArticleQuery,
+      [FromRoute] string id
+    )
     {
-      Id = result.Value.Value,
-      Location = location
-    };
+        var identifier = Identifier.From(id);
 
-    return TypedResults.Created(location, orderPointerDto);
-  }
+        var article = await fetchArticleQuery.FetchAsync(identifier);
 
-  public static async Task<Results<BadRequest, NotFound, Ok<ArticleDto>>> GetArticle(
-    IFetchArticleQuery fetchArticleQuery,
-    [FromRoute] string id
-  )
-  {
-    var identifier = Identifier.From(id);
+        if (article is null)
+        {
+            return TypedResults.NotFound();
+        }
 
-    var article = await fetchArticleQuery.FetchAsync(identifier);
+        var articleDto = ArticleDto.From(article);
 
-    if (article is null)
-    {
-      return TypedResults.NotFound();
+        return TypedResults.Ok(articleDto);
     }
 
-    var articleDto = ArticleDto.From(article);
-
-    return TypedResults.Ok(articleDto);
-  }
-
-  public static async Task<Results<NotFound, NoContent>> DeleteArticle(
-    IRetireArticleTransaction retireArticleTransaction,
-    [FromRoute] string id
-  )
-  {
-    var identifier = Identifier.From(id);
-
-    var result = await retireArticleTransaction.ExecuteAsync(identifier);
-
-    if (result.NotOk)
+    public static async Task<Results<NotFound, NoContent>> DeleteArticle(
+      IRetireArticleTransaction retireArticleTransaction,
+      [FromRoute] string id
+    )
     {
-      if (result.Error is NoSuchArticleProblem)
-      {
-        return TypedResults.NotFound();
-      }
-    }
+        var identifier = Identifier.From(id);
 
-    return TypedResults.NoContent();
-  }
+        var result = await retireArticleTransaction.ExecuteAsync(identifier);
+
+        if (result.NotOk)
+        {
+            if (result.Error is NoSuchArticleProblem)
+            {
+                return TypedResults.NotFound();
+            }
+        }
+
+        return TypedResults.NoContent();
+    }
 }

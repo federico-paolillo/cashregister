@@ -8,12 +8,12 @@ internal sealed record ArticleDto(
     decimal Price
 )
 {
-  public static ArticleDto From(Article article)
-  {
-    return new ArticleDto(
-        article.Id.ToString(),
-        article.Description,
-        article.Price.AsPayableMoney()
-    );
-  }
+    public static ArticleDto From(Article article)
+    {
+        return new ArticleDto(
+            article.Id.ToString(),
+            article.Description,
+            article.Price.AsPayableMoney()
+        );
+    }
 }

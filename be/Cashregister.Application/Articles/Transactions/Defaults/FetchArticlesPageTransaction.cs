@@ -11,31 +11,31 @@ public sealed class FetchArticlesPageTransaction(
   IFetchArticlesListQuery articlesListFetcher
 ) : IFetchArticlesPageTransaction
 {
-  public async Task<Result<ArticlesPage>> ExecuteAsync(ArticlesPageRequest pageRequest)
-  {
-    ArgumentNullException.ThrowIfNull(pageRequest);
-
-    var pageSizePlusOne = pageRequest.Size + 1;
-
-    var articleListItemPlusOne = await articlesListFetcher.FetchAsync(pageSizePlusOne, pageRequest.After);
-
-    var hasMore = articleListItemPlusOne.Length > pageRequest.Size;
-
-    var integerPageSize = (int)pageRequest.Size;
-
-    var maybeNext = hasMore ? articleListItemPlusOne[^1] : null;
-    
-    var actualArticleListItems = articleListItemPlusOne
-      .Take(integerPageSize)
-      .ToImmutableArray();
-    
-    var articlesPage = new ArticlesPage
+    public async Task<Result<ArticlesPage>> ExecuteAsync(ArticlesPageRequest pageRequest)
     {
-      Articles = actualArticleListItems,
-      HasNext = hasMore,
-      Next = maybeNext?.Id
-    };
+        ArgumentNullException.ThrowIfNull(pageRequest);
 
-    return Result.Ok(articlesPage);
-  }
+        var pageSizePlusOne = pageRequest.Size + 1;
+
+        var articleListItemPlusOne = await articlesListFetcher.FetchAsync(pageSizePlusOne, pageRequest.After);
+
+        var hasMore = articleListItemPlusOne.Length > pageRequest.Size;
+
+        var integerPageSize = (int)pageRequest.Size;
+
+        var maybeNext = hasMore ? articleListItemPlusOne[^1] : null;
+
+        var actualArticleListItems = articleListItemPlusOne
+          .Take(integerPageSize)
+          .ToImmutableArray();
+
+        var articlesPage = new ArticlesPage
+        {
+            Articles = actualArticleListItems,
+            HasNext = hasMore,
+            Next = maybeNext?.Id
+        };
+
+        return Result.Ok(articlesPage);
+    }
 }

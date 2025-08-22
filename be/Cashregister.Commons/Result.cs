@@ -38,7 +38,7 @@ public static class Result
         return new Result<TValue>(result);
     }
 
-    public static Result<TValue> Error<TValue>(Problem problem) 
+    public static Result<TValue> Error<TValue>(Problem problem)
     {
         return new Result<TValue>(problem);
     }

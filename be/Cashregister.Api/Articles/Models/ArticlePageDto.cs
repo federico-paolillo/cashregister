@@ -16,14 +16,14 @@ public sealed record ArticleListItemDto(
   decimal Price
 )
 {
-  public static ArticleListItemDto From(ArticleListItem article)
-  {
-    ArgumentNullException.ThrowIfNull(article);
+    public static ArticleListItemDto From(ArticleListItem article)
+    {
+        ArgumentNullException.ThrowIfNull(article);
 
-    return new ArticleListItemDto(
-      article.Id.Value,
-      article.Description,
-      article.Price.AsPayableMoney()
-    );
-  }
+        return new ArticleListItemDto(
+          article.Id.Value,
+          article.Description,
+          article.Price.AsPayableMoney()
+        );
+    }
 }

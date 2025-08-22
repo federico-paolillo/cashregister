@@ -2,12 +2,16 @@ namespace Cashregister.Api.Orders;
 
 internal static class Endpoints
 {
-  public static RouteGroupBuilder MapOrders(this WebApplication webApplication)
-  {
-    var routeGroup = webApplication.MapGroup("/orders");
+    public static RouteGroupBuilder MapOrders(this WebApplication webApplication)
+    {
+        var routeGroup = webApplication.MapGroup("/orders");
 
-    routeGroup.MapPost("/", Handlers.CreateOrder);
+        routeGroup.MapPost("/", Handlers.CreateOrder)
+          .WithName("CreateOrder");
 
-    return routeGroup;
-  }
+        routeGroup.MapGet("/{id}", Handlers.GetOrder)
+          .WithName("GetOrder");
+
+        return routeGroup;
+    }
 }
