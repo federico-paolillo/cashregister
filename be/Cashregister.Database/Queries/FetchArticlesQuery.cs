@@ -14,18 +14,14 @@ public sealed class FetchArticlesQuery(
 {
     public async Task<Article[]> FetchAsync(params Identifier[] identifiers)
     {
-        string[] rawIdentifiers = identifiers
-            .Select(x => x.Value)
-            .ToArray();
+        string[] rawIdentifiers = [.. identifiers.Select(x => x.Value)];
 
         ArticleEntity[] articleEntities = await dbContext.Articles
             .Where(a => rawIdentifiers.Contains(a.Id))
             .AsNoTracking()
             .ToArrayAsync();
 
-        Article[] articles = articleEntities
-            .Select(articleEntityMapper.FromEntity)
-            .ToArray();
+        Article[] articles = [.. articleEntities.Select(articleEntityMapper.FromEntity)];
 
         return articles;
     }

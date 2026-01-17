@@ -9,8 +9,8 @@ public sealed class OrderEntityMapper
     {
         ArgumentNullException.ThrowIfNull(pendingOrder);
 
-        List<OrderItemEntity> itemEntities = pendingOrder.Items
-            .Select(i => new OrderItemEntity
+        List<OrderItemEntity> itemEntities = [
+            .. pendingOrder.Items.Select(i => new OrderItemEntity
             {
                 Id = i.Id.Value,
                 ArticleId = i.Article.Value,
@@ -19,7 +19,7 @@ public sealed class OrderEntityMapper
                 Price = i.Price.Value,
                 Quantity = i.Quantity
             })
-            .ToList();
+        ];
 
         return new OrderEntity
         {

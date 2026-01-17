@@ -20,9 +20,7 @@ public sealed class PlaceOrderTransaction(
     {
         ArgumentNullException.ThrowIfNull(orderRequest);
 
-        Identifier[] articlesRequested = orderRequest.Items
-            .Select(item => item.Article)
-            .ToArray();
+        Identifier[] articlesRequested = [.. orderRequest.Items.Select(item => item.Article)];
 
         Article[] articles = await fetchArticlesQuery.FetchAsync(articlesRequested);
 

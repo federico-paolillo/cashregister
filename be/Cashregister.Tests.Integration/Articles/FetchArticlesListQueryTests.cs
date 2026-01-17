@@ -35,10 +35,9 @@ public sealed class FetchArticlesListQueryTests(
         Assert.True(string.Compare(result[0].Id.Value, result[1].Id.Value, StringComparison.Ordinal) < 0);
 
         // Verify the first two articles are returned
-        var expectedIds = new[] { article1Id, article2Id, article3Id }
+        Identifier[] expectedIds = [.. [article1Id, article2Id, article3Id]
             .OrderBy(id => id.Value)
-            .Take(2)
-            .ToArray();
+            .Take(2)];
 
         Assert.Equal(expectedIds[0].Value, result[0].Id.Value);
         Assert.Equal(expectedIds[1].Value, result[1].Id.Value);

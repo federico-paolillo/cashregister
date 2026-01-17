@@ -1,0 +1,24 @@
+<Solution>
+  <Project Path="Cashregister.Api\Cashregister.Api.csproj" Type="Classic C#" />
+  <Project Path="Cashregister.Database\Cashregister.Database.csproj" Type="Classic C#" />
+  <Project Path="Cashregister.Application\Cashregister.Application.csproj" Type="Classic C#" />
+  <Project Path="Cashregister.Domain\Cashregister.Domain.csproj" Type="Classic C#" />
+  <Project Path="Cashregister.Commons\Cashregister.Commons.csproj" Type="Classic C#" />
+  <Project Path="Cashregister.Activities\Cashregister.Activities.csproj" Type="Classic C#" />
+  <Project Path="Cashregister.Tests.Integration\Cashregister.Tests.Integration.csproj" Type="Classic C#" />
+  <Folder Name="Miscellaneous">
+    <File Path="..\.editorconfig" />
+    <File Path="..\.gitignore" />
+    <File Path="Directory.Build.props" />
+    <File Path="global.json" />
+    <File Path=".config\dotnet-tools.json" />
+  </Folder>
+  <Configurations>
+    <Configuration Name="Debug|Any CPU" />
+    <Configuration Name="Debug|x64" />
+    <Configuration Name="Debug|x86" />
+    <Configuration Name="Release|Any CPU" />
+    <Configuration Name="Release|x64" />
+    <Configuration Name="Release|x86" />
+  </Configurations>
+</Solution>
