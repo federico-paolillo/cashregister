@@ -33,7 +33,6 @@ ui/
 ├── app/
 │   ├── routes.ts           # Route definitions
 │   ├── root.tsx            # Root layout component
-│   ├── entry.client.tsx    # Client-side hydration
 │   └── routes/             # Route components (file-based routing)
 │       └── home.tsx        # Home page component (/)
 ├── react-router.config.ts  # React Router configuration
