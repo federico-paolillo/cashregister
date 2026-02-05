@@ -33,8 +33,7 @@ ui/
 ├── app/
 │   ├── api/
 │   │   ├── result.ts              # Result<T> type (ok/error union)
-│   │   ├── api-client.ts          # ApiClient class + singleton instance
-│   │   └── api-client-provider.tsx # React Context provider + useApiClient hook
+│   │   └── api-client.ts          # ApiClient class + singleton instance
 │   ├── env.d.ts            # Vite environment variable types
 │   ├── routes.ts           # Route definitions
 │   ├── root.tsx            # Root layout component
@@ -88,32 +87,21 @@ npm run typecheck  # Generate types and run TypeScript check
 
 The frontend uses a `fetch()`-based API client located in `app/api/`. It implements a lightweight `Result<T>` pattern mirroring the backend's approach.
 
-#### Architecture
+#### Usage
 
-There are **two ways** to access the client, each suited to different contexts:
+Import the singleton `apiClient` directly wherever needed — in `clientLoader`, `action`, components, or any other module:
 
-1. **Direct import** (for `clientLoader`, `action`, and imperative use):
-   ```ts
-   import { apiClient } from "~/api/api-client";
+```ts
+import { apiClient } from "~/api/api-client";
 
-   export async function clientLoader() {
-     const result = await apiClient.get<ArticlesPage>("/articles");
-     if (!result.ok) throw new Response(result.error.message, { status: result.error.status });
-     return result.value;
-   }
-   ```
+export async function clientLoader() {
+  const result = await apiClient.get<ArticlesPage>("/articles");
+  if (!result.ok) throw new Response(result.error.message, { status: result.error.status });
+  return result.value;
+}
+```
 
-2. **React Context** via `useApiClient()` (for components):
-   ```tsx
-   import { useApiClient } from "~/api/api-client-provider";
-
-   function MyComponent() {
-     const client = useApiClient();
-     // ...
-   }
-   ```
-
-The direct import is necessary because React Router's `clientLoader` and `action` functions run outside the React component tree and cannot access React Context. The Context provider (following [Kent C. Dodds' pattern](https://kentcdodds.com/blog/how-to-use-react-context-effectively)) wraps the app in `root.tsx` and is useful for component-level access and for substituting a mock client in tests.
+The singleton is instantiated once on module evaluation and cached by the ES module system for all subsequent imports.
 
 #### Result<T> Pattern
 
