@@ -31,6 +31,11 @@ The frontend uses **React Router v7 Framework mode** with Vite for a modern file
 ```
 ui/
 ├── app/
+│   ├── api/
+│   │   ├── result.ts              # Result<T> type (ok/error union)
+│   │   ├── api-client.ts          # ApiClient class + singleton instance
+│   │   └── api-client-provider.tsx # React Context provider + useApiClient hook
+│   ├── env.d.ts            # Vite environment variable types
 │   ├── routes.ts           # Route definitions
 │   ├── root.tsx            # Root layout component
 │   └── routes/             # Route components (file-based routing)
@@ -77,6 +82,65 @@ npm run build      # Build for production
 npm run start      # Serve production build
 npm run lint       # Run ESLint
 npm run typecheck  # Generate types and run TypeScript check
+```
+
+### API Client
+
+The frontend uses a `fetch()`-based API client located in `app/api/`. It implements a lightweight `Result<T>` pattern mirroring the backend's approach.
+
+#### Architecture
+
+There are **two ways** to access the client, each suited to different contexts:
+
+1. **Direct import** (for `clientLoader`, `action`, and imperative use):
+   ```ts
+   import { apiClient } from "~/api/api-client";
+
+   export async function clientLoader() {
+     const result = await apiClient.get<ArticlesPage>("/articles");
+     if (!result.ok) throw new Response(result.error.message, { status: result.error.status });
+     return result.value;
+   }
+   ```
+
+2. **React Context** via `useApiClient()` (for components):
+   ```tsx
+   import { useApiClient } from "~/api/api-client-provider";
+
+   function MyComponent() {
+     const client = useApiClient();
+     // ...
+   }
+   ```
+
+The direct import is necessary because React Router's `clientLoader` and `action` functions run outside the React component tree and cannot access React Context. The Context provider (following [Kent C. Dodds' pattern](https://kentcdodds.com/blog/how-to-use-react-context-effectively)) wraps the app in `root.tsx` and is useful for component-level access and for substituting a mock client in tests.
+
+#### Result<T> Pattern
+
+All client methods return `Promise<Result<T>>` — a discriminated union:
+
+```ts
+// Success
+{ ok: true, value: T }
+
+// Failure (HTTP error or network error)
+{ ok: false, error: { status: number, message: string } }
+```
+
+Network errors use `status: 0`. The client extracts error messages from ASP.NET ProblemDetails responses automatically.
+
+#### Available Methods
+
+- `apiClient.get<T>(path, params?)` — GET request with optional query parameters
+- `apiClient.post<T>(path, body?)` — POST request with JSON body
+- `apiClient.del(path)` — DELETE request (returns `Result<void>`)
+
+#### Configuration
+
+The backend URL is configured via the `VITE_API_BASE_URL` Vite environment variable. When empty (the default), requests use relative paths and resolve against the current origin — which is the production behavior where frontend and backend share the same host. For local development with a separate backend, set the variable:
+
+```bash
+VITE_API_BASE_URL=http://localhost:5000 npm run dev
 ```
 
 ### Generated Files

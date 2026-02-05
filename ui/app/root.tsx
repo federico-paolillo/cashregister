@@ -1,4 +1,6 @@
 import { Links, Meta, Outlet, Scripts, ScrollRestoration } from "react-router";
+import { ApiClientProvider } from "./api/api-client-provider";
+import { apiClient } from "./api/api-client";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
@@ -19,5 +21,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function Root() {
-  return <Outlet />;
+  return (
+    <ApiClientProvider client={apiClient}>
+      <Outlet />
+    </ApiClientProvider>
+  );
 }
