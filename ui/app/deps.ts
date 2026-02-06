@@ -1,4 +1,4 @@
-import { ApiClient } from "./api/api-client";
+import { ApiClient } from "./api-client";
 import { mustParseConfiguration } from "./settings";
 
 export interface Deps {
