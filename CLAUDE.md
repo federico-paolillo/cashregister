@@ -116,7 +116,7 @@ All client methods return `Promise<Result<T>>` — a discriminated union:
 { ok: false, error: { status: number, message: string } }
 ```
 
-Network errors use `status: 0`. The client extracts error messages from ASP.NET ProblemDetails responses automatically.
+Network errors use `status: 0`. For HTTP errors the `message` contains the URL that failed.
 
 #### Available Methods
 
