@@ -1,4 +1,4 @@
-import { type Result, type ApiError, success, failure } from "./result";
+import { type Result, success, failure } from "./result";
 
 export class ApiClient {
   private readonly baseUrl: string;
@@ -49,11 +49,7 @@ export class ApiClient {
       const response = await fetch(url, init);
 
       if (!response.ok) {
-        const error: ApiError = {
-          status: response.status,
-          message: await this.extractErrorMessage(response),
-        };
-        return failure(error);
+        return failure({ status: response.status, message: url });
       }
 
       if (response.status === 204) {
@@ -63,31 +59,11 @@ export class ApiClient {
       const data = (await response.json()) as T;
       return success(data);
     } catch (e) {
-      const error: ApiError = {
+      return failure({
         status: 0,
         message:
           e instanceof Error ? e.message : "An unknown network error occurred",
-      };
-      return failure(error);
-    }
-  }
-
-  private async extractErrorMessage(response: Response): Promise<string> {
-    try {
-      const text = await response.text();
-      try {
-        const json = JSON.parse(text) as Record<string, unknown>;
-        if (typeof json === "object" && json !== null) {
-          if (typeof json.title === "string") return json.title;
-          if (typeof json.detail === "string") return json.detail;
-          if ("errors" in json) return JSON.stringify(json.errors);
-        }
-        return text;
-      } catch {
-        return text || response.statusText;
-      }
-    } catch {
-      return response.statusText;
+      });
     }
   }
 }
