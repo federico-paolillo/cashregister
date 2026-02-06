@@ -31,9 +31,8 @@ The frontend uses **React Router v7 Framework mode** with Vite for a modern file
 ```
 ui/
 ├── app/
-│   ├── api/
-│   │   ├── result.ts              # Result<T> type (ok/error union)
-│   │   └── api-client.ts          # ApiClient class
+│   ├── result.ts              # Result<T> type (ok/error union)
+│   ├── api-client.ts          # ApiClient class
 │   ├── deps.ts             # Composition root (single entry point for all dependencies)
 │   ├── env.d.ts            # Vite environment variable types
 │   ├── routes.ts           # Route definitions
