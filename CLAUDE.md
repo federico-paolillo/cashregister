@@ -33,7 +33,8 @@ ui/
 ├── app/
 │   ├── api/
 │   │   ├── result.ts              # Result<T> type (ok/error union)
-│   │   └── api-client.ts          # ApiClient class + singleton instance
+│   │   └── api-client.ts          # ApiClient class
+│   ├── deps.ts             # Composition root (single entry point for all dependencies)
 │   ├── env.d.ts            # Vite environment variable types
 │   ├── routes.ts           # Route definitions
 │   ├── root.tsx            # Root layout component
@@ -92,16 +93,16 @@ The frontend uses a `fetch()`-based API client located in `app/api/`. It impleme
 Import the singleton `apiClient` directly wherever needed — in `clientLoader`, `action`, components, or any other module:
 
 ```ts
-import { apiClient } from "~/api/api-client";
+import { deps } from "~/deps";
 
 export async function clientLoader() {
-  const result = await apiClient.get<ArticlesPage>("/articles");
+  const result = await deps.apiClient.get<ArticlesPage>("/articles");
   if (!result.ok) throw new Response(result.error.message, { status: result.error.status });
   return result.value;
 }
 ```
 
-The singleton is instantiated once on module evaluation and cached by the ES module system for all subsequent imports.
+The `deps` object is the application's **Composition Root** (`app/deps.ts`), inspired by [Mark Seemann's Pure DI](https://blog.ploeh.dk/2014/06/10/pure-di/) approach. It is the single place where configuration is parsed and all root-level dependencies are constructed. ES module evaluation ensures `deps.ts` runs once and the result is cached — this is the only file that relies on that mechanism.
 
 #### Result<T> Pattern
 
