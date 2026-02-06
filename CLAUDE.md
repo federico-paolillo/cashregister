@@ -25,6 +25,8 @@ The frontend uses **React Router v7 Framework mode** with Vite for a modern file
 - React Router v7 (Framework mode)
 - TypeScript
 - Vite
+- Tailwind CSS v4
+- Vitest with React Testing Library
 
 ### Directory Structure
 
@@ -81,6 +83,8 @@ npm run build      # Build for production
 npm run start      # Serve production build
 npm run lint       # Run ESLint
 npm run typecheck  # Generate types and run TypeScript check
+npm run test       # Run tests once (vitest run)
+npm run test:watch # Run tests in watch mode (vitest)
 ```
 
 ### API Client
@@ -129,6 +133,37 @@ The backend URL is configured via the `VITE_API_BASE_URL` Vite environment varia
 
 ```bash
 VITE_API_BASE_URL=http://localhost:5000 npm run dev
+```
+
+### Styling (Tailwind CSS)
+
+The frontend uses **Tailwind CSS v4** with the `@tailwindcss/vite` plugin. Configuration:
+
+- The Vite plugin is registered in `vite.config.ts` (before `reactRouter()`)
+- The global stylesheet `app/app.css` imports Tailwind via `@import "tailwindcss"`
+- `app/app.css` is imported in `app/root.tsx` so styles are available to all routes
+- Tailwind v4 uses CSS-first configuration — customize themes and utilities directly in `app/app.css` using `@theme` directives rather than a `tailwind.config.js` file
+
+### Testing (Vitest)
+
+The frontend uses **Vitest** with **jsdom** for unit and component testing. Configuration lives in `vite.config.ts` under the `test` key (using `defineConfig` from `"vitest/config"`).
+
+- Test files follow the pattern `app/**/*.test.{ts,tsx}`
+- **React Testing Library** (`@testing-library/react`) and **user-event** (`@testing-library/user-event`) are available for component tests
+- Use Vitest's built-in `expect` matchers — no additional matcher libraries are installed
+
+#### Writing Tests
+
+```ts
+import { describe, it, expect } from "vitest";
+import { render, screen } from "@testing-library/react";
+
+describe("MyComponent", () => {
+  it("renders", () => {
+    render(<MyComponent />);
+    expect(screen.getByText("hello")).toBeDefined();
+  });
+});
 ```
 
 ### Generated Files
