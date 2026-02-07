@@ -1,3 +1,5 @@
+import { useEffect } from "react";
+import { useFetcher } from "react-router";
 import { useModalId } from "./use-modal";
 
 export interface ArticleFormData {
@@ -7,14 +9,26 @@ export interface ArticleFormData {
 
 interface ArticleFormProps {
   initialData?: ArticleFormData;
-  pending?: boolean;
+  intent: string;
 }
 
-export function ArticleForm({ initialData, pending }: ArticleFormProps) {
+export function ArticleForm({ initialData, intent }: ArticleFormProps) {
   const modalId = useModalId();
+  const fetcher = useFetcher();
+  const pending = fetcher.state !== "idle";
+
+  useEffect(() => {
+    if (fetcher.state !== "idle") return;
+
+    const data = fetcher.data as { ok: boolean } | undefined;
+    if (data?.ok) {
+      (document.getElementById(modalId) as HTMLDialogElement | null)?.close();
+    }
+  }, [fetcher.state, fetcher.data, modalId]);
 
   return (
-    <>
+    <fetcher.Form method="POST" action="/articles">
+      <input type="hidden" name="intent" value={intent} />
       <div>
         <label htmlFor="description">Description</label>
         <input
@@ -49,6 +63,6 @@ export function ArticleForm({ initialData, pending }: ArticleFormProps) {
           Save
         </button>
       </div>
-    </>
+    </fetcher.Form>
   );
 }
