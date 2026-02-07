@@ -1,4 +1,3 @@
-import { type FormEvent, useState } from "react";
 import { useModalId } from "./use-modal";
 
 export interface ArticleFormData {
@@ -8,37 +7,21 @@ export interface ArticleFormData {
 
 interface ArticleFormProps {
   initialData?: ArticleFormData;
-  onSave: (data: ArticleFormData) => void;
   pending?: boolean;
 }
 
-export function ArticleForm({
-  initialData,
-  onSave,
-  pending,
-}: ArticleFormProps) {
-  const [description, setDescription] = useState(
-    initialData?.description ?? "",
-  );
-  const [priceInCents, setPriceInCents] = useState(
-    initialData?.priceInCents ?? 0,
-  );
+export function ArticleForm({ initialData, pending }: ArticleFormProps) {
   const modalId = useModalId();
 
-  function handleSubmit(e: FormEvent) {
-    e.preventDefault();
-    onSave({ description, priceInCents });
-  }
-
   return (
-    <form onSubmit={handleSubmit}>
+    <>
       <div>
         <label htmlFor="description">Description</label>
         <input
           id="description"
+          name="description"
           type="text"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
+          defaultValue={initialData?.description ?? ""}
           required
         />
       </div>
@@ -46,9 +29,9 @@ export function ArticleForm({
         <label htmlFor="priceInCents">Price (cents)</label>
         <input
           id="priceInCents"
+          name="priceInCents"
           type="number"
-          value={priceInCents}
-          onChange={(e) => setPriceInCents(Number(e.target.value))}
+          defaultValue={initialData?.priceInCents ?? 0}
           required
           min={0}
         />
@@ -66,6 +49,6 @@ export function ArticleForm({
           Save
         </button>
       </div>
-    </form>
+    </>
   );
 }

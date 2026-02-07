@@ -1,22 +1,14 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useFetcher } from "react-router";
 import type { Route } from "./+types/articles";
 import { deps } from "../deps";
-import { type ArticleFormData, ArticleForm } from "../components/article-form";
+import type {
+  ArticlesPageDto,
+  RegisterArticleRequestDto,
+} from "../model";
+import { ArticleForm } from "../components/article-form";
 import { Modal } from "../components/modal";
 import { useModal } from "../components/use-modal";
-
-interface ArticlesPageDto {
-  next: string | null;
-  hasNext: boolean;
-  items: ArticleListItemDto[];
-}
-
-interface ArticleListItemDto {
-  id: string;
-  description: string;
-  price: number;
-}
 
 export async function clientLoader() {
   const result = await deps.apiClient.get<ArticlesPageDto>("/articles");
@@ -29,13 +21,15 @@ export async function clientLoader() {
 }
 
 export async function clientAction({ request }: Route.ClientActionArgs) {
-  const payload = await request.json();
+  const formData = await request.formData();
+  const intent = formData.get("intent");
 
-  if (payload.intent === "create") {
-    return await deps.apiClient.post("/articles", {
-      description: payload.description,
-      priceInCents: payload.priceInCents,
-    });
+  if (intent === "create") {
+    const body: RegisterArticleRequestDto = {
+      description: String(formData.get("description")),
+      priceInCents: Number(formData.get("priceInCents")),
+    };
+    return await deps.apiClient.post("/articles", body);
   }
 
   return { ok: false, error: { status: 400, message: "Unknown intent" } };
@@ -48,32 +42,22 @@ export default function Articles() {
     close: closeCreate,
   } = useModal();
 
-  const fetcher = useFetcher();
-  const pendingCreate = useRef(false);
+  const [fetcherKey, setFetcherKey] = useState(0);
+  const fetcher = useFetcher({ key: `create-article-${fetcherKey}` });
+
+  function openCreateModal() {
+    setFetcherKey((k) => k + 1);
+    openCreate();
+  }
 
   useEffect(() => {
-    if (!pendingCreate.current) return;
     if (fetcher.state !== "idle") return;
-
-    pendingCreate.current = false;
 
     const data = fetcher.data as { ok: boolean } | undefined;
     if (data?.ok) {
       closeCreate();
     }
   }, [fetcher.state, fetcher.data, closeCreate]);
-
-  function handleCreate(data: ArticleFormData) {
-    pendingCreate.current = true;
-    fetcher.submit(
-      {
-        intent: "create",
-        description: data.description,
-        priceInCents: data.priceInCents,
-      },
-      { method: "POST", encType: "application/json" },
-    );
-  }
 
   const pending = fetcher.state !== "idle";
 
@@ -83,7 +67,7 @@ export default function Articles() {
         <h1>Articles</h1>
       </header>
       <div className="flex justify-end p-4">
-        <button type="button" onClick={openCreate}>
+        <button type="button" onClick={openCreateModal}>
           New Article
         </button>
       </div>
@@ -91,7 +75,10 @@ export default function Articles() {
         {/* Table placeholder — cursor-paginated table will go here */}
       </div>
       <Modal open={isCreateOpen} onClose={closeCreate}>
-        <ArticleForm onSave={handleCreate} pending={pending} />
+        <fetcher.Form method="POST">
+          <input type="hidden" name="intent" value="create" />
+          <ArticleForm pending={pending} />
+        </fetcher.Form>
       </Modal>
     </div>
   );
