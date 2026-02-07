@@ -1,5 +1,4 @@
 import {
-  createElement,
   createContext,
   type ReactNode,
   useCallback,
@@ -15,8 +14,10 @@ export function ModalIdProvider({
 }: {
   id: string;
   children: ReactNode;
-}): ReactNode {
-  return createElement(ModalIdContext.Provider, { value: id }, children);
+}) {
+  return (
+    <ModalIdContext.Provider value={id}>{children}</ModalIdContext.Provider>
+  );
 }
 
 export function useModalId(): string {
