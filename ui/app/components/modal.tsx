@@ -1,4 +1,19 @@
-import { type ReactNode, useCallback, useEffect, useRef, useState } from "react";
+import {
+  createContext,
+  type ReactNode,
+  useCallback,
+  useContext,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+} from "react";
+
+const ModalIdContext = createContext<string | null>(null);
+
+export function useModalId(): string | null {
+  return useContext(ModalIdContext);
+}
 
 interface ModalProps {
   open: boolean;
@@ -7,6 +22,7 @@ interface ModalProps {
 }
 
 export function Modal({ open, onClose, children }: ModalProps) {
+  const id = useId();
   const dialogRef = useRef<HTMLDialogElement>(null);
 
   useEffect(() => {
@@ -21,9 +37,17 @@ export function Modal({ open, onClose, children }: ModalProps) {
   }, [open]);
 
   return (
-    <dialog ref={dialogRef} onClose={onClose}>
-      {open ? children : null}
-    </dialog>
+    <ModalIdContext.Provider value={id}>
+      <dialog
+        id={id}
+        ref={dialogRef}
+        closedby="none"
+        className="overflow-hidden"
+        onClose={onClose}
+      >
+        {children}
+      </dialog>
+    </ModalIdContext.Provider>
   );
 }
 
