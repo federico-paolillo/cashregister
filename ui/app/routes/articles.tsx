@@ -3,7 +3,8 @@ import { useFetcher } from "react-router";
 import type { Route } from "./+types/articles";
 import { deps } from "../deps";
 import { type ArticleFormData, ArticleForm } from "../components/article-form";
-import { Modal, useModal } from "../components/modal";
+import { Modal } from "../components/modal";
+import { useModal } from "../components/use-modal";
 
 interface ArticlesPageDto {
   next: string | null;
@@ -90,11 +91,7 @@ export default function Articles() {
         {/* Table placeholder — cursor-paginated table will go here */}
       </div>
       <Modal open={isCreateOpen} onClose={closeCreate}>
-        <ArticleForm
-          onSave={handleCreate}
-          onCancel={closeCreate}
-          pending={pending}
-        />
+        <ArticleForm onSave={handleCreate} pending={pending} />
       </Modal>
     </div>
   );

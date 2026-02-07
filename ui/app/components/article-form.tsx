@@ -1,5 +1,5 @@
 import { type FormEvent, useState } from "react";
-import { useModalId } from "./modal";
+import { useModalId } from "./use-modal";
 
 export interface ArticleFormData {
   description: string;
@@ -9,14 +9,12 @@ export interface ArticleFormData {
 interface ArticleFormProps {
   initialData?: ArticleFormData;
   onSave: (data: ArticleFormData) => void;
-  onCancel: () => void;
   pending?: boolean;
 }
 
 export function ArticleForm({
   initialData,
   onSave,
-  onCancel,
   pending,
 }: ArticleFormProps) {
   const [description, setDescription] = useState(
@@ -58,11 +56,9 @@ export function ArticleForm({
       <div>
         <button
           type="button"
-          onClick={onCancel}
           disabled={pending}
-          {...(modalId != null
-            ? { command: "close", commandFor: modalId }
-            : {})}
+          command="close"
+          commandfor={modalId}
         >
           Cancel
         </button>

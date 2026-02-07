@@ -1,19 +1,5 @@
-import {
-  createContext,
-  type ReactNode,
-  useCallback,
-  useContext,
-  useEffect,
-  useId,
-  useRef,
-  useState,
-} from "react";
-
-const ModalIdContext = createContext<string | null>(null);
-
-export function useModalId(): string | null {
-  return useContext(ModalIdContext);
-}
+import { type ReactNode, useEffect, useId, useRef } from "react";
+import { ModalIdProvider } from "./use-modal";
 
 interface ModalProps {
   open: boolean;
@@ -29,15 +15,15 @@ export function Modal({ open, onClose, children }: ModalProps) {
     const dialog = dialogRef.current;
     if (!dialog) return;
 
-    if (open && !dialog.open) {
+    if (open) {
       dialog.showModal();
-    } else if (!open && dialog.open) {
+    } else {
       dialog.close();
     }
   }, [open]);
 
   return (
-    <ModalIdContext.Provider value={id}>
+    <ModalIdProvider id={id}>
       <dialog
         id={id}
         ref={dialogRef}
@@ -47,13 +33,6 @@ export function Modal({ open, onClose, children }: ModalProps) {
       >
         {children}
       </dialog>
-    </ModalIdContext.Provider>
+    </ModalIdProvider>
   );
-}
-
-export function useModal() {
-  const [isOpen, setIsOpen] = useState(false);
-  const open = useCallback(() => setIsOpen(true), []);
-  const close = useCallback(() => setIsOpen(false), []);
-  return { isOpen, open, close };
 }
