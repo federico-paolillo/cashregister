@@ -1,4 +1,5 @@
 import { type FormEvent, useState } from "react";
+import { useModalId } from "./modal";
 
 export interface ArticleFormData {
   description: string;
@@ -24,6 +25,7 @@ export function ArticleForm({
   const [priceInCents, setPriceInCents] = useState(
     initialData?.priceInCents ?? 0,
   );
+  const modalId = useModalId();
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -54,7 +56,14 @@ export function ArticleForm({
         />
       </div>
       <div>
-        <button type="button" onClick={onCancel} disabled={pending}>
+        <button
+          type="button"
+          onClick={onCancel}
+          disabled={pending}
+          {...(modalId != null
+            ? { command: "close", commandFor: modalId }
+            : {})}
+        >
           Cancel
         </button>
         <button type="submit" disabled={pending}>
