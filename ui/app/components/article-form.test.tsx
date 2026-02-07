@@ -1,6 +1,5 @@
-import { describe, it, expect, vi, afterEach } from "vitest";
+import { describe, it, expect, afterEach } from "vitest";
 import { render, screen, cleanup } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
 import { ModalIdProvider } from "./use-modal";
 import { ArticleForm } from "./article-form";
 
@@ -11,27 +10,22 @@ function renderInModal(ui: React.ReactNode) {
 }
 
 describe("ArticleForm", () => {
-  it("calls onSave with the entered data on submit", async () => {
-    const user = userEvent.setup();
-    const onSave = vi.fn();
+  it("renders inputs with correct name attributes for FormData serialization", () => {
+    renderInModal(<ArticleForm />);
 
-    renderInModal(<ArticleForm onSave={onSave} />);
-
-    await user.type(screen.getByLabelText("Description"), "Espresso");
-    await user.clear(screen.getByLabelText("Price (cents)"));
-    await user.type(screen.getByLabelText("Price (cents)"), "350");
-    await user.click(screen.getByRole("button", { name: "Save" }));
-
-    expect(onSave).toHaveBeenCalledWith({
-      description: "Espresso",
-      priceInCents: 350,
-    });
+    expect(screen.getByLabelText("Description")).toHaveProperty(
+      "name",
+      "description",
+    );
+    expect(screen.getByLabelText("Price (cents)")).toHaveProperty(
+      "name",
+      "priceInCents",
+    );
   });
 
   it("initializes fields from initialData", () => {
     renderInModal(
       <ArticleForm
-        onSave={() => {}}
         initialData={{ description: "Latte", priceInCents: 450 }}
       />,
     );
@@ -47,7 +41,7 @@ describe("ArticleForm", () => {
   });
 
   it("disables both buttons when pending", () => {
-    renderInModal(<ArticleForm onSave={() => {}} pending={true} />);
+    renderInModal(<ArticleForm pending={true} />);
 
     expect(
       screen.getByRole("button", { name: "Cancel" }),
@@ -59,7 +53,7 @@ describe("ArticleForm", () => {
   });
 
   it("sets command and commandfor on the cancel button", () => {
-    renderInModal(<ArticleForm onSave={() => {}} />);
+    renderInModal(<ArticleForm />);
 
     const cancel = screen.getByRole("button", { name: "Cancel" });
     expect(cancel.getAttribute("command")).toBe("close");
