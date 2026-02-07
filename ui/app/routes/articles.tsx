@@ -1,5 +1,4 @@
-import { useEffect, useState } from "react";
-import { useFetcher } from "react-router";
+import { useState } from "react";
 import type { Route } from "./+types/articles";
 import { deps } from "../deps";
 import type {
@@ -42,24 +41,12 @@ export default function Articles() {
     close: closeCreate,
   } = useModal();
 
-  const [fetcherKey, setFetcherKey] = useState(0);
-  const fetcher = useFetcher({ key: `create-article-${fetcherKey}` });
+  const [createKey, setCreateKey] = useState(0);
 
   function openCreateModal() {
-    setFetcherKey((k) => k + 1);
+    setCreateKey((k) => k + 1);
     openCreate();
   }
-
-  useEffect(() => {
-    if (fetcher.state !== "idle") return;
-
-    const data = fetcher.data as { ok: boolean } | undefined;
-    if (data?.ok) {
-      closeCreate();
-    }
-  }, [fetcher.state, fetcher.data, closeCreate]);
-
-  const pending = fetcher.state !== "idle";
 
   return (
     <div className="flex h-screen flex-col">
@@ -75,10 +62,7 @@ export default function Articles() {
         {/* Table placeholder — cursor-paginated table will go here */}
       </div>
       <Modal open={isCreateOpen} onClose={closeCreate}>
-        <fetcher.Form method="POST">
-          <input type="hidden" name="intent" value="create" />
-          <ArticleForm pending={pending} />
-        </fetcher.Form>
+        <ArticleForm key={createKey} intent="create" />
       </Modal>
     </div>
   );
