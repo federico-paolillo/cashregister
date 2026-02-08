@@ -13,12 +13,13 @@ export function Modal({ open, onClose, children }: ModalProps) {
 
   useEffect(() => {
     const dialog = dialogRef.current;
-    if (!dialog) return;
 
-    if (open) {
-      dialog.showModal();
-    } else {
-      dialog.close();
+    if (dialog) {
+      if (open) {
+        dialog.showModal();
+      } else {
+        dialog.close();
+      }
     }
   }, [open]);
 

@@ -10,6 +10,7 @@ interface ImportMeta {
 
 // Invoker Commands API — supported in Chrome 135+, Edge 135+, Safari TP
 // https://developer.mozilla.org/en-US/docs/Web/API/Invoker_Commands_API
+
 declare namespace React {
   interface ButtonHTMLAttributes<T> {
     command?: string;
