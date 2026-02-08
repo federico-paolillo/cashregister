@@ -1,33 +1,30 @@
 import { useState } from "react";
-import type { Route } from "./+types/articles";
-import { deps } from "../deps";
-import type {
-  ArticlesPageDto,
-  RegisterArticleRequestDto,
-} from "../model";
 import { ArticleForm } from "../components/article-form";
 import { Modal } from "../components/modal";
 import { useModal } from "../components/use-modal";
+import { deps } from "../deps";
+import type {
+  RegisterArticleRequestDto
+} from "../model";
+import type { Route } from "./+types/articles";
 
 export async function clientLoader() {
-  const result = await deps.apiClient.get<ArticlesPageDto>("/articles");
-  if (!result.ok) {
-    throw new Response(result.error.message, {
-      status: result.error.status || 500,
-    });
-  }
-  return result.value;
+  // TODO: Load the first page of Articles
 }
 
 export async function clientAction({ request }: Route.ClientActionArgs) {
   const formData = await request.formData();
+
   const intent = formData.get("intent");
+
+  // TODO: Do something with errors
 
   if (intent === "create") {
     const body: RegisterArticleRequestDto = {
       description: String(formData.get("description")),
       priceInCents: Number(formData.get("priceInCents")),
     };
+
     return await deps.apiClient.post("/articles", body);
   }
 

@@ -1,6 +1,6 @@
-import { useEffect } from "react";
 import { useFetcher } from "react-router";
 import { useModalId } from "./use-modal";
+import { useEffect } from "react";
 
 export interface ArticleFormData {
   description: string;
@@ -16,19 +16,24 @@ interface ArticleFormProps {
 export function ArticleForm({ initialData, intent, onSubmit }: ArticleFormProps) {
   const modalId = useModalId();
   const fetcher = useFetcher();
+
   const pending = fetcher.state !== "idle";
 
   useEffect(() => {
-    if (fetcher.state !== "idle") return;
+    if (pending) {
+      return;
+    }
 
-    const data = fetcher.data as { ok: boolean } | undefined;
-    if (data?.ok) {
+    // Request is complete. 
+    // TODO: What to do with success/failure/pending ?
+
+    if (fetcher.data) {
       onSubmit?.();
     }
-  }, [fetcher.state, fetcher.data, onSubmit]);
+  }, [pending, fetcher.data, onSubmit])
 
   return (
-    <fetcher.Form method="POST" action="/articles">
+    <fetcher.Form method="post" action="/articles">
       <input type="hidden" name="intent" value={intent} />
       <div>
         <label htmlFor="description">Description</label>
