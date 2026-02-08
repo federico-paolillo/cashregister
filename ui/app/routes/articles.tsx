@@ -62,7 +62,7 @@ export default function Articles() {
         {/* Table placeholder — cursor-paginated table will go here */}
       </div>
       <Modal open={isCreateOpen} onClose={closeCreate}>
-        <ArticleForm key={createKey} intent="create" />
+        <ArticleForm key={createKey} intent="create" onSubmit={closeCreate} />
       </Modal>
     </div>
   );
