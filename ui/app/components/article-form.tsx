@@ -10,9 +10,10 @@ export interface ArticleFormData {
 interface ArticleFormProps {
   initialData?: ArticleFormData;
   intent: string;
+  onSubmit?: () => void;
 }
 
-export function ArticleForm({ initialData, intent }: ArticleFormProps) {
+export function ArticleForm({ initialData, intent, onSubmit }: ArticleFormProps) {
   const modalId = useModalId();
   const fetcher = useFetcher();
   const pending = fetcher.state !== "idle";
@@ -22,9 +23,9 @@ export function ArticleForm({ initialData, intent }: ArticleFormProps) {
 
     const data = fetcher.data as { ok: boolean } | undefined;
     if (data?.ok) {
-      (document.getElementById(modalId) as HTMLDialogElement | null)?.close();
+      onSubmit?.();
     }
-  }, [fetcher.state, fetcher.data, modalId]);
+  }, [fetcher.state, fetcher.data, onSubmit]);
 
   return (
     <fetcher.Form method="POST" action="/articles">
