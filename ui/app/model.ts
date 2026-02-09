@@ -1,3 +1,7 @@
+/**
+ * API Models for Articles
+ */
+
 export interface ArticlesPageDto {
   next: string | null;
   hasNext: boolean;
