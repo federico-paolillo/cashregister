@@ -1,0 +1,11 @@
+{
+  "name": "cash-register-root",
+  "version": "1.0.0",
+  "description": "Root package for Cash Register project",
+  "scripts": {},
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@google/gemini-cli": "^0.27.3"
+  }
+}
