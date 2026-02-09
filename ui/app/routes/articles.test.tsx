@@ -46,7 +46,8 @@ describe("Articles Page", () => {
   });
 
   it("renders initial articles from loader", () => {
-    render(<Articles />);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    render(<Articles loaderData={mockInitialData} /> as any);
 
     expect(screen.getByText("Article 1")).toBeDefined();
     expect(screen.getByText("Article 2")).toBeDefined();
@@ -54,7 +55,8 @@ describe("Articles Page", () => {
   });
 
   it("calls fetcher.load when clicking Load More", () => {
-    render(<Articles />);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    render(<Articles loaderData={mockInitialData} /> as any);
 
     const loadMoreButton = screen.getByRole("button", { name: "Load More" });
     fireEvent.click(loadMoreButton);
@@ -63,7 +65,8 @@ describe("Articles Page", () => {
   });
 
   it("appends articles when fetcher.data changes", async () => {
-    const { rerender } = render(<Articles />);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { rerender } = render(<Articles loaderData={mockInitialData} /> as any);
 
     const mockNextData = {
       items: [{ id: "3", description: "Article 3", price: 30.0 }],
@@ -79,7 +82,8 @@ describe("Articles Page", () => {
       Form: ({ children }: { children: React.ReactNode }) => <form>{children}</form>,
     } as unknown as reactRouter.FetcherWithComponents<ArticlesPageDto>);
 
-    rerender(<Articles />);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    rerender(<Articles loaderData={mockInitialData} /> as any);
 
     await waitFor(() => {
       expect(screen.getByText("Article 3")).toBeDefined();
@@ -89,12 +93,13 @@ describe("Articles Page", () => {
   });
 
   it("disables Load More button if hasNext is false", () => {
-    vi.mocked(reactRouter.useLoaderData).mockReturnValue({
+    const data = {
       ...mockInitialData,
       hasNext: false,
-    });
+    };
 
-    render(<Articles />);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    render(<Articles loaderData={data} /> as any);
 
     expect(screen.getByRole("button", { name: "Load More" })).toHaveProperty("disabled", true);
   });
@@ -107,7 +112,8 @@ describe("Articles Page", () => {
       Form: ({ children }: { children: React.ReactNode }) => <form>{children}</form>,
     } as unknown as reactRouter.FetcherWithComponents<ArticlesPageDto>);
 
-    render(<Articles />);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    render(<Articles loaderData={mockInitialData} /> as any);
 
     expect(screen.getByText("Loading...")).toBeDefined();
     expect(screen.getByRole("button", { name: "Loading..." })).toHaveProperty("disabled", true);

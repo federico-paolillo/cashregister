@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useLoaderData } from "react-router";
 import { ArticleForm } from "../components/article-form";
 import { ArticlesTable } from "../components/articles-table";
 import { Spinner } from "../components/spinner";
@@ -45,9 +44,15 @@ export async function clientAction({ request }: Route.ClientActionArgs) {
   return { ok: false, error: { status: 400, message: "Unknown intent" } };
 }
 
-export default function Articles() {
-  const initialData = useLoaderData<ArticlesPageDto>();
-  const { articles, isLoadingMore, hasNext, loadMore } = useArticlesPages(initialData);
+/**
+ * We use Route.ComponentProps to receive loaderData directly as a prop.
+ * This approach is preferred over useLoaderData() inside the custom hook because:
+ * 1. It leverages React Router v7 Framework mode's end-to-end type safety.
+ * 2. It keeps the custom hook decoupled from the router context, making it easier to test.
+ * 3. It makes the data flow explicit: the route component receives data and passes it to its logic.
+ */
+export default function Articles({ loaderData }: Route.ComponentProps) {
+  const { articles, isLoadingMore, hasNext, loadMore } = useArticlesPages(loaderData);
 
   const {
     isOpen: isCreateOpen,
