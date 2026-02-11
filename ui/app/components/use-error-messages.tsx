@@ -37,15 +37,17 @@ export function useErrorMessages(): ErrorMessagesContextValue {
 
 interface ErrorMessagesProviderProps {
   autoDismissMs?: number;
+  maxMessages?: number;
   children: ReactNode;
 }
 
 export function ErrorMessagesProvider({
   autoDismissMs = 5000,
+  maxMessages = 5,
   children,
 }: ErrorMessagesProviderProps) {
   const { errors, addError, dismissError } =
-    useErrorMessagesState(autoDismissMs);
+    useErrorMessagesState(autoDismissMs, maxMessages);
 
   return (
     <ErrorMessagesContext.Provider value={{ errors, addError, dismissError }}>
@@ -54,14 +56,15 @@ export function ErrorMessagesProvider({
   );
 }
 
-export function useErrorMessagesState(autoDismissMs: number) {
+export function useErrorMessagesState(
+  autoDismissMs: number,
+  maxMessages: number = 5,
+) {
   const [errors, setErrors] = useState<ErrorMessage[]>([]);
   const nextId = useRef(0);
   const timers = useRef(new Map<number, ReturnType<typeof setTimeout>>());
 
-  const dismissError = useCallback((id: number) => {
-    setErrors((prev) => prev.filter((e) => e.id !== id));
-
+  const clearTimer = useCallback((id: number) => {
     const timer = timers.current.get(id);
     if (timer !== undefined) {
       clearTimeout(timer);
@@ -69,11 +72,28 @@ export function useErrorMessagesState(autoDismissMs: number) {
     }
   }, []);
 
+  const dismissError = useCallback(
+    (id: number) => {
+      setErrors((prev) => prev.filter((e) => e.id !== id));
+      clearTimer(id);
+    },
+    [clearTimer],
+  );
+
   const addError = useCallback(
     (message: string) => {
       const id = nextId.current++;
 
-      setErrors((prev) => [...prev, { id, message }]);
+      setErrors((prev) => {
+        const next = [...prev, { id, message }];
+
+        if (maxMessages > 0 && next.length > maxMessages) {
+          const evicted = next.shift()!;
+          clearTimer(evicted.id);
+        }
+
+        return next;
+      });
 
       if (autoDismissMs > 0) {
         const timer = setTimeout(() => {
@@ -86,7 +106,7 @@ export function useErrorMessagesState(autoDismissMs: number) {
 
       return id;
     },
-    [autoDismissMs, dismissError],
+    [autoDismissMs, maxMessages, dismissError, clearTimer],
   );
 
   useEffect(() => {

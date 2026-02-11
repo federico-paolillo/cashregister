@@ -203,6 +203,80 @@ describe("useErrorMessagesState", () => {
     expect(result.current.errors).toHaveLength(1);
   });
 
+  it("evicts the oldest error when maxMessages is exceeded", () => {
+    const { result } = renderHook(() => useErrorMessagesState(5000, 2));
+
+    act(() => {
+      result.current.addError("first");
+      result.current.addError("second");
+    });
+
+    expect(result.current.errors.map((e) => e.message)).toEqual([
+      "first",
+      "second",
+    ]);
+
+    act(() => {
+      result.current.addError("third");
+    });
+
+    expect(result.current.errors.map((e) => e.message)).toEqual([
+      "second",
+      "third",
+    ]);
+  });
+
+  it("evicts multiple oldest errors when bursting past maxMessages", () => {
+    const { result } = renderHook(() => useErrorMessagesState(5000, 2));
+
+    act(() => {
+      result.current.addError("a");
+      result.current.addError("b");
+      result.current.addError("c");
+      result.current.addError("d");
+    });
+
+    // Each addError call can only evict one, so after 4 adds with max 2:
+    // add "a" -> [a]
+    // add "b" -> [a, b]
+    // add "c" -> [b, c] (a evicted)
+    // add "d" -> [c, d] (b evicted)
+    expect(result.current.errors.map((e) => e.message)).toEqual(["c", "d"]);
+  });
+
+  it("cancels the auto-dismiss timer of an evicted error", () => {
+    const { result } = renderHook(() => useErrorMessagesState(3000, 1));
+
+    act(() => {
+      result.current.addError("evicted");
+    });
+
+    act(() => {
+      result.current.addError("current");
+    });
+
+    // "evicted" was removed by the buffer, its timer should be cancelled.
+    // Advancing time should not cause any issues or double-removal.
+    act(() => {
+      vi.advanceTimersByTime(3000);
+    });
+
+    // "current" auto-dismissed, list is empty
+    expect(result.current.errors).toHaveLength(0);
+  });
+
+  it("does not evict when maxMessages is 0 (unlimited)", () => {
+    const { result } = renderHook(() => useErrorMessagesState(5000, 0));
+
+    act(() => {
+      result.current.addError("a");
+      result.current.addError("b");
+      result.current.addError("c");
+    });
+
+    expect(result.current.errors).toHaveLength(3);
+  });
+
   it("clears all timers on unmount", () => {
     const clearTimeoutSpy = vi.spyOn(globalThis, "clearTimeout");
 
