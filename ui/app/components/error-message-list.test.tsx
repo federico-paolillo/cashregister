@@ -12,9 +12,12 @@ function AddErrorButton({ message }: { message: string }) {
   return <button onClick={() => addError(message)}>add error</button>;
 }
 
-function renderWithProvider(ui: React.ReactNode, autoDismissMs = 5000) {
+function renderWithProvider(
+  ui: React.ReactNode,
+  { autoDismissMs = 5000, maxMessages = 5 } = {},
+) {
   return render(
-    <ErrorMessagesProvider autoDismissMs={autoDismissMs}>
+    <ErrorMessagesProvider autoDismissMs={autoDismissMs} maxMessages={maxMessages}>
       {ui}
     </ErrorMessagesProvider>,
   );
@@ -105,7 +108,7 @@ describe("ErrorMessageList", () => {
         <AddErrorButton message="vanishing" />
         <ErrorMessageList />
       </>,
-      2000,
+      { autoDismissMs: 2000 },
     );
 
     await user.click(screen.getByText("add error"));
@@ -132,6 +135,50 @@ describe("ErrorMessageList", () => {
     await user.click(screen.getByLabelText("Dismiss"));
 
     expect(screen.queryByRole("alert")).toBeNull();
+  });
+});
+
+describe("ErrorMessageList circular buffer", () => {
+  beforeEach(() => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("evicts the oldest error when maxMessages is reached", async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+
+    function AddThree() {
+      const { addError } = useErrorMessages();
+      return (
+        <button
+          onClick={() => {
+            addError("first");
+            addError("second");
+            addError("third");
+          }}
+        >
+          add three
+        </button>
+      );
+    }
+
+    renderWithProvider(
+      <>
+        <AddThree />
+        <ErrorMessageList />
+      </>,
+      { maxMessages: 2 },
+    );
+
+    await user.click(screen.getByText("add three"));
+
+    expect(screen.queryByText("first")).toBeNull();
+    expect(screen.getByText("second")).toBeDefined();
+    expect(screen.getByText("third")).toBeDefined();
+    expect(screen.getAllByRole("alert")).toHaveLength(2);
   });
 });
 
