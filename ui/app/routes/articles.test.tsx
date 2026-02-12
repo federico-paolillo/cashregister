@@ -3,7 +3,9 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, fireEvent, waitFor, cleanup } from "@testing-library/react";
 import Articles from "./articles";
 import * as reactRouter from "react-router";
+import * as errorMessages from "../components/use-error-messages";
 import type { ArticlesPageDto } from "../model";
+import type { Result } from "../result";
 
 const mockLoad = vi.fn();
 
@@ -16,8 +18,12 @@ vi.mock("react-router", async (importOriginal) => {
   };
 });
 
+vi.mock("../components/use-error-messages", () => ({
+  useErrorMessages: vi.fn(),
+}));
+
 describe("Articles Page", () => {
-  const mockInitialData = {
+  const mockInitialData: ArticlesPageDto = {
     items: [
       { id: "1", description: "Article 1", price: 10.0 },
       { id: "2", description: "Article 2", price: 20.0 },
@@ -26,15 +32,25 @@ describe("Articles Page", () => {
     hasNext: true,
   };
 
+  const mockInitialResult: Result<ArticlesPageDto> = {
+    ok: true,
+    value: mockInitialData,
+  };
+
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(reactRouter.useLoaderData).mockReturnValue(mockInitialData);
+    vi.mocked(reactRouter.useLoaderData).mockReturnValue(mockInitialResult);
     vi.mocked(reactRouter.useFetcher).mockReturnValue({
       state: "idle",
       data: undefined,
       load: mockLoad,
       Form: ({ children }: { children: React.ReactNode }) => <form>{children}</form>,
-    } as unknown as reactRouter.FetcherWithComponents<ArticlesPageDto>);
+    } as unknown as reactRouter.FetcherWithComponents<Result<ArticlesPageDto>>);
+    vi.mocked(errorMessages.useErrorMessages).mockReturnValue({
+      errors: [],
+      addError: vi.fn(),
+      dismissError: vi.fn(),
+    });
 
     // Mock HTMLDialogElement methods for Modal component
     HTMLDialogElement.prototype.showModal = vi.fn();
@@ -47,7 +63,7 @@ describe("Articles Page", () => {
 
   it("renders initial articles from loader", () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    render(<Articles loaderData={mockInitialData} /> as any);
+    render(<Articles loaderData={mockInitialResult} /> as any);
 
     expect(screen.getByText("Article 1")).toBeDefined();
     expect(screen.getByText("Article 2")).toBeDefined();
@@ -56,7 +72,7 @@ describe("Articles Page", () => {
 
   it("calls fetcher.load when clicking Load More", () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    render(<Articles loaderData={mockInitialData} /> as any);
+    render(<Articles loaderData={mockInitialResult} /> as any);
 
     const loadMoreButton = screen.getByRole("button", { name: "Load More" });
     fireEvent.click(loadMoreButton);
@@ -66,9 +82,9 @@ describe("Articles Page", () => {
 
   it("appends articles when fetcher.data changes", async () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { rerender } = render(<Articles loaderData={mockInitialData} /> as any);
+    const { rerender } = render(<Articles loaderData={mockInitialResult} /> as any);
 
-    const mockNextData = {
+    const mockNextData: ArticlesPageDto = {
       items: [{ id: "3", description: "Article 3", price: 30.0 }],
       next: null,
       hasNext: false,
@@ -77,13 +93,13 @@ describe("Articles Page", () => {
     // Simulate fetcher finished loading
     vi.mocked(reactRouter.useFetcher).mockReturnValue({
       state: "idle",
-      data: mockNextData,
+      data: { ok: true, value: mockNextData },
       load: mockLoad,
       Form: ({ children }: { children: React.ReactNode }) => <form>{children}</form>,
-    } as unknown as reactRouter.FetcherWithComponents<ArticlesPageDto>);
+    } as unknown as reactRouter.FetcherWithComponents<Result<ArticlesPageDto>>);
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    rerender(<Articles loaderData={mockInitialData} /> as any);
+    rerender(<Articles loaderData={mockInitialResult} /> as any);
 
     await waitFor(() => {
       expect(screen.getByText("Article 3")).toBeDefined();
@@ -93,9 +109,12 @@ describe("Articles Page", () => {
   });
 
   it("disables Load More button if hasNext is false", () => {
-    const data = {
-      ...mockInitialData,
-      hasNext: false,
+    const data: Result<ArticlesPageDto> = {
+      ok: true,
+      value: {
+        ...mockInitialData,
+        hasNext: false,
+      },
     };
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -110,10 +129,10 @@ describe("Articles Page", () => {
       data: undefined,
       load: mockLoad,
       Form: ({ children }: { children: React.ReactNode }) => <form>{children}</form>,
-    } as unknown as reactRouter.FetcherWithComponents<ArticlesPageDto>);
+    } as unknown as reactRouter.FetcherWithComponents<Result<ArticlesPageDto>>);
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    render(<Articles loaderData={mockInitialData} /> as any);
+    render(<Articles loaderData={mockInitialResult} /> as any);
 
     expect(screen.getByText("Loading...")).toBeDefined();
     expect(screen.getByRole("button", { name: "Loading..." })).toHaveProperty("disabled", true);

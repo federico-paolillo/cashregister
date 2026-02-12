@@ -1,5 +1,7 @@
 import { Links, Meta, Outlet, Scripts, ScrollRestoration } from "react-router";
 import "./app.css";
+import { ErrorMessagesProvider } from "./components/use-error-messages";
+import { ErrorMessageList } from "./components/error-message-list";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
@@ -11,7 +13,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body>
-        {children}
+        <ErrorMessagesProvider>
+          <ErrorMessageList />
+          {children}
+        </ErrorMessagesProvider>
         <ScrollRestoration />
         <Scripts />
       </body>

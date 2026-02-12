@@ -5,26 +5,25 @@ import { Spinner } from "../components/spinner";
 import { Modal } from "../components/modal";
 import { useModal } from "../components/use-modal";
 import { deps } from "../deps";
-import { useArticlesPages } from "./use-articles-page";
+import { useArticlesPages } from "../components/use-articles-page";
 import type {
   ArticlesPageDto,
   RegisterArticleRequestDto,
 } from "../model";
 import type { Route } from "./+types/articles";
+import { failure } from "../result";
 
 export async function clientLoader({ request }: Route.ClientLoaderArgs) {
   const url = new URL(request.url);
+
   const after = url.searchParams.get("after");
+
   const result = await deps.apiClient.get<ArticlesPageDto>(
     "/articles",
     after ? { after } : undefined,
   );
-  if (!result.ok) {
-    throw new Response(result.error.message, {
-      status: result.error.status || 500,
-    });
-  }
-  return result.value;
+
+  return result;
 }
 
 export async function clientAction({ request }: Route.ClientActionArgs) {
@@ -41,7 +40,7 @@ export async function clientAction({ request }: Route.ClientActionArgs) {
     return await deps.apiClient.post("/articles", body);
   }
 
-  return { ok: false, error: { status: 400, message: "Unknown intent" } };
+  return failure({ message: "unknown intent", status: 400 });
 }
 
 /**
