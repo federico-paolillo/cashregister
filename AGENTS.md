@@ -230,6 +230,29 @@ When working with AI agents on this project:
 5. **No Over-Engineering** - Keep changes focused and minimal
 6. **Documentation** - Update this file for significant contributions
 
+### Error Management System
+
+The frontend has a context-based error message system in `ui/app/components/`. It consists of two files:
+
+- **`use-error-messages.tsx`** — State management hook and React context provider
+- **`error-message-list.tsx`** — Presentational component that renders the error toasts
+
+#### Architecture
+
+`ErrorMessagesProvider` wraps the app and exposes `addError(message)` and `dismissError(id)` via `useErrorMessages()`. Internally the state logic lives in `useErrorMessagesState`, which is also exported so tests can exercise it directly without a provider.
+
+#### Key design decisions
+
+- **`useRef` for timers** — The auto-dismiss timer map (`timers`) is stored in a `useRef`, not `useState`, because nothing in the render output depends on it. Updating it should not trigger a re-render.
+- **`useRef` for the ID counter** — Same reasoning: `nextId` is internal bookkeeping only.
+- **FIFO eviction** — When `maxMessages` is exceeded the oldest error is shifted off and its timer is cancelled.
+- **Cleanup on unmount** — A `useEffect` cleanup function clears all pending timers to avoid firing `setState` on an unmounted component.
+- **Configurable behaviour** — `autoDismissMs` (default 5 000 ms) and `maxMessages` (default 5) are props on the provider. Setting `autoDismissMs` to 0 disables auto-dismiss.
+
+#### Testing
+
+Tests live alongside the source files (`use-error-messages.test.tsx`, `error-message-list.test.tsx`). They use `vi.useFakeTimers()` to exercise the auto-dismiss and eviction paths deterministically.
+
 ## AI Agent Contributions
 
 This section tracks significant contributions made by AI agents to the Cash Register project.
