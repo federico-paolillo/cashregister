@@ -1,31 +1,29 @@
 import type { ArticleListItemDto } from "../model";
+import { ArticleRow } from "./article-row";
 
 interface ArticlesTableProps {
   articles: ArticleListItemDto[];
+  onEdit: (article: ArticleListItemDto) => void;
 }
 
-export function ArticlesTable({ articles }: ArticlesTableProps) {
+export function ArticlesTable({ articles, onEdit }: ArticlesTableProps) {
   return (
     <table className="w-full border-collapse">
       <thead>
         <tr className="border-b bg-gray-100 text-left">
-          <th className="p-2 font-semibold">ID</th>
-          <th className="p-2 font-semibold">Description</th>
+          <th className="p-2 font-semibold">Name</th>
           <th className="p-2 font-semibold text-right">Price</th>
+          <th className="p-2 font-semibold text-right">Actions</th>
         </tr>
       </thead>
       <tbody>
-        {articles.map((article) => (
-          <tr key={article.id} className="border-b hover:bg-gray-50">
-            <td className="p-2 text-sm text-gray-500">{article.id}</td>
-            <td className="p-2">{article.description}</td>
-            <td className="p-2 text-right">
-              {article.price.toLocaleString(undefined, {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-              })}
-            </td>
-          </tr>
+        {articles.map((article, index) => (
+          <ArticleRow
+            key={article.id}
+            article={article}
+            striped={index % 2 === 1}
+            onEdit={onEdit}
+          />
         ))}
         {articles.length === 0 && (
           <tr>
