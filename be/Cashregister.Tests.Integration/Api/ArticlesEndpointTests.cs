@@ -171,6 +171,54 @@ public sealed class ArticlesEndpointTests(
     }
 
     [Fact]
+    public async Task ChangeArticle_ReturnsNoContent_WhenArticleIsUpdated()
+    {
+        await PrepareEnvironmentAsync();
+
+        var registerArticleResult = await RunScoped<IRegisterArticleTransaction, Result<Identifier>>(tx =>
+            tx.ExecuteAsync(new ArticleDefinition
+            {
+                Description = "Original description",
+                Price = Cents.From(500L)
+            })
+        );
+
+        Assert.True(registerArticleResult.Ok);
+
+        using var httpClient = CreateHttpClient();
+
+        var articleId = registerArticleResult.Value.Value;
+
+        var response = await httpClient.PostAsJsonAsync($"/articles/{articleId}",
+            new ChangeArticleRequestDto("Updated description", 1000));
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+
+        // Verify the article was actually updated via the list endpoint
+        var getResponse = await httpClient.GetAsync("/articles");
+        Assert.True(getResponse.IsSuccessStatusCode);
+
+        var articles = await getResponse.Content.ReadFromJsonAsync<ArticlesPageDto>();
+        Assert.NotNull(articles);
+        Assert.Single(articles.Items);
+        Assert.Equal("Updated description", articles.Items[0].Description);
+        Assert.Equal(10.00m, articles.Items[0].Price);
+    }
+
+    [Fact]
+    public async Task ChangeArticle_ReturnsNotFound_WhenArticleDoesNotExist()
+    {
+        await PrepareEnvironmentAsync();
+
+        using var httpClient = CreateHttpClient();
+
+        var response = await httpClient.PostAsJsonAsync("/articles/nonexistent-id",
+            new ChangeArticleRequestDto("Some description", 100));
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    [Fact]
     public async Task RegisterArticle_ReturnsCreated_WhenArticleIsRegistered()
     {
         await PrepareEnvironmentAsync();

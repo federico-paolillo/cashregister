@@ -102,6 +102,32 @@ internal static class Handlers
         return TypedResults.Ok(articleDto);
     }
 
+    public static async Task<Results<NotFound, NoContent>> ChangeArticle(
+      IChangeArticleTransaction changeArticleTransaction,
+      [FromRoute] string id,
+      [FromBody] ChangeArticleRequestDto request
+    )
+    {
+        var articleChange = new ArticleChange
+        {
+            Id = Identifier.From(id),
+            Description = request.Description,
+            Price = Cents.From(request.PriceInCents)
+        };
+
+        var result = await changeArticleTransaction.ExecuteAsync(articleChange);
+
+        if (result.NotOk)
+        {
+            if (result.Error is NoSuchArticleProblem)
+            {
+                return TypedResults.NotFound();
+            }
+        }
+
+        return TypedResults.NoContent();
+    }
+
     public static async Task<Results<NotFound, NoContent>> DeleteArticle(
       IRetireArticleTransaction retireArticleTransaction,
       [FromRoute] string id

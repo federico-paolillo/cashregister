@@ -15,6 +15,9 @@ internal static class Endpoints
         routeGroup.MapGet("/{id}", Handlers.GetArticle)
             .WithName("GetArticle");
 
+        routeGroup.MapPost("/{id}", Handlers.ChangeArticle)
+            .WithName("ChangeArticle");
+
         routeGroup.MapDelete("/{id}", Handlers.DeleteArticle)
             .WithName("RetireArticle");
 
