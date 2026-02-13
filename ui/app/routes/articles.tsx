@@ -7,6 +7,7 @@ import { useModal } from "../components/use-modal";
 import { deps } from "../deps";
 import { useArticlesPages } from "../components/use-articles-page";
 import type {
+  ArticleListItemDto,
   ArticlesPageDto,
   RegisterArticleRequestDto,
 } from "../model";
@@ -40,6 +41,15 @@ export async function clientAction({ request }: Route.ClientActionArgs) {
     return await deps.apiClient.post("/articles", body);
   }
 
+  if (intent === "edit") {
+    const body: RegisterArticleRequestDto = {
+      description: String(formData.get("description")),
+      priceInCents: Number(formData.get("priceInCents")),
+    };
+
+    return await deps.apiClient.post("/articles", body);
+  }
+
   return failure({ message: "unknown intent", status: 400 });
 }
 
@@ -59,11 +69,25 @@ export default function Articles({ loaderData }: Route.ComponentProps) {
     close: closeCreate,
   } = useModal();
 
+  const {
+    isOpen: isEditOpen,
+    open: openEdit,
+    close: closeEdit,
+  } = useModal();
+
   const [createKey, setCreateKey] = useState(0);
+  const [editKey, setEditKey] = useState(0);
+  const [editingArticle, setEditingArticle] = useState<ArticleListItemDto | null>(null);
 
   function openCreateModal() {
     setCreateKey((k) => k + 1);
     openCreate();
+  }
+
+  function openEditModal(article: ArticleListItemDto) {
+    setEditingArticle(article);
+    setEditKey((k) => k + 1);
+    openEdit();
   }
 
   return (
@@ -81,7 +105,7 @@ export default function Articles({ loaderData }: Route.ComponentProps) {
         </button>
       </div>
       <div className="relative flex-1 overflow-auto p-4">
-        <ArticlesTable articles={articles} />
+        <ArticlesTable articles={articles} onEdit={openEditModal} />
         {isLoadingMore && <Spinner />}
       </div>
       <div className="flex justify-center p-4 border-t">
@@ -96,6 +120,19 @@ export default function Articles({ loaderData }: Route.ComponentProps) {
       </div>
       <Modal open={isCreateOpen} onClose={closeCreate}>
         <ArticleForm key={createKey} intent="create" onSubmit={closeCreate} />
+      </Modal>
+      <Modal open={isEditOpen} onClose={closeEdit}>
+        {editingArticle && (
+          <ArticleForm
+            key={editKey}
+            intent="edit"
+            initialData={{
+              description: editingArticle.description,
+              priceInCents: editingArticle.price * 100,
+            }}
+            onSubmit={closeEdit}
+          />
+        )}
       </Modal>
     </div>
   );
