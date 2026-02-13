@@ -94,4 +94,23 @@ describe("ArticleForm", () => {
     expect(form).not.toBeNull();
     expect(form!.getAttribute("action")).toBe("/articles");
   });
+
+  it("includes articleId as a hidden field when provided", () => {
+    renderInModal(<ArticleForm intent="edit" articleId="abc-123" />);
+
+    const hidden = document.querySelector<HTMLInputElement>(
+      'input[name="articleId"]',
+    );
+    expect(hidden).not.toBeNull();
+    expect(hidden!.value).toBe("abc-123");
+  });
+
+  it("does not include articleId hidden field when not provided", () => {
+    renderInModal(<ArticleForm intent="create" />);
+
+    const hidden = document.querySelector<HTMLInputElement>(
+      'input[name="articleId"]',
+    );
+    expect(hidden).toBeNull();
+  });
 });

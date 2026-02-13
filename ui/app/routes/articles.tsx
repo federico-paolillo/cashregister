@@ -9,6 +9,7 @@ import { useArticlesPages } from "../components/use-articles-page";
 import type {
   ArticleListItemDto,
   ArticlesPageDto,
+  ChangeArticleRequestDto,
   RegisterArticleRequestDto,
 } from "../model";
 import type { Route } from "./+types/articles";
@@ -42,12 +43,14 @@ export async function clientAction({ request }: Route.ClientActionArgs) {
   }
 
   if (intent === "edit") {
-    const body: RegisterArticleRequestDto = {
+    const articleId = String(formData.get("articleId"));
+
+    const body: ChangeArticleRequestDto = {
       description: String(formData.get("description")),
       priceInCents: Number(formData.get("priceInCents")),
     };
 
-    return await deps.apiClient.post("/articles", body);
+    return await deps.apiClient.post(`/articles/${articleId}`, body);
   }
 
   return failure({ message: "unknown intent", status: 400 });
@@ -126,6 +129,7 @@ export default function Articles({ loaderData }: Route.ComponentProps) {
           <ArticleForm
             key={editKey}
             intent="edit"
+            articleId={editingArticle.id}
             initialData={{
               description: editingArticle.description,
               priceInCents: editingArticle.price * 100,
