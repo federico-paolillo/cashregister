@@ -18,3 +18,8 @@ export interface RegisterArticleRequestDto {
   description: string;
   priceInCents: number;
 }
+
+export interface ChangeArticleRequestDto {
+  description: string;
+  priceInCents: number;
+}

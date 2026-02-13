@@ -8,12 +8,13 @@ export interface ArticleFormData {
 }
 
 interface ArticleFormProps {
+  articleId?: string;
   initialData?: ArticleFormData;
   intent: string;
   onSubmit?: () => void;
 }
 
-export function ArticleForm({ initialData, intent, onSubmit }: ArticleFormProps) {
+export function ArticleForm({ articleId, initialData, intent, onSubmit }: ArticleFormProps) {
   const modalId = useModalId();
   const fetcher = useFetcher();
 
@@ -35,6 +36,7 @@ export function ArticleForm({ initialData, intent, onSubmit }: ArticleFormProps)
   return (
     <fetcher.Form method="post" action="/articles">
       <input type="hidden" name="intent" value={intent} />
+      {articleId && <input type="hidden" name="articleId" value={articleId} />}
       <div>
         <label htmlFor="description">Description</label>
         <input

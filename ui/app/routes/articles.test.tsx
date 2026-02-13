@@ -1,11 +1,13 @@
 import React from "react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, fireEvent, waitFor, cleanup } from "@testing-library/react";
-import Articles from "./articles";
+import Articles, { clientAction } from "./articles";
 import * as reactRouter from "react-router";
 import * as errorMessages from "../components/use-error-messages";
+import { deps } from "../deps";
 import type { ArticlesPageDto } from "../model";
 import type { Result } from "../result";
+import type { Route } from "./+types/articles";
 
 const mockLoad = vi.fn();
 
@@ -20,6 +22,16 @@ vi.mock("react-router", async (importOriginal) => {
 
 vi.mock("../components/use-error-messages", () => ({
   useErrorMessages: vi.fn(),
+}));
+
+vi.mock("../deps", () => ({
+  deps: {
+    apiClient: {
+      get: vi.fn(),
+      post: vi.fn(),
+      del: vi.fn(),
+    },
+  },
 }));
 
 describe("Articles Page", () => {
@@ -136,5 +148,68 @@ describe("Articles Page", () => {
 
     expect(screen.getByText("Loading...")).toBeDefined();
     expect(screen.getByRole("button", { name: "Loading..." })).toHaveProperty("disabled", true);
+  });
+});
+
+function buildFormRequest(fields: Record<string, string>): Route.ClientActionArgs {
+  const formData = new FormData();
+  for (const [key, value] of Object.entries(fields)) {
+    formData.append(key, value);
+  }
+  return {
+    request: new Request("http://localhost/articles", {
+      method: "POST",
+      body: formData,
+    }),
+    params: {},
+  } as Route.ClientActionArgs;
+}
+
+describe("clientAction", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("calls POST /articles/{id} for edit intent", async () => {
+    vi.mocked(deps.apiClient.post).mockResolvedValue({ ok: true, value: undefined });
+
+    const args = buildFormRequest({
+      intent: "edit",
+      articleId: "art-42",
+      description: "Updated name",
+      priceInCents: "500",
+    });
+
+    await clientAction(args);
+
+    expect(deps.apiClient.post).toHaveBeenCalledWith("/articles/art-42", {
+      description: "Updated name",
+      priceInCents: 500,
+    });
+  });
+
+  it("calls POST /articles for create intent", async () => {
+    vi.mocked(deps.apiClient.post).mockResolvedValue({ ok: true, value: undefined });
+
+    const args = buildFormRequest({
+      intent: "create",
+      description: "New article",
+      priceInCents: "1000",
+    });
+
+    await clientAction(args);
+
+    expect(deps.apiClient.post).toHaveBeenCalledWith("/articles", {
+      description: "New article",
+      priceInCents: 1000,
+    });
+  });
+
+  it("returns failure for unknown intent", async () => {
+    const args = buildFormRequest({ intent: "delete" });
+
+    const result = await clientAction(args);
+
+    expect(result).toEqual({ ok: false, error: { message: "unknown intent", status: 400 } });
   });
 });
