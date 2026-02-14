@@ -1,7 +1,7 @@
 import React from "react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, fireEvent, waitFor, cleanup } from "@testing-library/react";
-import Articles, { clientAction } from "./articles";
+import Articles, { clientAction, shouldRevalidate } from "./articles";
 import * as reactRouter from "react-router";
 import * as errorMessages from "../components/use-error-messages";
 import { deps } from "../deps";
@@ -211,5 +211,25 @@ describe("clientAction", () => {
     const result = await clientAction(args);
 
     expect(result).toEqual({ ok: false, error: { message: "unknown intent", status: 400 } });
+  });
+});
+
+describe("shouldRevalidate", () => {
+  it("returns false for edit intent", () => {
+    const formData = new FormData();
+    formData.append("intent", "edit");
+
+    expect(shouldRevalidate({ formData })).toBe(false);
+  });
+
+  it("returns true for create intent", () => {
+    const formData = new FormData();
+    formData.append("intent", "create");
+
+    expect(shouldRevalidate({ formData })).toBe(true);
+  });
+
+  it("returns true when no formData is present", () => {
+    expect(shouldRevalidate({})).toBe(true);
   });
 });

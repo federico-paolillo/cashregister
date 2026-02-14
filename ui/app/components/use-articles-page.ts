@@ -64,10 +64,17 @@ export function useArticlesPages(initialPageResult: Result<ArticlesPageDto>) {
     fetcher.load(url);
   }
 
+  function updateArticle(id: string, description: string, price: number) {
+    setArticles((prev) =>
+      prev.map((a) => (a.id === id ? { ...a, description, price } : a)),
+    );
+  }
+
   return {
     articles,
     isLoadingMore: fetcher.state !== "idle",
     hasNext,
     loadMore,
+    updateArticle,
   };
 }

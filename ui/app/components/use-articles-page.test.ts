@@ -145,6 +145,37 @@ describe("useArticlesPages", () => {
     expect(mockAddError).toHaveBeenCalledWith("Not found");
   });
 
+  it("updateArticle replaces a single article by id", () => {
+    vi.mocked(reactRouter.useFetcher).mockReturnValue({
+      state: "idle",
+      data: undefined,
+      load: mockLoad,
+    } as unknown as reactRouter.FetcherWithComponents<Result<ArticlesPageDto>>);
+
+    const twoItems: Result<ArticlesPageDto> = {
+      ok: true,
+      value: {
+        items: [
+          { id: "1", description: "A1", price: 10 },
+          { id: "2", description: "A2", price: 20 },
+        ],
+        next: null,
+        hasNext: false,
+      },
+    };
+
+    const { result } = renderHook(() => useArticlesPages(twoItems));
+
+    act(() => {
+      result.current.updateArticle("1", "Updated A1", 15);
+    });
+
+    expect(result.current.articles).toEqual([
+      { id: "1", description: "Updated A1", price: 15 },
+      { id: "2", description: "A2", price: 20 },
+    ]);
+  });
+
   it("synchronizes state when initialData changes", () => {
     vi.mocked(reactRouter.useFetcher).mockReturnValue({
       state: "idle",
