@@ -56,6 +56,13 @@ export async function clientAction({ request }: Route.ClientActionArgs) {
   return failure({ message: "unknown intent", status: 400 });
 }
 
+export function shouldRevalidate({ formData }: { formData?: FormData }) {
+  if (formData?.get("intent") === "edit") {
+    return false;
+  }
+  return true;
+}
+
 /**
  * We use Route.ComponentProps to receive loaderData directly as a prop.
  * This approach is preferred over useLoaderData() inside the custom hook because:
@@ -64,7 +71,7 @@ export async function clientAction({ request }: Route.ClientActionArgs) {
  * 3. It makes the data flow explicit: the route component receives data and passes it to its logic.
  */
 export default function Articles({ loaderData }: Route.ComponentProps) {
-  const { articles, isLoadingMore, hasNext, loadMore } = useArticlesPages(loaderData);
+  const { articles, isLoadingMore, hasNext, loadMore, updateArticle } = useArticlesPages(loaderData);
 
   const {
     isOpen: isCreateOpen,
@@ -122,7 +129,7 @@ export default function Articles({ loaderData }: Route.ComponentProps) {
         </button>
       </div>
       <Modal open={isCreateOpen} onClose={closeCreate}>
-        <ArticleForm key={createKey} intent="create" onSubmit={closeCreate} />
+        <ArticleForm key={createKey} intent="create" onSubmit={() => closeCreate()} />
       </Modal>
       <Modal open={isEditOpen} onClose={closeEdit}>
         {editingArticle && (
@@ -134,7 +141,10 @@ export default function Articles({ loaderData }: Route.ComponentProps) {
               description: editingArticle.description,
               priceInCents: editingArticle.price * 100,
             }}
-            onSubmit={closeEdit}
+            onSubmit={(data) => {
+              updateArticle(editingArticle.id, data.description, data.priceInCents / 100);
+              closeEdit();
+            }}
           />
         )}
       </Modal>

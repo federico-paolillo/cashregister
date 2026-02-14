@@ -1,6 +1,6 @@
 import { useFetcher } from "react-router";
 import { useModalId } from "./use-modal";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 export interface ArticleFormData {
   description: string;
@@ -11,27 +11,29 @@ interface ArticleFormProps {
   articleId?: string;
   initialData?: ArticleFormData;
   intent: string;
-  onSubmit?: () => void;
+  onSubmit?: (data: ArticleFormData) => void;
 }
 
 export function ArticleForm({ articleId, initialData, intent, onSubmit }: ArticleFormProps) {
   const modalId = useModalId();
   const fetcher = useFetcher();
+  const submittedRef = useRef<ArticleFormData | null>(null);
 
   const pending = fetcher.state !== "idle";
 
   useEffect(() => {
-    if (pending) {
-      return;
+    if (fetcher.state === "submitting" && fetcher.formData) {
+      submittedRef.current = {
+        description: String(fetcher.formData.get("description")),
+        priceInCents: Number(fetcher.formData.get("priceInCents")),
+      };
     }
 
-    // Request is complete. 
-    // TODO: What to do with success/failure/pending ?
-
-    if (fetcher.data) {
-      onSubmit?.();
+    if (fetcher.state === "idle" && fetcher.data && submittedRef.current) {
+      onSubmit?.(submittedRef.current);
+      submittedRef.current = null;
     }
-  }, [pending, fetcher.data, onSubmit])
+  }, [fetcher.state, fetcher.data, fetcher.formData, onSubmit]);
 
   return (
     <fetcher.Form method="post" action="/articles">

@@ -6,6 +6,7 @@ import { ArticleForm } from "./article-form";
 const mockFetcher = {
   state: "idle" as string,
   data: undefined as unknown,
+  formData: undefined as FormData | undefined,
   Form: "form",
 };
 
@@ -17,6 +18,7 @@ afterEach(() => {
   cleanup();
   mockFetcher.state = "idle";
   mockFetcher.data = undefined;
+  mockFetcher.formData = undefined;
 });
 
 function renderInModal(ui: React.ReactNode) {
@@ -112,5 +114,37 @@ describe("ArticleForm", () => {
       'input[name="articleId"]',
     );
     expect(hidden).toBeNull();
+  });
+
+  it("calls onSubmit with submitted data when fetcher completes", () => {
+    const onSubmit = vi.fn();
+
+    const formData = new FormData();
+    formData.append("description", "Espresso");
+    formData.append("priceInCents", "350");
+
+    // Phase 1: Submitting — formData is available
+    mockFetcher.state = "submitting";
+    mockFetcher.formData = formData;
+
+    const { rerender } = renderInModal(
+      <ArticleForm intent="edit" articleId="abc" onSubmit={onSubmit} />,
+    );
+
+    // Phase 2: Idle with result — formData cleared
+    mockFetcher.state = "idle";
+    mockFetcher.data = { ok: true, value: undefined };
+    mockFetcher.formData = undefined;
+
+    rerender(
+      <ModalIdProvider id="dlg-1">
+        <ArticleForm intent="edit" articleId="abc" onSubmit={onSubmit} />
+      </ModalIdProvider>,
+    );
+
+    expect(onSubmit).toHaveBeenCalledWith({
+      description: "Espresso",
+      priceInCents: 350,
+    });
   });
 });
