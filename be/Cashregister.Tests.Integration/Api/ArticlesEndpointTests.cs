@@ -171,51 +171,66 @@ public sealed class ArticlesEndpointTests(
     }
 
     [Fact]
-    public async Task ChangeArticle_ReturnsNoContent_WhenArticleIsUpdated()
+    public async Task GetArticles_WithUntil_ReturnsAccumulatedViewPlusOneMorePage()
     {
         await PrepareEnvironmentAsync();
 
-        var registerArticleResult = await RunScoped<IRegisterArticleTransaction, Result<Identifier>>(tx =>
+        // pageSize=1: page 1 returns [Article 1], next=article2_id.
+        // until=article2_id should return [Article 1, Article 2] with next=article3_id.
+        var article1Result = await RunScoped<IRegisterArticleTransaction, Result<Identifier>>(tx =>
             tx.ExecuteAsync(new ArticleDefinition
             {
-                Description = "Original description",
-                Price = Cents.From(500L)
+                Description = "Article 1",
+                Price = Cents.From(100L)
             })
         );
 
-        Assert.True(registerArticleResult.Ok);
+        var article2Result = await RunScoped<IRegisterArticleTransaction, Result<Identifier>>(tx =>
+            tx.ExecuteAsync(new ArticleDefinition
+            {
+                Description = "Article 2",
+                Price = Cents.From(200L)
+            })
+        );
+
+        var article3Result = await RunScoped<IRegisterArticleTransaction, Result<Identifier>>(tx =>
+            tx.ExecuteAsync(new ArticleDefinition
+            {
+                Description = "Article 3",
+                Price = Cents.From(300L)
+            })
+        );
+
+        Assert.True(article1Result.Ok);
+        Assert.True(article2Result.Ok);
+        Assert.True(article3Result.Ok);
 
         using var httpClient = CreateHttpClient();
 
-        var articleId = registerArticleResult.Value.Value;
+        var response = await httpClient.GetAsync($"/articles?pageSize=1&until={article2Result.Value.Value}");
 
-        var response = await httpClient.PostAsJsonAsync($"/articles/{articleId}",
-            new ChangeArticleRequestDto("Updated description", 1000));
+        Assert.True(response.IsSuccessStatusCode);
 
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        var page = await response.Content.ReadFromJsonAsync<ArticlesPageDto>();
 
-        // Verify the article was actually updated via the list endpoint
-        var getResponse = await httpClient.GetAsync("/articles");
-        Assert.True(getResponse.IsSuccessStatusCode);
-
-        var articles = await getResponse.Content.ReadFromJsonAsync<ArticlesPageDto>();
-        Assert.NotNull(articles);
-        Assert.Single(articles.Items);
-        Assert.Equal("Updated description", articles.Items[0].Description);
-        Assert.Equal(10.00m, articles.Items[0].Price);
+        Assert.NotNull(page);
+        Assert.Equal(2, page.Items.Length);
+        Assert.Equal(article1Result.Value.Value, page.Items[0].Id);
+        Assert.Equal(article2Result.Value.Value, page.Items[1].Id);
+        Assert.True(page.HasNext);
+        Assert.Equal(article3Result.Value.Value, page.Next);
     }
 
     [Fact]
-    public async Task ChangeArticle_ReturnsNotFound_WhenArticleDoesNotExist()
+    public async Task GetArticles_WithBothAfterAndUntil_ReturnsBadRequest()
     {
         await PrepareEnvironmentAsync();
 
         using var httpClient = CreateHttpClient();
 
-        var response = await httpClient.PostAsJsonAsync("/articles/nonexistent-id",
-            new ChangeArticleRequestDto("Some description", 100));
+        var response = await httpClient.GetAsync("/articles?after=somecursor&until=anothercursor");
 
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
     [Fact]

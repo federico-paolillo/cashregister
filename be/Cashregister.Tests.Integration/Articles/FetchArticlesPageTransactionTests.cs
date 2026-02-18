@@ -246,6 +246,91 @@ public sealed class FetchArticlesPageTransactionTests(
         });
     }
 
+    [Fact]
+    public async Task FetchAsync_WithUntil_ShouldReturnAccumulatedViewPlusOneMorePage()
+    {
+        await PrepareEnvironmentAsync();
+
+        // With pageSize=1: page 1 returns [A], next=B_id.
+        // Submitting until=B_id should extend the view to [A, B].
+        await CreateArticleAsync("Article A", 100);
+        var articleBId = await CreateArticleAsync("Article B", 200);
+        await CreateArticleAsync("Article C", 300);
+
+        var result = await RunScoped<IFetchArticlesPageTransaction, Result<ArticlesPage>>(
+            tx => tx.ExecuteAsync(new ArticlesPageRequest
+            {
+                After = null,
+                Until = articleBId,
+                Size = 1
+            })
+        );
+
+        Assert.True(result.Ok);
+        var page = result.Value;
+
+        Assert.Equal(2, page.Size);
+        Assert.Equal("Article A", page.Articles[0].Description);
+        Assert.Equal("Article B", page.Articles[1].Description);
+    }
+
+    [Fact]
+    public async Task FetchAsync_WithUntil_ShouldSetNextCursorToStartOfNextUnloadedPage()
+    {
+        await PrepareEnvironmentAsync();
+
+        await CreateArticleAsync("Article A", 100);
+        var articleBId = await CreateArticleAsync("Article B", 200);
+        var articleCId = await CreateArticleAsync("Article C", 300);
+        await CreateArticleAsync("Article D", 400);
+
+        // until=B_id with pageSize=1: historical=[A], next page=[B], lookahead hits C
+        var result = await RunScoped<IFetchArticlesPageTransaction, Result<ArticlesPage>>(
+            tx => tx.ExecuteAsync(new ArticlesPageRequest
+            {
+                After = null,
+                Until = articleBId,
+                Size = 1
+            })
+        );
+
+        Assert.True(result.Ok);
+        var page = result.Value;
+
+        Assert.True(page.HasNext);
+        Assert.NotNull(page.Next);
+        Assert.Equal(articleCId.Value, page.Next.Value);
+    }
+
+    [Fact]
+    public async Task FetchAsync_WithUntil_ShouldReportHasNextFalse_WhenNothingExistsAtOrAfterCursor()
+    {
+        await PrepareEnvironmentAsync();
+
+        await CreateArticleAsync("Article A", 100);
+        await CreateArticleAsync("Article B", 200);
+
+        // Identifier.New() generates a ULID after all existing ones, so nothing in the DB
+        // has an ID >= this cursor.
+        var beyondAllCursor = Identifier.New();
+
+        var result = await RunScoped<IFetchArticlesPageTransaction, Result<ArticlesPage>>(
+            tx => tx.ExecuteAsync(new ArticlesPageRequest
+            {
+                After = null,
+                Until = beyondAllCursor,
+                Size = 50
+            })
+        );
+
+        Assert.True(result.Ok);
+        var page = result.Value;
+
+        Assert.Equal(2, page.Size);
+        Assert.False(page.HasNext);
+        Assert.Null(page.Next);
+    }
+
     private async Task<Identifier> CreateArticleAsync(string description, long priceInCents)
     {
         var registerArticleResult = await RunScoped<IRegisterArticleTransaction, Result<Identifier>>(

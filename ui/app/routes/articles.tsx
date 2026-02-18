@@ -1,11 +1,12 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { Form, useNavigation } from "react-router";
 import { ArticleForm } from "../components/article-form";
 import { ArticlesTable } from "../components/articles-table";
 import { Spinner } from "../components/spinner";
 import { Modal } from "../components/modal";
 import { useModal } from "../components/use-modal";
+import { useErrorMessages } from "../components/use-error-messages";
 import { deps } from "../deps";
-import { useArticlesPages } from "../components/use-articles-page";
 import type {
   ArticleListItemDto,
   ArticlesPageDto,
@@ -18,11 +19,11 @@ import { failure } from "../result";
 export async function clientLoader({ request }: Route.ClientLoaderArgs) {
   const url = new URL(request.url);
 
-  const after = url.searchParams.get("after");
+  const until = url.searchParams.get("until");
 
   const result = await deps.apiClient.get<ArticlesPageDto>(
     "/articles",
-    after ? { after } : undefined,
+    until ? { until } : undefined,
   );
 
   return result;
@@ -71,7 +72,16 @@ export function shouldRevalidate({ formData }: { formData?: FormData }) {
  * 3. It makes the data flow explicit: the route component receives data and passes it to its logic.
  */
 export default function Articles({ loaderData }: Route.ComponentProps) {
-  const { articles, isLoadingMore, hasNext, loadMore, updateArticle } = useArticlesPages(loaderData);
+  const navigation = useNavigation();
+  const { addError } = useErrorMessages();
+
+  const isLoadingMore = navigation.state === "loading";
+
+  useEffect(() => {
+    if (!loaderData.ok) {
+      addError(loaderData.error.message);
+    }
+  }, [loaderData, addError]);
 
   const {
     isOpen: isCreateOpen,
@@ -94,11 +104,7 @@ export default function Articles({ loaderData }: Route.ComponentProps) {
     openCreate();
   }
 
-  function openEditModal(article: ArticleListItemDto) {
-    setEditingArticle(article);
-    setEditKey((k) => k + 1);
-    openEdit();
-  }
+  const page = loaderData.ok ? loaderData.value : null;
 
   return (
     <div className="flex h-screen flex-col">
@@ -115,18 +121,22 @@ export default function Articles({ loaderData }: Route.ComponentProps) {
         </button>
       </div>
       <div className="relative flex-1 overflow-auto p-4">
-        <ArticlesTable articles={articles} onEdit={openEditModal} />
+        <ArticlesTable articles={page?.items ?? []} />
         {isLoadingMore && <Spinner />}
       </div>
       <div className="flex justify-center p-4 border-t">
-        <button
-          type="button"
-          onClick={loadMore}
-          disabled={!hasNext || isLoadingMore}
-          className="rounded border border-gray-300 px-6 py-2 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {isLoadingMore ? "Loading..." : "Load More"}
-        </button>
+        {page?.next && (
+          <Form method="get">
+            <input type="hidden" name="until" value={page.next} />
+            <button
+              type="submit"
+              disabled={isLoadingMore}
+              className="rounded border border-gray-300 px-6 py-2 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isLoadingMore ? "Loading..." : "Load More"}
+            </button>
+          </Form>
+        )}
       </div>
       <Modal open={isCreateOpen} onClose={closeCreate}>
         <ArticleForm key={createKey} intent="create" onSubmit={() => closeCreate()} />

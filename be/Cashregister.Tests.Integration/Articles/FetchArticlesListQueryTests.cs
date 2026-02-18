@@ -35,9 +35,10 @@ public sealed class FetchArticlesListQueryTests(
         Assert.True(string.Compare(result[0].Id.Value, result[1].Id.Value, StringComparison.Ordinal) < 0);
 
         // Verify the first two articles are returned
-        Identifier[] expectedIds = [.. [article1Id, article2Id, article3Id]
+        Identifier[] expectedIds = new[] { article1Id, article2Id, article3Id }
             .OrderBy(id => id.Value)
-            .Take(2)];
+            .Take(2)
+            .ToArray();
 
         Assert.Equal(expectedIds[0].Value, result[0].Id.Value);
         Assert.Equal(expectedIds[1].Value, result[1].Id.Value);
@@ -127,6 +128,38 @@ public sealed class FetchArticlesListQueryTests(
         Assert.Single(result);
         Assert.Equal(articleId.Value, result[0].Id.Value);
         Assert.Equal(description, result[0].Description);
+    }
+
+    [Fact]
+    public async Task FetchUntilAsync_ShouldReturnArticlesStrictlyBeforeCursor()
+    {
+        await PrepareEnvironmentAsync();
+
+        var article1Id = await CreateArticleAsync("Article A", 100);
+        var article2Id = await CreateArticleAsync("Article B", 200);
+        _ = await CreateArticleAsync("Article C", 300);
+
+        var result = await RunScoped<IFetchArticlesListQuery, ImmutableArray<ArticleListItem>>(
+            fetcher => fetcher.FetchUntilAsync(article2Id)
+        );
+
+        Assert.Single(result);
+        Assert.Equal(article1Id.Value, result[0].Id.Value);
+    }
+
+    [Fact]
+    public async Task FetchUntilAsync_WithCursorBeforeAllArticles_ShouldReturnEmpty()
+    {
+        await PrepareEnvironmentAsync();
+
+        var article1Id = await CreateArticleAsync("Article A", 100);
+        _ = await CreateArticleAsync("Article B", 200);
+
+        var result = await RunScoped<IFetchArticlesListQuery, ImmutableArray<ArticleListItem>>(
+            fetcher => fetcher.FetchUntilAsync(article1Id)
+        );
+
+        Assert.Empty(result);
     }
 
     private async Task<Identifier> CreateArticleAsync(string description, long priceInCents)

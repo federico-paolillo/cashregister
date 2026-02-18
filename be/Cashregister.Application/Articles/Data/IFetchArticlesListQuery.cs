@@ -8,4 +8,6 @@ namespace Cashregister.Application.Articles.Data;
 public interface IFetchArticlesListQuery
 {
     Task<ImmutableArray<ArticleListItem>> FetchAsync(uint count, Identifier? after = null);
+
+    Task<ImmutableArray<ArticleListItem>> FetchUntilAsync(Identifier until);
 }
