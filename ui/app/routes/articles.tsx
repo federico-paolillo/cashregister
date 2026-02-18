@@ -57,20 +57,6 @@ export async function clientAction({ request }: Route.ClientActionArgs) {
   return failure({ message: "unknown intent", status: 400 });
 }
 
-export function shouldRevalidate({ formData }: { formData?: FormData }) {
-  if (formData?.get("intent") === "edit") {
-    return false;
-  }
-  return true;
-}
-
-/**
- * We use Route.ComponentProps to receive loaderData directly as a prop.
- * This approach is preferred over useLoaderData() inside the custom hook because:
- * 1. It leverages React Router v7 Framework mode's end-to-end type safety.
- * 2. It keeps the custom hook decoupled from the router context, making it easier to test.
- * 3. It makes the data flow explicit: the route component receives data and passes it to its logic.
- */
 export default function Articles({ loaderData }: Route.ComponentProps) {
   const navigation = useNavigation();
   const { addError } = useErrorMessages();
@@ -104,6 +90,12 @@ export default function Articles({ loaderData }: Route.ComponentProps) {
     openCreate();
   }
 
+  function openEditModal(article: ArticleListItemDto) {
+    setEditingArticle(article);
+    setEditKey((k) => k + 1);
+    openEdit();
+  }
+
   const page = loaderData.ok ? loaderData.value : null;
 
   return (
@@ -121,7 +113,7 @@ export default function Articles({ loaderData }: Route.ComponentProps) {
         </button>
       </div>
       <div className="relative flex-1 overflow-auto p-4">
-        <ArticlesTable articles={page?.items ?? []} />
+        <ArticlesTable articles={page?.items ?? []} onEdit={openEditModal} />
         {isLoadingMore && <Spinner />}
       </div>
       <div className="flex justify-center p-4 border-t">
@@ -151,8 +143,7 @@ export default function Articles({ loaderData }: Route.ComponentProps) {
               description: editingArticle.description,
               priceInCents: editingArticle.price * 100,
             }}
-            onSubmit={(data) => {
-              updateArticle(editingArticle.id, data.description, data.priceInCents / 100);
+            onSubmit={() => {
               closeEdit();
             }}
           />

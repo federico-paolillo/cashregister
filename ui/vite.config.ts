@@ -10,4 +10,13 @@ export default defineConfig({
     environment: "jsdom",
     include: ["app/**/*.test.{ts,tsx}"],
   },
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:5122',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, ''),
+      },
+    }
+  }
 });

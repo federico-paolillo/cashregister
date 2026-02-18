@@ -484,4 +484,6 @@ $RECYCLE.BIN/
 *.swp
 
 # SQLite databases
-*.db
+cashregister.db-wal
+cashregister.db
+cashregister.db-shm
