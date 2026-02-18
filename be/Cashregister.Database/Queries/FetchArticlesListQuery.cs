@@ -31,4 +31,22 @@ public sealed class FetchArticlesListQuery(
 
         return [.. articleListItems];
     }
+
+    public async Task<ImmutableArray<ArticleListItem>> FetchAllBeforeAsync(Identifier until)
+    {
+        var untilValue = until.Value;
+
+        var articleListItems = await applicationDbContext.Articles
+            .Where(a => a.Id.CompareTo(untilValue) < 0)
+            .OrderBy(a => a.Id)
+            .Select(a => new ArticleListItem
+            {
+                Id = Identifier.From(a.Id),
+                Description = a.Description,
+                Price = Cents.From(a.Price)
+            })
+            .ToArrayAsync();
+
+        return [.. articleListItems];
+    }
 }

@@ -128,6 +128,64 @@ public sealed class ArticlesEndpointTests(
     }
 
     [Fact]
+    public async Task GetArticles_ReturnsAllArticlesBeforeCursor_WhenUntilIsProvided()
+    {
+        await PrepareEnvironmentAsync();
+
+        var article1Result = await RunScoped<IRegisterArticleTransaction, Result<Identifier>>(tx =>
+            tx.ExecuteAsync(new ArticleDefinition
+            {
+                Description = "Article A",
+                Price = Cents.From(100L)
+            })
+        );
+
+        var article2Result = await RunScoped<IRegisterArticleTransaction, Result<Identifier>>(tx =>
+            tx.ExecuteAsync(new ArticleDefinition
+            {
+                Description = "Article B",
+                Price = Cents.From(200L)
+            })
+        );
+
+        var article3Result = await RunScoped<IRegisterArticleTransaction, Result<Identifier>>(tx =>
+            tx.ExecuteAsync(new ArticleDefinition
+            {
+                Description = "Article C",
+                Price = Cents.From(300L)
+            })
+        );
+
+        Assert.True(article1Result.Ok);
+        Assert.True(article2Result.Ok);
+        Assert.True(article3Result.Ok);
+
+        using var httpClient = CreateHttpClient();
+
+        // Fetch first page of size 2 to get the cursor
+        var page1Response = await httpClient.GetAsync("/articles?pageSize=2");
+        Assert.True(page1Response.IsSuccessStatusCode);
+
+        var page1 = await page1Response.Content.ReadFromJsonAsync<ArticlesPageDto>();
+        Assert.NotNull(page1);
+        Assert.NotNull(page1.Next);
+        Assert.True(page1.HasNext);
+
+        // Use ?until= to reconstruct the first two articles
+        var untilResponse = await httpClient.GetAsync($"/articles?until={page1.Next}");
+        Assert.True(untilResponse.IsSuccessStatusCode);
+
+        var untilPage = await untilResponse.Content.ReadFromJsonAsync<ArticlesPageDto>();
+        Assert.NotNull(untilPage);
+
+        Assert.Equal(2, untilPage.Items.Length);
+        Assert.Equal(article1Result.Value.Value, untilPage.Items[0].Id);
+        Assert.Equal(article2Result.Value.Value, untilPage.Items[1].Id);
+        Assert.True(untilPage.HasNext);
+        Assert.Equal(page1.Next, untilPage.Next);
+    }
+
+    [Fact]
     public async Task DeleteArticle_RetiresArticle_WhenArticleExists()
     {
         await PrepareEnvironmentAsync();

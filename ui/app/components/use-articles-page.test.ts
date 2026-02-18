@@ -8,6 +8,7 @@ import type { Result } from "../result";
 
 vi.mock("react-router", () => ({
   useFetcher: vi.fn(),
+  useNavigate: vi.fn(),
 }));
 
 vi.mock("./use-error-messages", () => ({
@@ -27,6 +28,7 @@ describe("useArticlesPages", () => {
   };
 
   const mockLoad = vi.fn();
+  const mockNavigate = vi.fn();
   const mockAddError = vi.fn();
 
   beforeEach(() => {
@@ -36,6 +38,7 @@ describe("useArticlesPages", () => {
       addError: mockAddError,
       dismissError: vi.fn(),
     });
+    vi.mocked(reactRouter.useNavigate).mockReturnValue(mockNavigate);
   });
 
   it("initializes with provided data", () => {
@@ -200,5 +203,86 @@ describe("useArticlesPages", () => {
 
     expect(result.current.articles).toEqual(newData.items);
     expect(result.current.hasNext).toBe(true);
+  });
+
+  it("navigates with until cursor after loading more pages when hasNext is true", () => {
+    const fetcherMock = {
+      state: "idle",
+      data: undefined as Result<ArticlesPageDto> | undefined,
+      load: mockLoad,
+    };
+    vi.mocked(reactRouter.useFetcher).mockReturnValue(
+      fetcherMock as unknown as reactRouter.FetcherWithComponents<Result<ArticlesPageDto>>
+    );
+
+    const { rerender } = renderHook(() => useArticlesPages(initialResult));
+
+    const nextData: ArticlesPageDto = {
+      items: [{ id: "2", description: "A2", price: 20 }],
+      next: "cursor-2",
+      hasNext: true,
+    };
+
+    fetcherMock.state = "idle";
+    fetcherMock.data = { ok: true, value: nextData };
+    rerender();
+
+    expect(mockNavigate).toHaveBeenCalledWith("/articles?until=cursor-2", {
+      replace: true,
+      preventScrollReset: true,
+    });
+  });
+
+  it("navigates with encoded until cursor when cursor contains special characters", () => {
+    const fetcherMock = {
+      state: "idle",
+      data: undefined as Result<ArticlesPageDto> | undefined,
+      load: mockLoad,
+    };
+    vi.mocked(reactRouter.useFetcher).mockReturnValue(
+      fetcherMock as unknown as reactRouter.FetcherWithComponents<Result<ArticlesPageDto>>
+    );
+
+    const { rerender } = renderHook(() => useArticlesPages(initialResult));
+
+    const nextData: ArticlesPageDto = {
+      items: [{ id: "2", description: "A2", price: 20 }],
+      next: "cursor with space",
+      hasNext: true,
+    };
+
+    fetcherMock.state = "idle";
+    fetcherMock.data = { ok: true, value: nextData };
+    rerender();
+
+    expect(mockNavigate).toHaveBeenCalledWith("/articles?until=cursor%20with%20space", {
+      replace: true,
+      preventScrollReset: true,
+    });
+  });
+
+  it("does not navigate when fetcher returns last page (hasNext false)", () => {
+    const fetcherMock = {
+      state: "idle",
+      data: undefined as Result<ArticlesPageDto> | undefined,
+      load: mockLoad,
+    };
+    vi.mocked(reactRouter.useFetcher).mockReturnValue(
+      fetcherMock as unknown as reactRouter.FetcherWithComponents<Result<ArticlesPageDto>>
+    );
+
+    const { rerender } = renderHook(() => useArticlesPages(initialResult));
+
+    const lastPageData: ArticlesPageDto = {
+      items: [{ id: "2", description: "A2", price: 20 }],
+      next: null,
+      hasNext: false,
+    };
+
+    fetcherMock.state = "idle";
+    fetcherMock.data = { ok: true, value: lastPageData };
+    rerender();
+
+    expect(mockNavigate).not.toHaveBeenCalled();
   });
 });

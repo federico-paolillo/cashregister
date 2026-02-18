@@ -15,6 +15,11 @@ public sealed class FetchArticlesPageTransaction(
     {
         ArgumentNullException.ThrowIfNull(pageRequest);
 
+        if (pageRequest.Until is not null)
+        {
+            return await FetchUntilAsync(pageRequest.Until);
+        }
+
         var pageSizePlusOne = pageRequest.Size + 1;
 
         var articleListItemPlusOne = await articlesListFetcher.FetchAsync(pageSizePlusOne, pageRequest.After);
@@ -34,6 +39,23 @@ public sealed class FetchArticlesPageTransaction(
             Articles = actualArticleListItems,
             HasNext = hasMore,
             Next = maybeNext?.Id
+        };
+
+        return Result.Ok(articlesPage);
+    }
+
+    private async Task<Result<ArticlesPage>> FetchUntilAsync(Identifier until)
+    {
+        var itemsBeforeUntil = await articlesListFetcher.FetchAllBeforeAsync(until);
+
+        var peek = await articlesListFetcher.FetchAsync(1, until);
+        var hasMore = peek.Length > 0;
+
+        var articlesPage = new ArticlesPage
+        {
+            Articles = itemsBeforeUntil,
+            HasNext = hasMore,
+            Next = hasMore ? until : null
         };
 
         return Result.Ok(articlesPage);

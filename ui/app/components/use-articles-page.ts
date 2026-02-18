@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from "react";
-import { useFetcher } from "react-router";
+import { useFetcher, useNavigate } from "react-router";
 import type { ArticlesPageDto, ArticleListItemDto } from "../model";
 import type { Result } from "../result";
 import { useErrorMessages } from "./use-error-messages";
 
 export function useArticlesPages(initialPageResult: Result<ArticlesPageDto>) {
   const fetcher = useFetcher<Result<ArticlesPageDto>>();
+  const navigate = useNavigate();
 
   const [articles, setArticles] = useState<ArticleListItemDto[]>([]);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
@@ -55,8 +56,18 @@ export function useArticlesPages(initialPageResult: Result<ArticlesPageDto>) {
       setArticles((prev) => [...prev, ...newPage.items]);
       setNextCursor(newPage.next);
       setHasNext(newPage.hasNext);
+
+      // Update the route URL with the latest cursor so that React Router's
+      // revalidation (triggered by a subsequent action) calls the clientLoader
+      // with ?until=<cursor>, allowing it to reconstruct the full accumulated view.
+      if (newPage.hasNext && newPage.next) {
+        navigate(`/articles?until=${encodeURIComponent(newPage.next)}`, {
+          replace: true,
+          preventScrollReset: true,
+        });
+      }
     }
-  }, [fetcher.data, fetcher.state, addError]);
+  }, [fetcher.data, fetcher.state, addError, navigate]);
 
   function loadMore() {
     if (!nextCursor || fetcher.state !== "idle") return;

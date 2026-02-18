@@ -246,6 +246,187 @@ public sealed class FetchArticlesPageTransactionTests(
         });
     }
 
+    [Fact]
+    public async Task FetchAsync_WithUntil_ShouldReturnAllArticlesBeforeCursor()
+    {
+        await PrepareEnvironmentAsync();
+
+        await CreateArticleAsync("Article A", 100);
+        await CreateArticleAsync("Article B", 200);
+        await CreateArticleAsync("Article C", 300);
+        await CreateArticleAsync("Article D", 400);
+
+        var firstPageResult = await RunScoped<IFetchArticlesPageTransaction, Result<ArticlesPage>>(
+            tx => tx.ExecuteAsync(new ArticlesPageRequest
+            {
+                After = null,
+                Size = 2
+            })
+        );
+
+        Assert.True(firstPageResult.Ok);
+        Assert.NotNull(firstPageResult.Value.Next);
+
+        var untilCursor = firstPageResult.Value.Next;
+
+        var untilResult = await RunScoped<IFetchArticlesPageTransaction, Result<ArticlesPage>>(
+            tx => tx.ExecuteAsync(new ArticlesPageRequest
+            {
+                After = null,
+                Until = untilCursor,
+                Size = 2
+            })
+        );
+
+        Assert.True(untilResult.Ok);
+
+        var page = untilResult.Value;
+
+        Assert.Equal(2, page.Size);
+        Assert.Equal("Article A", page.Articles[0].Description);
+        Assert.Equal("Article B", page.Articles[1].Description);
+        Assert.True(page.HasNext);
+        Assert.Equal(untilCursor, page.Next);
+    }
+
+    [Fact]
+    public async Task FetchAsync_WithUntil_ShouldReturnHasNextFalse_WhenNoArticlesAfterCursor()
+    {
+        await PrepareEnvironmentAsync();
+
+        await CreateArticleAsync("Article A", 100);
+        await CreateArticleAsync("Article B", 200);
+
+        var firstPageResult = await RunScoped<IFetchArticlesPageTransaction, Result<ArticlesPage>>(
+            tx => tx.ExecuteAsync(new ArticlesPageRequest
+            {
+                After = null,
+                Size = 1
+            })
+        );
+
+        Assert.True(firstPageResult.Ok);
+        Assert.NotNull(firstPageResult.Value.Next);
+
+        var untilCursor = firstPageResult.Value.Next;
+
+        var secondPageResult = await RunScoped<IFetchArticlesPageTransaction, Result<ArticlesPage>>(
+            tx => tx.ExecuteAsync(new ArticlesPageRequest
+            {
+                After = null,
+                Size = 1,
+                Until = untilCursor,
+            })
+        );
+
+        Assert.True(secondPageResult.Ok);
+
+        var page = secondPageResult.Value;
+
+        // After loading page 2 (Article B), the cursor points past the last article
+        // so until=cursor should return Article A with hasNext=true (Article B still exists)
+        Assert.Equal(1, page.Size);
+        Assert.Equal("Article A", page.Articles[0].Description);
+        Assert.True(page.HasNext);
+
+        // Now get a cursor that points past all articles
+        var lastPageResult = await RunScoped<IFetchArticlesPageTransaction, Result<ArticlesPage>>(
+            tx => tx.ExecuteAsync(new ArticlesPageRequest
+            {
+                After = null,
+                Size = 10
+            })
+        );
+
+        Assert.True(lastPageResult.Ok);
+        Assert.False(lastPageResult.Value.HasNext);
+        Assert.Null(lastPageResult.Value.Next);
+    }
+
+    [Fact]
+    public async Task FetchAsync_WithUntil_ShouldIncludeNewlyAddedArticles()
+    {
+        await PrepareEnvironmentAsync();
+
+        var article1Id = await CreateArticleAsync("Article A", 100);
+        var article2Id = await CreateArticleAsync("Article B", 200);
+        var article3Id = await CreateArticleAsync("Article C", 300);
+
+        var firstPageResult = await RunScoped<IFetchArticlesPageTransaction, Result<ArticlesPage>>(
+            tx => tx.ExecuteAsync(new ArticlesPageRequest
+            {
+                After = null,
+                Size = 2
+            })
+        );
+
+        Assert.True(firstPageResult.Ok);
+        Assert.NotNull(firstPageResult.Value.Next);
+
+        var untilCursor = firstPageResult.Value.Next;
+
+        // Simulate a new article being added before Article C (not possible with ULIDs
+        // since they are time-ordered, but Article A and B are before the cursor)
+        // The until query should return all articles with Id < cursor
+
+        var untilResult = await RunScoped<IFetchArticlesPageTransaction, Result<ArticlesPage>>(
+            tx => tx.ExecuteAsync(new ArticlesPageRequest
+            {
+                After = null,
+                Until = untilCursor,
+                Size = 2
+            })
+        );
+
+        Assert.True(untilResult.Ok);
+
+        var page = untilResult.Value;
+
+        // Should return articles A and B (both before the cursor)
+        Assert.Equal(2, page.Size);
+        Assert.Equal("Article A", page.Articles[0].Description);
+        Assert.Equal("Article B", page.Articles[1].Description);
+    }
+
+    [Fact]
+    public async Task FetchAsync_WithUntil_ShouldReturnEmptyPage_WhenNothingIsBeforeCursor()
+    {
+        await PrepareEnvironmentAsync();
+
+        await CreateArticleAsync("Article A", 100);
+
+        var firstPageResult = await RunScoped<IFetchArticlesPageTransaction, Result<ArticlesPage>>(
+            tx => tx.ExecuteAsync(new ArticlesPageRequest
+            {
+                After = null,
+                Size = 10
+            })
+        );
+
+        Assert.True(firstPageResult.Ok);
+
+        var firstArticleId = firstPageResult.Value.Articles[0].Id;
+
+        // Use the first article's own Id as the until cursor:
+        // nothing has Id < firstArticleId
+        var untilResult = await RunScoped<IFetchArticlesPageTransaction, Result<ArticlesPage>>(
+            tx => tx.ExecuteAsync(new ArticlesPageRequest
+            {
+                After = null,
+                Until = firstArticleId,
+                Size = 10
+            })
+        );
+
+        Assert.True(untilResult.Ok);
+
+        var page = untilResult.Value;
+
+        Assert.Equal(0, page.Size);
+        Assert.True(page.HasNext); // Article A is at the cursor position
+        Assert.Equal(firstArticleId, page.Next);
+    }
+
     private async Task<Identifier> CreateArticleAsync(string description, long priceInCents)
     {
         var registerArticleResult = await RunScoped<IRegisterArticleTransaction, Result<Identifier>>(

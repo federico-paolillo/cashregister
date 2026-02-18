@@ -10,6 +10,7 @@ import type { Result } from "../result";
 import type { Route } from "./+types/articles";
 
 const mockLoad = vi.fn();
+const mockNavigate = vi.fn();
 
 vi.mock("react-router", async (importOriginal) => {
   const actual = await importOriginal<typeof reactRouter>();
@@ -17,6 +18,7 @@ vi.mock("react-router", async (importOriginal) => {
     ...actual,
     useLoaderData: vi.fn(),
     useFetcher: vi.fn(),
+    useNavigate: vi.fn(),
   };
 });
 
@@ -58,6 +60,7 @@ describe("Articles Page", () => {
       load: mockLoad,
       Form: ({ children }: { children: React.ReactNode }) => <form>{children}</form>,
     } as unknown as reactRouter.FetcherWithComponents<Result<ArticlesPageDto>>);
+    vi.mocked(reactRouter.useNavigate).mockReturnValue(mockNavigate);
     vi.mocked(errorMessages.useErrorMessages).mockReturnValue({
       errors: [],
       addError: vi.fn(),
@@ -215,21 +218,40 @@ describe("clientAction", () => {
 });
 
 describe("shouldRevalidate", () => {
+  const baseUrl = new URL("http://localhost/articles");
+
   it("returns false for edit intent", () => {
     const formData = new FormData();
     formData.append("intent", "edit");
 
-    expect(shouldRevalidate({ formData })).toBe(false);
+    expect(shouldRevalidate({ currentUrl: baseUrl, nextUrl: baseUrl, formData })).toBe(false);
   });
 
   it("returns true for create intent", () => {
     const formData = new FormData();
     formData.append("intent", "create");
 
-    expect(shouldRevalidate({ formData })).toBe(true);
+    expect(shouldRevalidate({ currentUrl: baseUrl, nextUrl: baseUrl, formData })).toBe(true);
   });
 
-  it("returns true when no formData is present", () => {
-    expect(shouldRevalidate({})).toBe(true);
+  it("returns false when only the until param changes (scroll pagination)", () => {
+    const currentUrl = new URL("http://localhost/articles");
+    const nextUrl = new URL("http://localhost/articles?until=cursor-1");
+
+    expect(shouldRevalidate({ currentUrl, nextUrl })).toBe(false);
+  });
+
+  it("returns false when until param updates to a new cursor value", () => {
+    const currentUrl = new URL("http://localhost/articles?until=cursor-1");
+    const nextUrl = new URL("http://localhost/articles?until=cursor-2");
+
+    expect(shouldRevalidate({ currentUrl, nextUrl })).toBe(false);
+  });
+
+  it("returns true when no formData is present but other params change", () => {
+    const currentUrl = new URL("http://localhost/articles");
+    const nextUrl = new URL("http://localhost/articles?after=cursor-1");
+
+    expect(shouldRevalidate({ currentUrl, nextUrl })).toBe(true);
   });
 });

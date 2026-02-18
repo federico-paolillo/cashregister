@@ -18,12 +18,12 @@ import { failure } from "../result";
 export async function clientLoader({ request }: Route.ClientLoaderArgs) {
   const url = new URL(request.url);
 
+  const until = url.searchParams.get("until");
   const after = url.searchParams.get("after");
 
-  const result = await deps.apiClient.get<ArticlesPageDto>(
-    "/articles",
-    after ? { after } : undefined,
-  );
+  const params = until ? { until } : after ? { after } : undefined;
+
+  const result = await deps.apiClient.get<ArticlesPageDto>("/articles", params);
 
   return result;
 }
@@ -56,10 +56,31 @@ export async function clientAction({ request }: Route.ClientActionArgs) {
   return failure({ message: "unknown intent", status: 400 });
 }
 
-export function shouldRevalidate({ formData }: { formData?: FormData }) {
+export function shouldRevalidate({
+  currentUrl,
+  nextUrl,
+  formData,
+}: {
+  currentUrl: URL;
+  nextUrl: URL;
+  formData?: FormData;
+}) {
   if (formData?.get("intent") === "edit") {
     return false;
   }
+
+  // Suppress revalidation when only the `until` cursor changes due to scroll pagination.
+  // An action submission always provides formData, so this branch only fires for navigations.
+  if (!formData) {
+    const current = new URLSearchParams(currentUrl.search);
+    const next = new URLSearchParams(nextUrl.search);
+    current.delete("until");
+    next.delete("until");
+    if (currentUrl.pathname === nextUrl.pathname && current.toString() === next.toString()) {
+      return false;
+    }
+  }
+
   return true;
 }
 
