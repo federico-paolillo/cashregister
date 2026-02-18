@@ -201,4 +201,66 @@ describe("useArticlesPages", () => {
     expect(result.current.articles).toEqual(newData.items);
     expect(result.current.hasNext).toBe(true);
   });
+
+  it("updates the URL with until cursor after loading more pages", () => {
+    const replaceStateSpy = vi.spyOn(window.history, "replaceState");
+
+    const fetcherMock = {
+      state: "idle",
+      data: undefined as Result<ArticlesPageDto> | undefined,
+      load: mockLoad,
+    };
+    vi.mocked(reactRouter.useFetcher).mockReturnValue(
+      fetcherMock as unknown as reactRouter.FetcherWithComponents<Result<ArticlesPageDto>>
+    );
+
+    const { rerender } = renderHook(() => useArticlesPages(initialResult));
+
+    const nextData: ArticlesPageDto = {
+      items: [{ id: "2", description: "A2", price: 20 }],
+      next: "cursor-2",
+      hasNext: true,
+    };
+
+    fetcherMock.state = "idle";
+    fetcherMock.data = { ok: true, value: nextData };
+    rerender();
+
+    expect(replaceStateSpy).toHaveBeenCalledOnce();
+
+    const calledUrl = new URL(replaceStateSpy.mock.calls[0][2] as string);
+    expect(calledUrl.searchParams.get("until")).toBe("cursor-2");
+    expect(calledUrl.searchParams.has("after")).toBe(false);
+
+    replaceStateSpy.mockRestore();
+  });
+
+  it("does not update the URL when the loaded page has no next cursor", () => {
+    const replaceStateSpy = vi.spyOn(window.history, "replaceState");
+
+    const fetcherMock = {
+      state: "idle",
+      data: undefined as Result<ArticlesPageDto> | undefined,
+      load: mockLoad,
+    };
+    vi.mocked(reactRouter.useFetcher).mockReturnValue(
+      fetcherMock as unknown as reactRouter.FetcherWithComponents<Result<ArticlesPageDto>>
+    );
+
+    const { rerender } = renderHook(() => useArticlesPages(initialResult));
+
+    const lastPageData: ArticlesPageDto = {
+      items: [{ id: "2", description: "A2", price: 20 }],
+      next: null,
+      hasNext: false,
+    };
+
+    fetcherMock.state = "idle";
+    fetcherMock.data = { ok: true, value: lastPageData };
+    rerender();
+
+    expect(replaceStateSpy).not.toHaveBeenCalled();
+
+    replaceStateSpy.mockRestore();
+  });
 });

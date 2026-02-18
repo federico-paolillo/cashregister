@@ -1,7 +1,7 @@
 import React from "react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, fireEvent, waitFor, cleanup } from "@testing-library/react";
-import Articles, { clientAction, shouldRevalidate } from "./articles";
+import Articles, { clientAction, clientLoader, shouldRevalidate } from "./articles";
 import * as reactRouter from "react-router";
 import * as errorMessages from "../components/use-error-messages";
 import { deps } from "../deps";
@@ -231,5 +231,54 @@ describe("shouldRevalidate", () => {
 
   it("returns true when no formData is present", () => {
     expect(shouldRevalidate({})).toBe(true);
+  });
+});
+
+function buildLoaderRequest(searchParams: Record<string, string> = {}): Route.ClientLoaderArgs {
+  const url = new URL("http://localhost/articles");
+  for (const [key, value] of Object.entries(searchParams)) {
+    url.searchParams.set(key, value);
+  }
+  return {
+    request: new Request(url.toString()),
+    params: {},
+  } as Route.ClientLoaderArgs;
+}
+
+describe("clientLoader", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("calls GET /articles with no params when neither after nor until is present", async () => {
+    vi.mocked(deps.apiClient.get).mockResolvedValue({ ok: true, value: { items: [], next: null, hasNext: false } });
+
+    await clientLoader(buildLoaderRequest());
+
+    expect(deps.apiClient.get).toHaveBeenCalledWith("/articles", undefined);
+  });
+
+  it("calls GET /articles with after param when after is in the URL", async () => {
+    vi.mocked(deps.apiClient.get).mockResolvedValue({ ok: true, value: { items: [], next: null, hasNext: false } });
+
+    await clientLoader(buildLoaderRequest({ after: "cursor-1" }));
+
+    expect(deps.apiClient.get).toHaveBeenCalledWith("/articles", { after: "cursor-1" });
+  });
+
+  it("calls GET /articles with until param when until is in the URL", async () => {
+    vi.mocked(deps.apiClient.get).mockResolvedValue({ ok: true, value: { items: [], next: null, hasNext: false } });
+
+    await clientLoader(buildLoaderRequest({ until: "cursor-3" }));
+
+    expect(deps.apiClient.get).toHaveBeenCalledWith("/articles", { until: "cursor-3" });
+  });
+
+  it("prefers until over after when both are present in the URL", async () => {
+    vi.mocked(deps.apiClient.get).mockResolvedValue({ ok: true, value: { items: [], next: null, hasNext: false } });
+
+    await clientLoader(buildLoaderRequest({ after: "cursor-1", until: "cursor-3" }));
+
+    expect(deps.apiClient.get).toHaveBeenCalledWith("/articles", { until: "cursor-3" });
   });
 });

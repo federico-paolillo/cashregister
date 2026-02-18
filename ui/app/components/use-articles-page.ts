@@ -55,6 +55,17 @@ export function useArticlesPages(initialPageResult: Result<ArticlesPageDto>) {
       setArticles((prev) => [...prev, ...newPage.items]);
       setNextCursor(newPage.next);
       setHasNext(newPage.hasNext);
+
+      // Keep the URL in sync with the last-seen cursor.
+      // When React Router revalidates after a mutation it will call clientLoader
+      // with this URL, which maps to GET /articles?until=<cursor> and returns
+      // the full accumulated list instead of just page 1.
+      if (newPage.next) {
+        const nextUrl = new URL(window.location.href);
+        nextUrl.searchParams.set("until", newPage.next);
+        nextUrl.searchParams.delete("after");
+        window.history.replaceState({}, "", nextUrl.toString());
+      }
     }
   }, [fetcher.data, fetcher.state, addError]);
 

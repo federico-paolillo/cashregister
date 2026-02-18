@@ -15,6 +15,11 @@ public sealed class FetchArticlesPageTransaction(
     {
         ArgumentNullException.ThrowIfNull(pageRequest);
 
+        if (pageRequest.Until is not null)
+        {
+            return await FetchUntilPageAsync(pageRequest.Until);
+        }
+
         var pageSizePlusOne = pageRequest.Size + 1;
 
         var articleListItemPlusOne = await articlesListFetcher.FetchAsync(pageSizePlusOne, pageRequest.After);
@@ -34,6 +39,25 @@ public sealed class FetchArticlesPageTransaction(
             Articles = actualArticleListItems,
             HasNext = hasMore,
             Next = maybeNext?.Id
+        };
+
+        return Result.Ok(articlesPage);
+    }
+
+    private async Task<Result<ArticlesPage>> FetchUntilPageAsync(Identifier until)
+    {
+        var articlesBeforeUntil = await articlesListFetcher.FetchUntilAsync(until);
+
+        // Find what cursor the client should use to continue scrolling forward.
+        // FetchAsync with count=1 and after=until returns the first article at or after the cursor.
+        var articlesAtOrAfterUntil = await articlesListFetcher.FetchAsync(1, until);
+        var nextArticle = articlesAtOrAfterUntil.Length > 0 ? articlesAtOrAfterUntil[0] : null;
+
+        var articlesPage = new ArticlesPage
+        {
+            Articles = articlesBeforeUntil,
+            HasNext = nextArticle is not null,
+            Next = nextArticle?.Id
         };
 
         return Result.Ok(articlesPage);

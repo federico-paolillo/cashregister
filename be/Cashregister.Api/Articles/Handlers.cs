@@ -19,15 +19,18 @@ internal static class Handlers
     public static async Task<Results<BadRequest, Ok<ArticlesPageDto>>> GetArticlesPage(
       IFetchArticlesPageTransaction fetchArticlesPageTransaction,
       [FromQuery(Name = "pageSize")] uint pageSize = 50,
-      [FromQuery(Name = "after")] string? after = null
+      [FromQuery(Name = "after")] string? after = null,
+      [FromQuery(Name = "until")] string? until = null
     )
     {
         var afterIdentifier = after is not null ? Identifier.From(after) : null;
+        var untilIdentifier = until is not null ? Identifier.From(until) : null;
 
         var pageRequest = new ArticlesPageRequest
         {
             After = afterIdentifier,
             Size = pageSize,
+            Until = untilIdentifier,
         };
 
         var articlesPageResult = await fetchArticlesPageTransaction.ExecuteAsync(pageRequest);

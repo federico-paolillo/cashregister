@@ -18,14 +18,18 @@ import { failure } from "../result";
 export async function clientLoader({ request }: Route.ClientLoaderArgs) {
   const url = new URL(request.url);
 
+  const until = url.searchParams.get("until");
+
+  if (until) {
+    return await deps.apiClient.get<ArticlesPageDto>("/articles", { until });
+  }
+
   const after = url.searchParams.get("after");
 
-  const result = await deps.apiClient.get<ArticlesPageDto>(
+  return await deps.apiClient.get<ArticlesPageDto>(
     "/articles",
     after ? { after } : undefined,
   );
-
-  return result;
 }
 
 export async function clientAction({ request }: Route.ClientActionArgs) {

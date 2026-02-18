@@ -219,6 +219,65 @@ public sealed class ArticlesEndpointTests(
     }
 
     [Fact]
+    public async Task GetArticles_ReturnsAllArticlesUntilCursor_WhenUntilParameterIsProvided()
+    {
+        await PrepareEnvironmentAsync();
+
+        var registerArticleResult1 = await RunScoped<IRegisterArticleTransaction, Result<Identifier>>(tx =>
+            tx.ExecuteAsync(new ArticleDefinition
+            {
+                Description = "Article A",
+                Price = Cents.From(100L)
+            })
+        );
+
+        var registerArticleResult2 = await RunScoped<IRegisterArticleTransaction, Result<Identifier>>(tx =>
+            tx.ExecuteAsync(new ArticleDefinition
+            {
+                Description = "Article B",
+                Price = Cents.From(200L)
+            })
+        );
+
+        var registerArticleResult3 = await RunScoped<IRegisterArticleTransaction, Result<Identifier>>(tx =>
+            tx.ExecuteAsync(new ArticleDefinition
+            {
+                Description = "Article C",
+                Price = Cents.From(300L)
+            })
+        );
+
+        Assert.True(registerArticleResult1.Ok);
+        Assert.True(registerArticleResult2.Ok);
+        Assert.True(registerArticleResult3.Ok);
+
+        using var httpClient = CreateHttpClient();
+
+        // Fetch page 1 with pageSize=2 to obtain the cursor pointing at Article C
+        var page1Response = await httpClient.GetAsync("/articles?pageSize=2");
+        Assert.True(page1Response.IsSuccessStatusCode);
+
+        var page1 = await page1Response.Content.ReadFromJsonAsync<ArticlesPageDto>();
+        Assert.NotNull(page1);
+        Assert.True(page1.HasNext);
+        Assert.NotNull(page1.Next);
+
+        // Revalidate using ?until=<cursor> – must return Articles A and B and signal HasNext=true
+        var untilResponse = await httpClient.GetAsync($"/articles?until={page1.Next}");
+        Assert.True(untilResponse.IsSuccessStatusCode);
+
+        var untilPage = await untilResponse.Content.ReadFromJsonAsync<ArticlesPageDto>();
+        Assert.NotNull(untilPage);
+
+        Assert.Equal(2, untilPage.Items.Length);
+        Assert.Equal(registerArticleResult1.Value.Value, untilPage.Items[0].Id);
+        Assert.Equal(registerArticleResult2.Value.Value, untilPage.Items[1].Id);
+
+        Assert.True(untilPage.HasNext);
+        Assert.Equal(page1.Next, untilPage.Next);
+    }
+
+    [Fact]
     public async Task RegisterArticle_ReturnsCreated_WhenArticleIsRegistered()
     {
         await PrepareEnvironmentAsync();
