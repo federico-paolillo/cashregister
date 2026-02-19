@@ -23,3 +23,12 @@ export interface ChangeArticleRequestDto {
   description: string;
   priceInCents: number;
 }
+
+export interface PlaceOrderRequestDto {
+  items: PlaceOrderItemDto[];
+}
+
+export interface PlaceOrderItemDto {
+  article: string;
+  quantity: number;
+}
