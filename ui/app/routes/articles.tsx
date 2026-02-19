@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Form, useNavigation } from "react-router";
+import { Form, Link, useNavigation } from "react-router";
 import { ArticleForm } from "../components/article-form";
 import { ArticlesTable } from "../components/articles-table";
 import { Spinner } from "../components/spinner";
@@ -103,7 +103,7 @@ export default function Articles({ loaderData }: Route.ComponentProps) {
       <header className="p-4 border-b">
         <h1 className="text-xl font-semibold">Articles</h1>
       </header>
-      <div className="flex justify-end p-4">
+      <div className="flex justify-end p-4 gap-2">
         <button
           type="button"
           onClick={openCreateModal}
@@ -111,6 +111,15 @@ export default function Articles({ loaderData }: Route.ComponentProps) {
         >
           New Article
         </button>
+        <Link to="/articles/bulk">
+          <button
+            type="button"
+            onClick={openCreateModal}
+            className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+          >
+            New Articles
+          </button>
+        </Link>
       </div>
       <div className="relative flex-1 overflow-auto p-4">
         <ArticlesTable articles={page?.items ?? []} onEdit={openEditModal} />

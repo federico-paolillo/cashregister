@@ -17,6 +17,8 @@ vi.mock("react-router", async (importOriginal) => {
     useFetcher: vi.fn(),
     Form: ({ children, ...props }: React.FormHTMLAttributes<HTMLFormElement>) =>
       <form {...props}>{children}</form>,
+    Link: ({ children, to, ...props }: { children: React.ReactNode; to: string } & React.AnchorHTMLAttributes<HTMLAnchorElement>) =>
+      <a href={String(to)} {...props}>{children}</a>,
   };
 });
 
