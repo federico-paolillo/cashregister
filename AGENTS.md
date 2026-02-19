@@ -173,6 +173,29 @@ The `.react-router/` directory contains auto-generated type definitions. This di
 - Regenerated on `npm run dev` or `npm run typecheck`
 - Required for TypeScript type safety with routes
 
+### Error Management System
+
+The frontend has a context-based error message system in `ui/app/components/`. It consists of two files:
+
+- **`use-error-messages.tsx`** — State management hook and React context provider
+- **`error-message-list.tsx`** — Presentational component that renders the error toasts
+
+#### Architecture
+
+`ErrorMessagesProvider` wraps the app and exposes `addError(message)` and `dismissError(id)` via `useErrorMessages()`. Internally the state logic lives in `useErrorMessagesState`, which is also exported so tests can exercise it directly without a provider.
+
+#### Key design decisions
+
+- **`useRef` for timers** — The auto-dismiss timer map (`timers`) is stored in a `useRef`, not `useState`, because nothing in the render output depends on it. Updating it should not trigger a re-render.
+- **`useRef` for the ID counter** — Same reasoning: `nextId` is internal bookkeeping only.
+- **FIFO eviction** — When `maxMessages` is exceeded the oldest error is shifted off and its timer is cancelled.
+- **Cleanup on unmount** — A `useEffect` cleanup function clears all pending timers to avoid firing `setState` on an unmounted component.
+- **Configurable behaviour** — `autoDismissMs` (default 5 000 ms) and `maxMessages` (default 5) are props on the provider. Setting `autoDismissMs` to 0 disables auto-dismiss.
+
+#### Testing
+
+Tests live alongside the source files (`use-error-messages.test.tsx`, `error-message-list.test.tsx`). They use `vi.useFakeTimers()` to exercise the auto-dismiss and eviction paths deterministically.
+
 ## Backend
 
 ### Technology Stack
@@ -219,99 +242,60 @@ dotnet test
 3. Run tests before committing
 4. Follow conventional commit format (e.g., `feat:`, `fix:`, `chore:`)
 
-## Guidelines for AI-Assisted Development
+## Guidelines specifically for AI agents
 
-When working with AI agents on this project:
+### 1. Think Before Coding
 
-1. **Preserve Architecture** - Maintain the clean layered architecture (Domain → Application → Database → API)
-2. **Follow Patterns** - Respect existing patterns (Result monad, Transaction pattern, Unit of Work)
-3. **Test Coverage** - Ensure existing tests continue to pass
-4. **Modern Idioms** - Adopt new language features where they improve clarity
-5. **No Over-Engineering** - Keep changes focused and minimal
-6. **Documentation** - Update this file for significant contributions
+**Don't assume. Don't hide confusion. Surface tradeoffs.**
 
-### Error Management System
+Before implementing:
+- State your assumptions explicitly. If uncertain, ask.
+- If multiple interpretations exist, present them - don't pick silently.
+- If a simpler approach exists, say so. Push back when warranted.
+- If something is unclear, stop. Name what's confusing. Ask.
 
-The frontend has a context-based error message system in `ui/app/components/`. It consists of two files:
+### 2. Simplicity First
 
-- **`use-error-messages.tsx`** — State management hook and React context provider
-- **`error-message-list.tsx`** — Presentational component that renders the error toasts
+**Minimum code that solves the problem. Nothing speculative.**
 
-#### Architecture
+- No features beyond what was asked.
+- No abstractions for single-use code.
+- No "flexibility" or "configurability" that wasn't requested.
+- No error handling for impossible scenarios.
+- If you write 200 lines and it could be 50, rewrite it.
 
-`ErrorMessagesProvider` wraps the app and exposes `addError(message)` and `dismissError(id)` via `useErrorMessages()`. Internally the state logic lives in `useErrorMessagesState`, which is also exported so tests can exercise it directly without a provider.
+Ask yourself: "Would a senior engineer say this is overcomplicated?" If yes, simplify.
 
-#### Key design decisions
+### 3. Surgical Changes
 
-- **`useRef` for timers** — The auto-dismiss timer map (`timers`) is stored in a `useRef`, not `useState`, because nothing in the render output depends on it. Updating it should not trigger a re-render.
-- **`useRef` for the ID counter** — Same reasoning: `nextId` is internal bookkeeping only.
-- **FIFO eviction** — When `maxMessages` is exceeded the oldest error is shifted off and its timer is cancelled.
-- **Cleanup on unmount** — A `useEffect` cleanup function clears all pending timers to avoid firing `setState` on an unmounted component.
-- **Configurable behaviour** — `autoDismissMs` (default 5 000 ms) and `maxMessages` (default 5) are props on the provider. Setting `autoDismissMs` to 0 disables auto-dismiss.
+**Touch only what you must. Clean up only your own mess.**
 
-#### Testing
+When editing existing code:
+- Don't "improve" adjacent code, comments, or formatting.
+- Don't refactor things that aren't broken.
+- Match existing style, even if you'd do it differently.
+- If you notice unrelated dead code, mention it - don't delete it.
 
-Tests live alongside the source files (`use-error-messages.test.tsx`, `error-message-list.test.tsx`). They use `vi.useFakeTimers()` to exercise the auto-dismiss and eviction paths deterministically.
+When your changes create orphans:
+- Remove imports/variables/functions that YOUR changes made unused.
+- Don't remove pre-existing dead code unless asked.
 
-## AI Agent Contributions
+The test: Every changed line should trace directly to the user's request.
 
-This section tracks significant contributions made by AI agents to the Cash Register project.
+### 4. Goal-Driven Execution
 
-### .NET 10 Upgrade (2026-01-17)
+**Define success criteria. Loop until verified.**
 
-**Agent**: Claude (Anthropic)
-**Branch**: `claude/upgrade-dotnet-10-taGNP`
-**Commits**: `1e190b6`, `cb53713`
+Transform tasks into verifiable goals:
+- "Add validation" → "Write tests for invalid inputs, then make them pass"
+- "Fix the bug" → "Write a test that reproduces it, then make it pass"
+- "Refactor X" → "Ensure tests pass before and after"
 
-#### Scope
-Complete upgrade of the Cash Register backend from .NET 9.0 to .NET 10 with adoption of modern C# 14 features and new tooling formats.
-
-#### Changes Made
-
-**Framework & SDK**
-- Updated `global.json` from .NET SDK 9.0.300 → 10.0.100
-- Updated `Directory.Build.props` target framework from net9.0 → net10.0
-- Added explicit C# language version 14 configuration
-
-**NuGet Packages (9.x → 10.0.0)**
-- Microsoft.EntityFrameworkCore
-- Microsoft.EntityFrameworkCore.Design
-- Microsoft.EntityFrameworkCore.Sqlite
-- Microsoft.Extensions.Configuration
-- Microsoft.Extensions.Configuration.Binder
-- Microsoft.Extensions.DependencyInjection.Abstractions
-- Microsoft.AspNetCore.Mvc.Testing
-- Microsoft.NET.Test.Sdk (17.12.0 → 18.0.0)
-
-**Tooling**
-- Updated dotnet-ef tool from 9.0.5 → 10.0.0
-- Converted solution from legacy `.sln` to new `.slnx` XML format
-
-**Code Modernization (C# 14 Collection Expressions)**
-- `Cashregister.Database/Mappers/OrderEntityMapper.cs` - Replaced `.ToList()` with collection expression spread
-- `Cashregister.Application/Orders/Transactions/Defaults/PlaceOrderTransaction.cs` - Array initialization
-- `Cashregister.Database/Queries/FetchArticlesQuery.cs` - LINQ to array conversions (2 locations)
-- `Cashregister.Tests.Integration/Articles/FetchArticlesListQueryTests.cs` - Test data collection
-
-**Pattern Applied**
-```csharp
-// Before
-var items = source.Select(x => transform(x)).ToArray();
-
-// After
-var items = [.. source.Select(x => transform(x))];
+For multi-step tasks, state a brief plan:
+```
+1. [Step] → verify: [check]
+2. [Step] → verify: [check]
+3. [Step] → verify: [check]
 ```
 
-#### Impact
-- Zero breaking changes to public APIs
-- Maintained backward compatibility with existing functionality
-- Improved code consistency with modern C# idioms
-- Better performance through optimized collection expressions
-- Future-proofed for .NET 10 features and ecosystem
-
-#### Testing Strategy
-All existing integration tests remain functional. The upgrade preserves:
-- Article management endpoints
-- Order processing workflows
-- Database query operations
-- Entity Framework Core migrations
+Strong success criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
