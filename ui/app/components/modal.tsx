@@ -29,7 +29,7 @@ export function Modal({ open, onClose, children }: ModalProps) {
         id={id}
         ref={dialogRef}
         closedby="none"
-        className="overflow-hidden"
+        className="fixed inset-0 m-auto max-h-[90vh] max-w-[90vw] w-full h-full overflow-hidden backdrop:bg-black/50"
         onClose={onClose}
       >
         {children}
