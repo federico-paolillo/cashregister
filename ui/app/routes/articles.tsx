@@ -59,15 +59,11 @@ export async function clientAction({ request }: Route.ClientActionArgs) {
 
 export default function Articles({ loaderData }: Route.ComponentProps) {
   const navigation = useNavigation();
+
   const { addError } = useErrorMessages();
 
   const isLoadingMore = navigation.state === "loading";
-
-  useEffect(() => {
-    if (!loaderData.ok) {
-      addError(loaderData.error.message);
-    }
-  }, [loaderData, addError]);
+  const page = loaderData.ok ? loaderData.value : null;
 
   const {
     isOpen: isCreateOpen,
@@ -96,7 +92,11 @@ export default function Articles({ loaderData }: Route.ComponentProps) {
     openEdit();
   }
 
-  const page = loaderData.ok ? loaderData.value : null;
+  useEffect(() => {
+    if (!loaderData.ok) {
+      addError(loaderData.error.message);
+    }
+  }, [loaderData, addError]);
 
   return (
     <div className="flex h-screen flex-col">

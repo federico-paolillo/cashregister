@@ -11,29 +11,25 @@ interface ArticleFormProps {
   articleId?: string;
   initialData?: ArticleFormData;
   intent: string;
-  onSubmit?: (data: ArticleFormData) => void;
+  onSubmit?: () => void;
 }
 
 export function ArticleForm({ articleId, initialData, intent, onSubmit }: ArticleFormProps) {
   const modalId = useModalId();
   const fetcher = useFetcher();
-  const submittedRef = useRef<ArticleFormData | null>(null);
 
   const pending = fetcher.state !== "idle";
+  const idling = fetcher.state === "idle";
+
+  const prevFetcherState = useRef(fetcher.state);
 
   useEffect(() => {
-    if (fetcher.state === "submitting" && fetcher.formData) {
-      submittedRef.current = {
-        description: String(fetcher.formData.get("description")),
-        priceInCents: Number(fetcher.formData.get("priceInCents")),
-      };
+    if (prevFetcherState.current !== "idle" && idling) {
+      onSubmit?.();
     }
 
-    if (fetcher.state === "idle" && fetcher.data && submittedRef.current) {
-      onSubmit?.(submittedRef.current);
-      submittedRef.current = null;
-    }
-  }, [fetcher.state, fetcher.data, fetcher.formData, onSubmit]);
+    prevFetcherState.current = fetcher.state;
+  }, [fetcher.state, onSubmit]);
 
   return (
     <fetcher.Form method="post" action="/articles">
