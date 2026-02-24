@@ -3,6 +3,7 @@ import { Links, Meta, Outlet, Scripts, ScrollRestoration, useRouteError, isRoute
 import "./app.css";
 import { ErrorMessagesProvider } from "./components/use-error-messages";
 import { ErrorMessageList } from "./components/error-message-list";
+import { Spinner } from "./components/spinner";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
@@ -29,6 +30,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
 export default function Root() {
   return <Outlet />;
+}
+
+export function HydrateFallback() {
+  return <Spinner />;
 }
 
 export function ErrorBoundary() {
