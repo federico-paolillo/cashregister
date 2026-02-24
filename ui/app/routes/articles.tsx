@@ -111,14 +111,11 @@ export default function Articles({ loaderData }: Route.ComponentProps) {
         >
           New Article
         </button>
-        <Link to="/articles/bulk">
-          <button
-            type="button"
-            onClick={openCreateModal}
-            className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
-          >
-            New Articles
-          </button>
+        <Link
+          to="/articles/bulk"
+          className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 inline-block"
+        >
+          New Articles
         </Link>
       </div>
       <div className="relative flex-1 overflow-auto p-4">
