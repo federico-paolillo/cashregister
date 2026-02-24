@@ -2,83 +2,7 @@
 
 Reviewed: all files under `ui/app/`, configuration files, and all test files.
 
-**Current state**: 91 tests pass, ESLint reports 2 issues (1 error, 1 warning), TypeScript reports 4 errors in `articles.test.tsx`.
-
----
-
-## 1. Bugs
-
-### 1.1 "New Articles" button opens the create modal AND navigates
-
-`app/routes/articles.tsx:114-122`
-
-```tsx
-<Link to="/articles/bulk">
-  <button
-    type="button"
-    onClick={openCreateModal}   // ← wrong handler
-    className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
-  >
-    New Articles
-  </button>
-</Link>
-```
-
-The `onClick` is `openCreateModal` — copied from the "New Article" button above. Clicking "New Articles" opens the single-article create modal *and* navigates to `/articles/bulk`. The `onClick` should be removed entirely; the `<Link>` handles navigation.
-
-Additionally, a `<button>` nested inside a `<Link>` (which renders `<a>`) is **invalid HTML** per the spec (interactive content cannot nest). Replace with a styled `<Link>`:
-
-```tsx
-<Link
-  to="/articles/bulk"
-  className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 inline-block"
->
-  New Articles
-</Link>
-```
-
-### 1.2 `z.coerce.string()` turns `undefined` into `"undefined"`
-
-`app/settings.ts:4`
-
-```ts
-const settingsSchema = z.object({
-  apiBaseUrl: z.coerce.string()
-});
-```
-
-`z.coerce.string()` calls `String(input)`. When `VITE_API_BASE_URL` is not set, `import.meta.env.VITE_API_BASE_URL` is `undefined`, and `String(undefined)` is the literal string `"undefined"`. The `ApiClient` would then make requests to `undefined/articles`.
-
-Per the AGENTS.md, an empty string is the intended default (relative paths resolve against the current origin). The schema should enforce this:
-
-```ts
-const settingsSchema = z.object({
-  apiBaseUrl: z.string().default("")
-});
-```
-
-Or, if you want to keep `coerce` for other reasons, add `.transform()` to catch the `undefined` → `"undefined"` conversion.
-
-### 1.3 ESLint error in `env.d.ts`
-
-`app/env.d.ts:14`
-
-```ts
-declare namespace React {
-  interface ButtonHTMLAttributes<T> {
-    command?: string;
-    commandfor?: string;
-  }
-}
-```
-
-The type parameter `T` is unused, causing `@typescript-eslint/no-unused-vars`. Since this is augmenting React's existing generic interface, the parameter must match the original signature but can use `_T` or be prefixed with an underscore to satisfy the rule.
-
-### 1.4 TypeScript errors in `articles.test.tsx`
-
-`app/routes/articles.test.tsx:80,88,100,111`
-
-The generated `Route.ComponentProps` type includes `params` and `matches` alongside `loaderData`. The test renders `<Articles loaderData={...} />` without these props, and the existing `as any` casts suppress the runtime error but not `tsc`. Either provide the full props shape or add a cast at the render-helper level (as `order.test.tsx` does with its `renderOrder` helper).
+**Current state**: All tests pass, ESLint and TypeScript report no errors.
 
 ---
 
@@ -372,22 +296,16 @@ For a local-network single-user app this is acceptable, but consider a batch end
 
 ## 6. Summary of Recommended Actions
 
-**Fix (bugs)**:
-1. Remove `onClick={openCreateModal}` from the "New Articles" `<Link>` and unwrap the nested `<button>`.
-2. Fix the Zod schema in `settings.ts` so an unset `VITE_API_BASE_URL` defaults to `""`.
-3. Fix the unused `T` in `env.d.ts`.
-4. Fix the TypeScript errors in `articles.test.tsx`.
-
 **Improve (idiom compliance)**:
-5. Pick one error-handling strategy for loaders (throw + ErrorBoundary, or Result + component handling) and apply it consistently.
-6. Export an `ErrorBoundary` from `root.tsx` at minimum.
-7. Surface action errors in `articles.tsx` (read `actionData` or check `fetcher.data`).
+1. Pick one error-handling strategy for loaders (throw + ErrorBoundary, or Result + component handling) and apply it consistently.
+2. Export an `ErrorBoundary` from `root.tsx` at minimum.
+3. Surface action errors in `articles.tsx` (read `actionData` or check `fetcher.data`).
 
 **Consider (maintainability)**:
-8. Extract shared `formatPrice` utility.
-9. Add a `<nav>` layout with links to `/order` and `/articles`.
-10. Type the `intent` prop as `"create" | "edit"`.
-11. Add an `onCancel` fallback on `<dialog>` for browsers without `closedby` support.
-12. Add an `onClick` fallback on the Cancel button for browsers without Invoker Commands support.
-13. Remove or un-disable the dead delete button.
-14. Clarify the `components/` vs co-located split: either move article-specific components next to their route or into a feature directory, and establish a home for domain utilities and infrastructure files.
+4. Extract shared `formatPrice` utility.
+5. Add a `<nav>` layout with links to `/order` and `/articles`.
+6. Type the `intent` prop as `"create" | "edit"`.
+7. Add an `onCancel` fallback on `<dialog>` for browsers without `closedby` support.
+8. Add an `onClick` fallback on the Cancel button for browsers without Invoker Commands support.
+9. Remove or un-disable the dead delete button.
+10. Clarify the `components/` vs co-located split: either move article-specific components next to their route or into a feature directory, and establish a home for domain utilities and infrastructure files.
