@@ -1,6 +1,7 @@
 import { useFetcher } from "react-router";
 import { useModalId } from "./use-modal";
 import { useEffect, useRef } from "react";
+import type { Result } from "../result";
 
 export interface ArticleFormData {
   description: string;
@@ -17,7 +18,7 @@ interface ArticleFormProps {
 
 export function ArticleForm({ articleId, initialData, intent, onSubmit, onError }: ArticleFormProps) {
   const modalId = useModalId();
-  const fetcher = useFetcher();
+  const fetcher = useFetcher<Result<unknown>>();
 
   const pending = fetcher.state !== "idle";
   const idling = fetcher.state === "idle";
@@ -26,9 +27,8 @@ export function ArticleForm({ articleId, initialData, intent, onSubmit, onError 
 
   useEffect(() => {
     if (prevFetcherState.current !== "idle" && idling) {
-      const result = fetcher.data as { ok: boolean; error?: { message: string } } | undefined;
-      if (result && !result.ok) {
-        onError?.(result.error?.message ?? "An unknown error occurred.");
+      if (fetcher.data && !fetcher.data.ok) {
+        onError?.(fetcher.data.error.message);
       } else {
         onSubmit?.();
       }
