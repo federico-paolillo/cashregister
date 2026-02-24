@@ -12,6 +12,7 @@ interface ImportMeta {
 // https://developer.mozilla.org/en-US/docs/Web/API/Invoker_Commands_API
 
 declare namespace React {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   interface ButtonHTMLAttributes<T> {
     command?: string;
     commandfor?: string;
