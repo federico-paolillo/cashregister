@@ -21,24 +21,6 @@ React Router's convention is to **throw** from loaders and let an `ErrorBoundary
 
 **Recommendation**: Pick one pattern. Throwing from loaders and defining `ErrorBoundary` exports is the more idiomatic choice and keeps components focused on the happy path. Alternatively, if you prefer the `Result<T>` approach everywhere (which gives you more UI control), use it consistently.
 
-### 2.2 No `ErrorBoundary` exports on any route
-
-Since `order.tsx` throws from its loader, an error will bubble to React Router's default error boundary (a generic error page). None of the routes export an `ErrorBoundary`, so the user sees a framework-level error screen with no way to recover or navigate back.
-
-At minimum, `root.tsx` should export an `ErrorBoundary` component that shows a user-friendly error message with a "try again" action.
-
-### 2.3 No `HydrateFallback`
-
-In SPA mode (`ssr: false`), the user sees a blank screen while JavaScript loads and the `clientLoader` runs. Exporting a `HydrateFallback` from the root layout (or the heavy routes like `/order` and `/articles`) provides a loading indicator during the initial page load.
-
-For a local-network kiosk app, cold-start latency is minimal, but a blank white screen on every hard refresh is still noticeable.
-
-### 2.4 Action errors are silently lost in `articles.tsx`
-
-The `clientAction` in `articles.tsx` returns a `Result<T>`, but the component never reads `actionData`. If a create or edit operation fails, the API error is returned from the action, but nothing in the component displays it. The page revalidates (re-fetches articles via loader), the modal closes, and the user has no idea the operation failed.
-
-The `order.tsx` route handles this correctly: it reads `actionData` and calls `addError()` on failure. The `articles.tsx` route should do the same, or the `ArticleForm` component should check `fetcher.data` for errors.
-
 ---
 
 ## 3. React Mental Model
@@ -298,14 +280,12 @@ For a local-network single-user app this is acceptable, but consider a batch end
 
 **Improve (idiom compliance)**:
 1. Pick one error-handling strategy for loaders (throw + ErrorBoundary, or Result + component handling) and apply it consistently.
-2. Export an `ErrorBoundary` from `root.tsx` at minimum.
-3. Surface action errors in `articles.tsx` (read `actionData` or check `fetcher.data`).
 
 **Consider (maintainability)**:
-4. Extract shared `formatPrice` utility.
-5. Add a `<nav>` layout with links to `/order` and `/articles`.
-6. Type the `intent` prop as `"create" | "edit"`.
-7. Add an `onCancel` fallback on `<dialog>` for browsers without `closedby` support.
-8. Add an `onClick` fallback on the Cancel button for browsers without Invoker Commands support.
-9. Remove or un-disable the dead delete button.
-10. Clarify the `components/` vs co-located split: either move article-specific components next to their route or into a feature directory, and establish a home for domain utilities and infrastructure files.
+2. Extract shared `formatPrice` utility.
+3. Add a `<nav>` layout with links to `/order` and `/articles`.
+4. Type the `intent` prop as `"create" | "edit"`.
+5. Add an `onCancel` fallback on `<dialog>` for browsers without `closedby` support.
+6. Add an `onClick` fallback on the Cancel button for browsers without Invoker Commands support.
+7. Remove or un-disable the dead delete button.
+8. Clarify the `components/` vs co-located split: either move article-specific components next to their route or into a feature directory, and establish a home for domain utilities and infrastructure files.
