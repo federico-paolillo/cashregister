@@ -1,5 +1,5 @@
 import { StrictMode } from "react";
-import { Links, Meta, Outlet, Scripts, ScrollRestoration } from "react-router";
+import { Links, Meta, Outlet, Scripts, ScrollRestoration, useRouteError, isRouteErrorResponse } from "react-router";
 import "./app.css";
 import { ErrorMessagesProvider } from "./components/use-error-messages";
 import { ErrorMessageList } from "./components/error-message-list";
@@ -29,4 +29,31 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
 export default function Root() {
   return <Outlet />;
+}
+
+export function ErrorBoundary() {
+  const error = useRouteError();
+
+  let message = "An unexpected error occurred.";
+  if (isRouteErrorResponse(error)) {
+    message = error.data || `${error.status} ${error.statusText}`;
+  } else if (error instanceof Error) {
+    message = error.message;
+  }
+
+  return (
+    <div className="flex h-screen items-center justify-center">
+      <div className="text-center">
+        <h1 className="text-xl font-semibold text-red-600">Something went wrong</h1>
+        <p className="mt-2 text-gray-600">{message}</p>
+        <button
+          type="button"
+          onClick={() => window.location.reload()}
+          className="mt-4 rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+        >
+          Try Again
+        </button>
+      </div>
+    </div>
+  );
 }
