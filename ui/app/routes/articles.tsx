@@ -137,7 +137,7 @@ export default function Articles({ loaderData }: Route.ComponentProps) {
         )}
       </div>
       <Modal open={isCreateOpen} onClose={closeCreate}>
-        <ArticleForm key={createKey} intent="create" onSubmit={() => closeCreate()} />
+        <ArticleForm key={createKey} intent="create" onSubmit={() => closeCreate()} onError={(msg) => { closeCreate(); addError(msg); }} />
       </Modal>
       <Modal open={isEditOpen} onClose={closeEdit}>
         {editingArticle && (
@@ -151,6 +151,10 @@ export default function Articles({ loaderData }: Route.ComponentProps) {
             }}
             onSubmit={() => {
               closeEdit();
+            }}
+            onError={(msg) => {
+              closeEdit();
+              addError(msg);
             }}
           />
         )}

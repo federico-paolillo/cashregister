@@ -12,9 +12,10 @@ interface ArticleFormProps {
   initialData?: ArticleFormData;
   intent: string;
   onSubmit?: () => void;
+  onError?: (message: string) => void;
 }
 
-export function ArticleForm({ articleId, initialData, intent, onSubmit }: ArticleFormProps) {
+export function ArticleForm({ articleId, initialData, intent, onSubmit, onError }: ArticleFormProps) {
   const modalId = useModalId();
   const fetcher = useFetcher();
 
@@ -25,11 +26,16 @@ export function ArticleForm({ articleId, initialData, intent, onSubmit }: Articl
 
   useEffect(() => {
     if (prevFetcherState.current !== "idle" && idling) {
-      onSubmit?.();
+      const result = fetcher.data as { ok: boolean; error?: { message: string } } | undefined;
+      if (result && !result.ok) {
+        onError?.(result.error?.message ?? "An unknown error occurred.");
+      } else {
+        onSubmit?.();
+      }
     }
 
     prevFetcherState.current = fetcher.state;
-  }, [fetcher.state, onSubmit]);
+  }, [fetcher.state, fetcher.data, onSubmit, onError]);
 
   return (
     <fetcher.Form method="post" action="/articles" className="flex flex-col gap-6 p-6 min-w-80">

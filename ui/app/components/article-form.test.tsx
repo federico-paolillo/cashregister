@@ -116,6 +116,29 @@ describe("ArticleForm", () => {
     expect(hidden).toBeNull();
   });
 
+  it("calls onError when fetcher completes with a failure result", () => {
+    const onSubmit = vi.fn();
+    const onError = vi.fn();
+
+    mockFetcher.state = "submitting";
+
+    const { rerender } = renderInModal(
+      <ArticleForm intent="create" onSubmit={onSubmit} onError={onError} />,
+    );
+
+    mockFetcher.state = "idle";
+    mockFetcher.data = { ok: false, error: { message: "Server error", status: 500 } };
+
+    rerender(
+      <ModalIdProvider id="dlg-1">
+        <ArticleForm intent="create" onSubmit={onSubmit} onError={onError} />
+      </ModalIdProvider>,
+    );
+
+    expect(onError).toHaveBeenCalledWith("Server error");
+    expect(onSubmit).not.toHaveBeenCalled();
+  });
+
   it("calls onSubmit with submitted data when fetcher completes", () => {
     const onSubmit = vi.fn();
 
