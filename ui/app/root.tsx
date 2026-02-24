@@ -1,3 +1,4 @@
+import { StrictMode } from "react";
 import { Links, Meta, Outlet, Scripts, ScrollRestoration } from "react-router";
 import "./app.css";
 import { ErrorMessagesProvider } from "./components/use-error-messages";
@@ -13,10 +14,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body>
-        <ErrorMessagesProvider>
-          <ErrorMessageList />
-          {children}
-        </ErrorMessagesProvider>
+        <StrictMode>
+          <ErrorMessagesProvider>
+            <ErrorMessageList />
+            {children}
+          </ErrorMessagesProvider>
+        </StrictMode>
         <ScrollRestoration />
         <Scripts />
       </body>
