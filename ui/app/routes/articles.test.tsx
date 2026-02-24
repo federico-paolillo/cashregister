@@ -102,6 +102,17 @@ describe("Articles Page", () => {
     expect(screen.queryByRole("button", { name: "Load More" })).toBeNull();
   });
 
+  it("'New Articles' link navigates without opening the create modal", () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    render(<Articles loaderData={mockInitialResult} /> as any);
+
+    const link = screen.getByRole("link", { name: "New Articles" });
+
+    link.click();
+
+    expect(HTMLDialogElement.prototype.showModal).not.toHaveBeenCalled();
+  });
+
   it("shows loading state when navigation is loading", () => {
     vi.mocked(reactRouter.useNavigation).mockReturnValue({
       state: "loading",
