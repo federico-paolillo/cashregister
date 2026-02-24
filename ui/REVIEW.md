@@ -286,7 +286,57 @@ rounded border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:out
 
 For a small codebase this is tolerable, but if these classes change (e.g., the focus ring color), you'd need to update multiple files. Tailwind v4's `@theme` or a CSS layer with `@apply` can centralize this. Alternatively, a small `<Input>` wrapper component.
 
-### 4.8 `articles-bulk.tsx` fires N parallel requests
+### 4.8 Decomposition and folder structure
+
+```
+app/
+├── components/          # 7 components: mix of shared and domain-specific
+│   ├── article-form     ← only used by routes/articles.tsx
+│   ├── article-row      ← only used by articles-table
+│   ├── articles-table   ← only used by routes/articles.tsx
+│   ├── error-message-list  ← shared (used by root.tsx)
+│   ├── modal               ← shared
+│   ├── spinner             ← shared
+│   ├── use-error-messages  ← shared
+│   └── use-modal           ← shared
+├── routes/
+│   ├── articles.tsx
+│   ├── articles-bulk.tsx   # BulkRow defined inline here
+│   ├── home.tsx
+│   └── order.tsx
+├── api-client.ts        # infrastructure, sitting at root
+├── deps.ts              # infrastructure, sitting at root
+├── model.ts             # all DTOs in one file
+├── result.ts            # infrastructure, sitting at root
+├── settings.ts          # infrastructure, sitting at root
+├── root.tsx             # routing entry point
+└── routes.ts            # routing entry point
+```
+
+Three observations:
+
+**`components/` mixes domain-specific and truly shared components.** `ArticleForm`, `ArticleRow`, and `ArticlesTable` are only consumed by the `articles.tsx` route — they are article feature components that happen to live in the shared bucket. `Modal`, `Spinner`, and `ErrorMessageList` are genuinely route-agnostic. At 7 components the flat list is manageable, but the distinction is blurred.
+
+**Inconsistent co-location.** `BulkRow` in `articles-bulk.tsx:44-81` is defined inline in its route file, which is reasonable for a small single-use component. But `ArticleRow`, `ArticleForm`, and `ArticlesTable` are extracted to `components/` even though they are equally single-use (only `articles.tsx` imports them). The choice of what to extract vs co-locate is not consistent.
+
+**No home for domain utilities.** The duplicated `formatPrice` (section 4.1) is a symptom: there is no established place for shared domain helpers. Infrastructure files (`api-client.ts`, `result.ts`, `deps.ts`, `settings.ts`) sit at the `app/` root alongside routing entry points (`root.tsx`, `routes.ts`). If more helpers are added they will also land at the root, and the root becomes a catch-all.
+
+For 4 routes and 7 components, restructuring now would be premature. But if the app grows, the natural direction is feature-based grouping:
+
+```
+app/
+├── components/          # truly shared: modal, spinner, error-messages
+├── routes/
+├── articles/            # article-form, article-row, articles-table, article DTOs
+├── orders/              # order DTOs, formatPrice
+├── infra/               # api-client, result, deps, settings
+├── root.tsx
+└── routes.ts
+```
+
+This makes the dependency graph explicit: routes import from their feature module, shared components, and infra.
+
+### 4.9 `articles-bulk.tsx` fires N parallel requests
 
 `app/routes/articles-bulk.tsx:13-22`
 
@@ -340,3 +390,4 @@ For a local-network single-user app this is acceptable, but consider a batch end
 11. Add an `onCancel` fallback on `<dialog>` for browsers without `closedby` support.
 12. Add an `onClick` fallback on the Cancel button for browsers without Invoker Commands support.
 13. Remove or un-disable the dead delete button.
+14. Clarify the `components/` vs co-located split: either move article-specific components next to their route or into a feature directory, and establish a home for domain utilities and infrastructure files.
