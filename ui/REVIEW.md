@@ -109,27 +109,7 @@ In SPA mode (`ssr: false`), the user sees a blank screen while JavaScript loads 
 
 For a local-network kiosk app, cold-start latency is minimal, but a blank white screen on every hard refresh is still noticeable.
 
-### 2.4 "Load More" replaces data instead of appending
-
-`app/routes/articles.tsx:129-140`
-
-```tsx
-<Form method="get">
-  <input type="hidden" name="until" value={page.next} />
-  <button type="submit">Load More</button>
-</Form>
-```
-
-This `<Form method="get">` triggers a full navigation to `/articles?until=cursor`. The `clientLoader` fetches the next page from the API. React Router replaces `loaderData` entirely, so the component only shows the **new** page's articles — the previous page's articles disappear.
-
-A true "Load More" should **append**. Two approaches:
-
-1. **`useFetcher`**: Use a fetcher to load the next page in the background, then merge the results into a `useState` accumulator.
-2. **Backend returns all items up to the cursor**: If the `until` parameter makes the API return everything from the start up to the cursor, then the current approach works — but the naming is misleading and the growing response size is inefficient.
-
-If the API returns only the next slice (as is typical), the `useFetcher` approach is the correct fix.
-
-### 2.5 Action errors are silently lost in `articles.tsx`
+### 2.4 Action errors are silently lost in `articles.tsx`
 
 The `clientAction` in `articles.tsx` returns a `Result<T>`, but the component never reads `actionData`. If a create or edit operation fails, the API error is returned from the action, but nothing in the component displays it. The page revalidates (re-fetches articles via loader), the modal closes, and the user has no idea the operation failed.
 
@@ -351,13 +331,12 @@ For a local-network single-user app this is acceptable, but consider a batch end
 **Improve (idiom compliance)**:
 5. Pick one error-handling strategy for loaders (throw + ErrorBoundary, or Result + component handling) and apply it consistently.
 6. Export an `ErrorBoundary` from `root.tsx` at minimum.
-7. Fix "Load More" to actually accumulate articles (likely via `useFetcher`).
-8. Surface action errors in `articles.tsx` (read `actionData` or check `fetcher.data`).
+7. Surface action errors in `articles.tsx` (read `actionData` or check `fetcher.data`).
 
 **Consider (maintainability)**:
-9. Extract shared `formatPrice` utility.
-10. Add a `<nav>` layout with links to `/order` and `/articles`.
-11. Type the `intent` prop as `"create" | "edit"`.
-12. Add an `onCancel` fallback on `<dialog>` for browsers without `closedby` support.
-13. Add an `onClick` fallback on the Cancel button for browsers without Invoker Commands support.
-14. Remove or un-disable the dead delete button.
+8. Extract shared `formatPrice` utility.
+9. Add a `<nav>` layout with links to `/order` and `/articles`.
+10. Type the `intent` prop as `"create" | "edit"`.
+11. Add an `onCancel` fallback on `<dialog>` for browsers without `closedby` support.
+12. Add an `onClick` fallback on the Cancel button for browsers without Invoker Commands support.
+13. Remove or un-disable the dead delete button.
