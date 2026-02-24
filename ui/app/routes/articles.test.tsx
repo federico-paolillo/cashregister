@@ -36,20 +36,28 @@ vi.mock("../deps", () => ({
   },
 }));
 
-describe("Articles Page", () => {
-  const mockInitialData: ArticlesPageDto = {
-    items: [
-      { id: "1", description: "Article 1", price: 10.0 },
-      { id: "2", description: "Article 2", price: 20.0 },
-    ],
-    next: "cursor-1",
-    hasNext: true,
-  };
+const mockInitialData: ArticlesPageDto = {
+  items: [
+    { id: "1", description: "Article 1", price: 10.0 },
+    { id: "2", description: "Article 2", price: 20.0 },
+  ],
+  next: "cursor-1",
+  hasNext: true,
+};
 
-  const mockInitialResult: Result<ArticlesPageDto> = {
-    ok: true,
-    value: mockInitialData,
-  };
+const mockInitialResult: Result<ArticlesPageDto> = {
+  ok: true,
+  value: mockInitialData,
+};
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function renderArticles(props: any = {}) {
+  return render(
+    <Articles loaderData={mockInitialResult} {...props} />,
+  );
+}
+
+describe("Articles Page", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -76,16 +84,14 @@ describe("Articles Page", () => {
   });
 
   it("renders initial articles from loader", () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    render(<Articles loaderData={mockInitialResult} /> as any);
+    renderArticles();
 
     expect(screen.getByText("Article 1")).toBeDefined();
     expect(screen.getByText("Article 2")).toBeDefined();
   });
 
   it("shows Load More button when page.next is set", () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    render(<Articles loaderData={mockInitialResult} /> as any);
+    renderArticles();
 
     expect(screen.getByRole("button", { name: "Load More" })).toBeDefined();
   });
@@ -96,15 +102,13 @@ describe("Articles Page", () => {
       value: { ...mockInitialData, next: null, hasNext: false },
     };
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    render(<Articles loaderData={data} /> as any);
+    renderArticles({ loaderData: data });
 
     expect(screen.queryByRole("button", { name: "Load More" })).toBeNull();
   });
 
   it("'New Articles' link navigates without opening the create modal", () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    render(<Articles loaderData={mockInitialResult} /> as any);
+    renderArticles();
 
     const link = screen.getByRole("link", { name: "New Articles" });
 
@@ -118,8 +122,7 @@ describe("Articles Page", () => {
       state: "loading",
     } as reactRouter.Navigation);
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    render(<Articles loaderData={mockInitialResult} /> as any);
+    renderArticles();
 
     expect(screen.getByText("Loading...")).toBeDefined();
     expect(screen.getByRole("button", { name: "Loading..." })).toHaveProperty("disabled", true);
