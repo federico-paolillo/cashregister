@@ -1,12 +1,12 @@
 import React from "react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, cleanup } from "@testing-library/react";
-import Articles, { clientAction } from "./articles";
+import Articles, { clientAction } from "@cashregister/routes/articles";
 import * as reactRouter from "react-router";
-import * as errorMessages from "../components/use-error-messages";
-import { deps } from "../deps";
-import type { ArticlesPageDto } from "../model";
-import type { Result } from "../result";
+import * as errorMessages from "@cashregister/components/use-error-messages";
+import { deps } from "@cashregister/deps";
+import type { ArticlesPageDto } from "@cashregister/model";
+import type { Result } from "@cashregister/result";
 import type { Route } from "./+types/articles";
 
 vi.mock("react-router", async (importOriginal) => {
@@ -22,11 +22,11 @@ vi.mock("react-router", async (importOriginal) => {
   };
 });
 
-vi.mock("../components/use-error-messages", () => ({
+vi.mock("@cashregister/components/use-error-messages", () => ({
   useErrorMessages: vi.fn(),
 }));
 
-vi.mock("../deps", () => ({
+vi.mock("@cashregister/deps", () => ({
   deps: {
     apiClient: {
       get: vi.fn(),

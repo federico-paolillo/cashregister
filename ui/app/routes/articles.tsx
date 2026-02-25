@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import { Form, Link, useNavigation } from "react-router";
-import { ArticleForm } from "../components/article-form";
-import { ArticlesTable } from "../components/articles-table";
-import { Spinner } from "../components/spinner";
-import { Modal } from "../components/modal";
-import { useModal } from "../components/use-modal";
-import { useErrorMessages } from "../components/use-error-messages";
-import { deps } from "../deps";
+import { ArticleForm } from "@cashregister/components/article-form";
+import { ArticlesTable } from "@cashregister/components/articles-table";
+import { Spinner } from "@cashregister/components/spinner";
+import { Modal } from "@cashregister/components/modal";
+import { useModal } from "@cashregister/components/use-modal";
+import { useErrorMessages } from "@cashregister/components/use-error-messages";
+import { deps } from "@cashregister/deps";
 import type {
   ArticleListItemDto,
   ArticlesPageDto,
@@ -14,7 +14,7 @@ import type {
   RegisterArticleRequestDto,
 } from "../model";
 import type { Route } from "./+types/articles";
-import { failure } from "../result";
+import { failure } from "@cashregister/result";
 
 export async function clientLoader({ request }: Route.ClientLoaderArgs) {
   const url = new URL(request.url);

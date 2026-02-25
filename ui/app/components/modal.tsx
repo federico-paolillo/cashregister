@@ -1,5 +1,5 @@
 import { type ReactNode, useEffect, useId, useRef } from "react";
-import { ModalIdProvider } from "./use-modal";
+import { ModalIdProvider } from "@cashregister/components/use-modal";
 
 interface ModalProps {
   open: boolean;

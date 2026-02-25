@@ -1,5 +1,5 @@
 import type { ArticleListItemDto } from "../model";
-import { ArticleRow } from "./article-row";
+import { ArticleRow } from "@cashregister/components/article-row";
 
 interface ArticlesTableProps {
   articles: ArticleListItemDto[];

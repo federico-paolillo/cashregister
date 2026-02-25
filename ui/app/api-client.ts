@@ -1,4 +1,4 @@
-import { type Result, success, failure } from "./result";
+import { type Result, success, failure } from "@cashregister/result";
 
 export class ApiClient {
   private readonly baseUrl: string;

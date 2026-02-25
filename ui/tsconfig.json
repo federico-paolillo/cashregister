@@ -7,7 +7,11 @@
   "compilerOptions": {
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.tsbuildinfo",
     "target": "ES2022",
-    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "lib": [
+      "ES2022",
+      "DOM",
+      "DOM.Iterable"
+    ],
     "module": "ESNext",
     "skipLibCheck": true,
     "moduleResolution": "bundler",
@@ -21,7 +25,17 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true,
-    "rootDirs": [".", ".react-router/types"],
-    "types": ["vite/client"]
+    "rootDirs": [
+      ".",
+      ".react-router/types"
+    ],
+    "types": [
+      "vite/client"
+    ],
+    "paths": {
+      "@cashregister/*": [
+        "./app/*",
+      ],
+    }
   }
 }

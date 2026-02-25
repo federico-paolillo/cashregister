@@ -1,7 +1,7 @@
 import { useFetcher } from "react-router";
-import { useModalId } from "./use-modal";
+import { useModalId } from "@cashregister/components/use-modal";
 import { useEffect, useRef } from "react";
-import type { Result } from "../result";
+import type { Result } from "@cashregister/result";
 
 export interface ArticleFormData {
   description: string;

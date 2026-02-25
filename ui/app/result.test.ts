@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { success, failure } from "./result";
+import { success, failure } from "@cashregister/result";
 
 describe("result", () => {
   it("creates a success result", () => {

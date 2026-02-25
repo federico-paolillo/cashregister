@@ -1,7 +1,7 @@
 import { useNavigation, Form, Link, redirect } from "react-router";
 import { useState, useRef } from "react";
-import { deps } from "../deps";
-import type { RegisterArticleRequestDto } from "../model";
+import { deps } from "@cashregister/deps";
+import type { RegisterArticleRequestDto } from "@cashregister/model";
 import type { Route } from "./+types/articles-bulk";
 
 export async function clientAction({ request }: Route.ClientActionArgs) {

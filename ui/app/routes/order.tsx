@@ -1,12 +1,12 @@
 import { Fragment, useEffect, useState } from "react";
 import { Form, useNavigation } from "react-router";
-import { useErrorMessages } from "../components/use-error-messages";
-import { deps } from "../deps";
+import { useErrorMessages } from "@cashregister/components/use-error-messages";
+import { deps } from "@cashregister/deps";
 import type {
   ArticleListItemDto,
   ArticlesPageDto,
   PlaceOrderRequestDto,
-} from "../model";
+} from "@cashregister/model";
 import type { Route } from "./+types/order";
 
 export async function clientLoader() {

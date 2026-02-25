@@ -1,10 +1,10 @@
 import React from "react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, cleanup, fireEvent } from "@testing-library/react";
-import Order, { clientAction } from "./order";
+import Order, { clientAction } from "@cashregister/routes/order";
 import * as reactRouter from "react-router";
-import * as errorMessages from "../components/use-error-messages";
-import { deps } from "../deps";
+import * as errorMessages from "@cashregister/components/use-error-messages";
+import { deps } from "@cashregister/deps";
 import type { Route } from "./+types/order";
 
 vi.mock("react-router", async (importOriginal) => {
@@ -21,7 +21,7 @@ vi.mock("react-router", async (importOriginal) => {
   };
 });
 
-vi.mock("../deps", () => ({
+vi.mock("@cashregister/deps", () => ({
   deps: {
     apiClient: {
       post: vi.fn(),
@@ -29,7 +29,7 @@ vi.mock("../deps", () => ({
   },
 }));
 
-vi.mock("../components/use-error-messages", () => ({
+vi.mock("@cashregister/components/use-error-messages", () => ({
   useErrorMessages: vi.fn(),
 }));
 

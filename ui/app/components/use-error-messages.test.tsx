@@ -10,7 +10,7 @@ import {
   useErrorMessages,
   useErrorMessagesState,
   ErrorMessagesProvider,
-} from "./use-error-messages";
+} from "@cashregister/components/use-error-messages";
 
 afterEach(cleanup);
 

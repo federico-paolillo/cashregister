@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render } from "@testing-library/react";
-import { Modal } from "./modal";
+import { Modal } from "@cashregister/components/modal";
 
 const showModal = vi.fn();
 const close = vi.fn();
@@ -16,7 +16,7 @@ beforeEach(() => {
 describe("Modal", () => {
   it("calls showModal when open is true", () => {
     render(
-      <Modal open={true} onClose={() => {}}>
+      <Modal open={true} onClose={() => { }}>
         content
       </Modal>,
     );
@@ -26,7 +26,7 @@ describe("Modal", () => {
 
   it("calls close when open is false", () => {
     render(
-      <Modal open={false} onClose={() => {}}>
+      <Modal open={false} onClose={() => { }}>
         content
       </Modal>,
     );
@@ -36,13 +36,13 @@ describe("Modal", () => {
 
   it("calls close when open transitions from true to false", () => {
     const { rerender } = render(
-      <Modal open={true} onClose={() => {}}>
+      <Modal open={true} onClose={() => { }}>
         content
       </Modal>,
     );
 
     rerender(
-      <Modal open={false} onClose={() => {}}>
+      <Modal open={false} onClose={() => { }}>
         content
       </Modal>,
     );
@@ -53,7 +53,7 @@ describe("Modal", () => {
 
   it("renders children regardless of open state", () => {
     const { container } = render(
-      <Modal open={false} onClose={() => {}}>
+      <Modal open={false} onClose={() => { }}>
         <span>always here</span>
       </Modal>,
     );
@@ -63,7 +63,7 @@ describe("Modal", () => {
 
   it("sets closedby to none", () => {
     const { container } = render(
-      <Modal open={false} onClose={() => {}}>
+      <Modal open={false} onClose={() => { }}>
         content
       </Modal>,
     );
@@ -75,7 +75,7 @@ describe("Modal", () => {
 
   it("sets overflow-hidden on the dialog", () => {
     const { container } = render(
-      <Modal open={false} onClose={() => {}}>
+      <Modal open={false} onClose={() => { }}>
         content
       </Modal>,
     );

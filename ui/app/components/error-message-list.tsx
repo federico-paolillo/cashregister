@@ -1,4 +1,4 @@
-import { useErrorMessages, type ErrorMessage } from "./use-error-messages";
+import { useErrorMessages, type ErrorMessage } from "@cashregister/components/use-error-messages";
 
 export function ErrorMessageList() {
   const { errors, dismissError } = useErrorMessages();

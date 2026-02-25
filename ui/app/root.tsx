@@ -1,9 +1,9 @@
 import { StrictMode } from "react";
 import { Links, Meta, Outlet, Scripts, ScrollRestoration, useRouteError, isRouteErrorResponse } from "react-router";
-import "./app.css";
-import { ErrorMessagesProvider } from "./components/use-error-messages";
-import { ErrorMessageList } from "./components/error-message-list";
-import { Spinner } from "./components/spinner";
+import "@cashregister/app.css";
+import { ErrorMessagesProvider } from "@cashregister/components/use-error-messages";
+import { ErrorMessageList } from "@cashregister/components/error-message-list";
+import { Spinner } from "@cashregister/components/spinner";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (

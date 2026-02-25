@@ -1,4 +1,4 @@
-import type { ArticleListItemDto } from "../model";
+import type { ArticleListItemDto } from "@cashregister/model";
 
 interface ArticleRowProps {
   article: ArticleListItemDto;

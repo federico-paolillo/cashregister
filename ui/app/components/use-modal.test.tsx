@@ -1,6 +1,6 @@
 import { describe, it, expect, afterEach } from "vitest";
 import { renderHook, act, render, screen, cleanup } from "@testing-library/react";
-import { ModalIdProvider, useModalId, useModal } from "./use-modal";
+import { ModalIdProvider, useModalId, useModal } from "@cashregister/components/use-modal";
 
 afterEach(cleanup);
 

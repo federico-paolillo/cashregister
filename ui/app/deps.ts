@@ -1,5 +1,5 @@
-import { ApiClient } from "./api-client";
-import { mustParseConfiguration } from "./settings";
+import { ApiClient } from "@cashregister/api-client";
+import { mustParseConfiguration } from "@cashregister/settings";
 
 export interface Deps {
   apiClient: ApiClient;

@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
 import { render, screen, cleanup, act } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { ErrorMessageList, ErrorMessageItem } from "./error-message-list";
-import { ErrorMessagesProvider } from "./use-error-messages";
-import { useErrorMessages } from "./use-error-messages";
+import { ErrorMessageList, ErrorMessageItem } from "@cashregister/components/error-message-list";
+import { ErrorMessagesProvider } from "@cashregister/components/use-error-messages";
+import { useErrorMessages } from "@cashregister/components/use-error-messages";
 
 afterEach(cleanup);
 
@@ -187,7 +187,7 @@ describe("ErrorMessageItem", () => {
     render(
       <ErrorMessageItem
         error={{ id: 1, message: "broken pipe" }}
-        onDismiss={() => {}}
+        onDismiss={() => { }}
       />,
     );
 
@@ -215,7 +215,7 @@ describe("ErrorMessageItem", () => {
     render(
       <ErrorMessageItem
         error={{ id: 1, message: "alert me" }}
-        onDismiss={() => {}}
+        onDismiss={() => { }}
       />,
     );
 
