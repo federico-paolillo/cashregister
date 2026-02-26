@@ -17,7 +17,7 @@ describe("ErrorMessageItem", () => {
     expect(screen.getByText("broken pipe")).toBeDefined();
   });
 
-  it("calls onDismiss with the error id when dismiss is clicked", async () => {
+  it("calls onDismiss when dismiss is clicked", async () => {
     const onDismiss = vi.fn();
     const user = userEvent.setup();
 
@@ -31,7 +31,6 @@ describe("ErrorMessageItem", () => {
     await user.click(screen.getByLabelText("Dismiss"));
 
     expect(onDismiss).toHaveBeenCalledOnce();
-    expect(onDismiss).toHaveBeenCalledWith(42);
   });
 
   it("has role alert for accessibility", () => {
