@@ -35,16 +35,60 @@ ui/
 ├── app/
 │   ├── result.ts              # Result<T> type (ok/error union)
 │   ├── api-client.ts          # ApiClient class
-│   ├── deps.ts             # Composition root (single entry point for all dependencies)
-│   ├── env.d.ts            # Vite environment variable types
-│   ├── routes.ts           # Route definitions
-│   ├── root.tsx            # Root layout component
-│   └── routes/             # Route components (file-based routing)
-│       └── home.tsx        # Home page component (/)
-├── react-router.config.ts  # React Router configuration
-├── vite.config.ts          # Vite configuration
-├── tsconfig.json           # TypeScript configuration
-└── package.json            # Dependencies and scripts
+│   ├── deps.ts                # Composition root (single entry point for all dependencies)
+│   ├── env.d.ts               # Vite environment variable types
+│   ├── model.ts               # All shared DTO types
+│   ├── routes.ts              # Route definitions (registers all routes)
+│   ├── root.tsx               # Root layout component
+│   ├── components/            # Cross-cutting, reusable components only
+│   │   ├── modal.tsx          # Generic modal dialog wrapper
+│   │   ├── spinner.tsx        # Loading spinner overlay
+│   │   ├── use-modal.tsx      # Modal state hook and context
+│   │   ├── error-message-list.tsx   # Error toast list (uses ErrorMessageItem)
+│   │   ├── error-message-item.tsx   # Single error toast item
+│   │   └── use-error-messages.tsx   # Error message state hook and context
+│   └── routes/                # Route components – one folder per route
+│       ├── home/
+│       │   └── home.tsx       # Home page (/)
+│       ├── articles/
+│       │   ├── articles.tsx   # Articles route (/articles)
+│       │   └── components/    # Components used only by this route
+│       │       ├── article-form.tsx
+│       │       ├── article-row.tsx
+│       │       └── articles-table.tsx
+│       ├── articles-bulk/
+│       │   ├── articles-bulk.tsx   # Bulk article creation (/articles/bulk)
+│       │   └── components/
+│       │       └── bulk-row.tsx
+│       └── order/
+│           └── order.tsx      # Order creation (/order)
+├── react-router.config.ts     # React Router configuration
+├── vite.config.ts             # Vite configuration
+├── tsconfig.json              # TypeScript configuration (defines @cashregister/* paths)
+└── package.json               # Dependencies and scripts
+```
+
+### Component Layout Rules
+
+The folder structure enforces a clear ownership model:
+
+1. **One component per file** — every `.tsx` file exports exactly one React component. Do not define multiple components in the same file.
+
+2. **Route folder** — each route in `routes.ts` lives in its own subfolder under `app/routes/`. The route file name matches the folder name (e.g. `routes/articles/articles.tsx`).
+
+3. **Route-specific components** — components that are only used by a single route live in a `components/` subfolder next to that route (e.g. `routes/articles/components/article-form.tsx`). They are imported with the full `@cashregister/routes/<route>/components/<name>` path.
+
+4. **Cross-cutting components** — components used by more than one route, or by `root.tsx`, live in `app/components/`. These are generic utilities with no route-specific knowledge.
+
+**Decision guide: where does a new component go?**
+- Used only in route `foo`? → `routes/foo/components/<component-name>.tsx`
+- Used in multiple routes, or in the root layout? → `components/<component-name>.tsx`
+
+**Example:** adding `BulkRow` used only in the bulk articles route:
+```
+routes/articles-bulk/components/bulk-row.tsx   ✓
+components/bulk-row.tsx                        ✗  (not cross-cutting)
+routes/articles-bulk/articles-bulk.tsx         ✗  (must be its own file)
 ```
 
 ### React Router Framework Mode
@@ -57,9 +101,9 @@ The frontend is configured as a **Single Page Application (SPA)** with `ssr: fal
 
 ### Adding New Routes
 
-1. Create a new component in `app/routes/`:
+1. Create a new folder and route file in `app/routes/`:
    ```tsx
-   // app/routes/about.tsx
+   // app/routes/about/about.tsx
    export default function About() {
      return <h1>About Page</h1>;
    }
@@ -70,9 +114,15 @@ The frontend is configured as a **Single Page Application (SPA)** with `ssr: fal
    import { type RouteConfig, route } from "@react-router/dev/routes";
 
    export default [
-     route("/", "routes/home.tsx"),
-     route("/about", "routes/about.tsx"),
+     route("/", "routes/home/home.tsx"),
+     route("/about", "routes/about/about.tsx"),
    ] satisfies RouteConfig;
+   ```
+
+3. Place any components specific to this route under `app/routes/about/components/`:
+   ```tsx
+   // app/routes/about/components/about-card.tsx
+   export function AboutCard() { ... }
    ```
 
 ### NPM Scripts
@@ -175,10 +225,11 @@ The `.react-router/` directory contains auto-generated type definitions. This di
 
 ### Error Management System
 
-The frontend has a context-based error message system in `ui/app/components/`. It consists of two files:
+The frontend has a context-based error message system in `ui/app/components/`. It consists of three files:
 
 - **`use-error-messages.tsx`** — State management hook and React context provider
-- **`error-message-list.tsx`** — Presentational component that renders the error toasts
+- **`error-message-list.tsx`** — Renders the stack of error toasts (uses `ErrorMessageItem`)
+- **`error-message-item.tsx`** — Presentational component for a single error toast
 
 #### Architecture
 

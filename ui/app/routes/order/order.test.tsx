@@ -1,7 +1,7 @@
 import React from "react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, cleanup, fireEvent } from "@testing-library/react";
-import Order, { clientAction } from "@cashregister/routes/order";
+import Order, { clientAction } from "@cashregister/routes/order/order";
 import * as reactRouter from "react-router";
 import * as errorMessages from "@cashregister/components/use-error-messages";
 import { deps } from "@cashregister/deps";
