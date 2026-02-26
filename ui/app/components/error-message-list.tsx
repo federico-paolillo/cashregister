@@ -14,7 +14,7 @@ export function ErrorMessageList() {
         <ErrorMessageItem
           key={error.id}
           error={error}
-          onDismiss={dismissError}
+          onDismiss={() => dismissError(error.id)}
         />
       ))}
     </div>

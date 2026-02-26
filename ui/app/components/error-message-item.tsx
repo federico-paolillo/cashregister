@@ -2,7 +2,7 @@ import type { ErrorMessage } from "@cashregister/components/use-error-messages";
 
 interface ErrorMessageItemProps {
   error: ErrorMessage;
-  onDismiss: (id: number) => void;
+  onDismiss: () => void;
 }
 
 export function ErrorMessageItem({ error, onDismiss }: ErrorMessageItemProps) {
@@ -12,7 +12,7 @@ export function ErrorMessageItem({ error, onDismiss }: ErrorMessageItemProps) {
       <button
         type="button"
         aria-label="Dismiss"
-        onClick={() => onDismiss(error.id)}
+        onClick={onDismiss}
         className="ml-2 cursor-pointer font-bold"
       >
         ✕
