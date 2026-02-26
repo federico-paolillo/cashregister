@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Form, Link, useNavigation } from "react-router";
-import { ArticleForm } from "@cashregister/components/article-form";
-import { ArticlesTable } from "@cashregister/components/articles-table";
+import { ArticleForm } from "@cashregister/routes/articles/components/article-form";
+import { ArticlesTable } from "@cashregister/routes/articles/components/articles-table";
 import { Spinner } from "@cashregister/components/spinner";
 import { Modal } from "@cashregister/components/modal";
 import { useModal } from "@cashregister/components/use-modal";
@@ -12,7 +12,7 @@ import type {
   ArticlesPageDto,
   ChangeArticleRequestDto,
   RegisterArticleRequestDto,
-} from "../model";
+} from "@cashregister/model";
 import type { Route } from "./+types/articles";
 import { failure } from "@cashregister/result";
 

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { render, screen, cleanup, fireEvent } from "@testing-library/react";
-import { ArticleRow } from "@cashregister/components/article-row";
+import { ArticleRow } from "@cashregister/routes/articles/components/article-row";
 import type { ArticleListItemDto } from "@cashregister/model";
 
 afterEach(() => {

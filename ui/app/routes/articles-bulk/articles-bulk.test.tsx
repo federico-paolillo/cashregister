@@ -1,7 +1,7 @@
 import React from "react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, cleanup, fireEvent } from "@testing-library/react";
-import ArticlesBulk, { clientAction } from "@cashregister/routes/articles-bulk";
+import ArticlesBulk, { clientAction } from "@cashregister/routes/articles-bulk/articles-bulk";
 import * as reactRouter from "react-router";
 import { deps } from "@cashregister/deps";
 import type { Route } from "./+types/articles-bulk";

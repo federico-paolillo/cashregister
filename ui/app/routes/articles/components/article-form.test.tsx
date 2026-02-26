@@ -1,7 +1,7 @@
 import { describe, it, expect, afterEach, vi } from "vitest";
 import { render, screen, cleanup } from "@testing-library/react";
 import { ModalIdProvider } from "@cashregister/components/use-modal";
-import { ArticleForm } from "@cashregister/components/article-form";
+import { ArticleForm } from "@cashregister/routes/articles/components/article-form";
 
 const mockFetcher = {
   state: "idle" as string,

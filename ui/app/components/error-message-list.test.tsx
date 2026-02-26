@@ -1,7 +1,8 @@
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
 import { render, screen, cleanup, act } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { ErrorMessageList, ErrorMessageItem } from "@cashregister/components/error-message-list";
+import { ErrorMessageList } from "@cashregister/components/error-message-list";
+import { ErrorMessageItem } from "@cashregister/components/error-message-item";
 import { ErrorMessagesProvider } from "@cashregister/components/use-error-messages";
 import { useErrorMessages } from "@cashregister/components/use-error-messages";
 
