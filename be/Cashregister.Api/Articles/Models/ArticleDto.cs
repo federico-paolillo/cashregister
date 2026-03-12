@@ -2,7 +2,7 @@ using Cashregister.Domain;
 
 namespace Cashregister.Api.Articles.Models;
 
-internal sealed record ArticleDto(
+public sealed record ArticleDto(
     string Id,
     string Description,
     decimal Price
