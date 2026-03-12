@@ -1,5 +1,6 @@
 using System.Collections.Immutable;
 
+using Cashregister.Api.Commons.Models;
 using Cashregister.Api.Orders.Models;
 using Cashregister.Application.Orders.Data;
 using Cashregister.Application.Orders.Models.Input;
@@ -13,7 +14,7 @@ namespace Cashregister.Api.Orders;
 
 internal static class Handlers
 {
-    public static async Task<Results<BadRequest, Created<OrderRequestDto>>> CreateOrder(
+    public static async Task<Results<BadRequest, Created<EntityPointerDto>>> CreateOrder(
       IPlaceOrderTransaction placeOrderTransaction,
       LinkGenerator linkGenerator,
       [FromBody] OrderRequestDto orderRequestDto
@@ -43,9 +44,15 @@ internal static class Handlers
         var getOrderUrl = linkGenerator.GetPathByName(
           "GetOrder",
           new { id = orderResult.Value.Value }
-        );
+        ) ?? throw new InvalidOperationException("Failed to generate location for order");
 
-        return TypedResults.Created(getOrderUrl, orderRequestDto);
+        var orderPointerDto = new EntityPointerDto
+        {
+            Id = orderResult.Value.Value,
+            Location = getOrderUrl
+        };
+
+        return TypedResults.Created(getOrderUrl, orderPointerDto);
     }
 
     public static async Task<Results<NotFound, Ok<OrderSummaryDto>>> GetOrder(
