@@ -20,7 +20,7 @@ public sealed class SqlitePragmasDbConnectionInterceptor(
     {
         ArgumentNullException.ThrowIfNull(connection);
 
-        DbCommand? pragmaCommand = connection.CreateCommand();
+        await using DbCommand pragmaCommand = connection.CreateCommand();
 
         pragmaCommand.CommandText =
             """
