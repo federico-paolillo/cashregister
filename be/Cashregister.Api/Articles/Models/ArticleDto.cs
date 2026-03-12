@@ -11,7 +11,7 @@ internal sealed record ArticleDto(
     public static ArticleDto From(Article article)
     {
         return new ArticleDto(
-            article.Id.ToString(),
+            article.Id.Value,
             article.Description,
             article.Price.AsPayableMoney()
         );
