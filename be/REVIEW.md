@@ -66,69 +66,6 @@ The `IntegrationTest` base class with per-test SQLite databases, `WebApplication
 
 ## 3. Bugs and Correctness Issues
 
-### 3.1 [BUG] `ChangeArticle` handler silently returns `NoContent` on unknown errors
-
-**File:** `Cashregister.Api/Articles/Handlers.cs:113-137`
-
-```csharp
-public static async Task<Results<NotFound, NoContent>> ChangeArticle(...)
-{
-    var result = await changeArticleTransaction.ExecuteAsync(articleChange);
-
-    if (result.NotOk)
-    {
-        if (result.Error is NoSuchArticleProblem)
-        {
-            return TypedResults.NotFound();
-        }
-    }
-
-    return TypedResults.NoContent();  // ← reached even when result.NotOk with a non-NotFound error
-}
-```
-
-When `result.NotOk` is `true` and the error is *not* `NoSuchArticleProblem` (e.g., `UnhandledExceptionProblem`), the handler falls through and returns `204 NoContent` — a success status. The same issue exists in `DeleteArticle` at line 139. Both handlers should return a `500` or at minimum a `BadRequest` for unrecognised problems.
-
-**Suggested fix:** add an `else` branch or a catch-all after the pattern match:
-
-```csharp
-if (result.NotOk)
-{
-    return result.Error switch
-    {
-        NoSuchArticleProblem => TypedResults.NotFound(),
-        _ => TypedResults.BadRequest()  // or InternalServerError
-    };
-}
-
-return TypedResults.NoContent();
-```
-
-### 3.2 [BUG] `CreateOrder` returns the request DTO instead of an `EntityPointerDto`
-
-**File:** `Cashregister.Api/Orders/Handlers.cs:48`
-
-```csharp
-return TypedResults.Created(getOrderUrl, orderRequestDto);  // ← returns the input, not a pointer
-```
-
-The `RegisterArticle` handler correctly returns an `EntityPointerDto` with `Id` and `Location`. The `CreateOrder` handler instead echoes back the incoming `OrderRequestDto`. This is inconsistent and means the client receives no order ID in the response body. It should return an `EntityPointerDto` (or a similar DTO containing the new order's `Id`), consistent with the articles endpoint.
-
-### 3.3 [BUG] `SqlitePragmasDbConnectionInterceptor` does not dispose the `DbCommand`
-
-**File:** `Cashregister.Database/Interceptors/SqlitePragmasDbConnectionInterceptor.cs:24`
-
-```csharp
-DbCommand? pragmaCommand = connection.CreateCommand();
-// ... command is used but never disposed
-```
-
-`DbCommand` implements `IDisposable`. The command should be wrapped in `await using`:
-
-```csharp
-await using var pragmaCommand = connection.CreateCommand();
-```
-
 ### 3.4 [ISSUE] `FetchArticlesListQuery` inclusive cursor semantics may duplicate items
 
 **File:** `Cashregister.Database/Queries/FetchArticlesListQuery.cs:21`
@@ -367,34 +304,6 @@ The integration tests cover:
 ### 7.3 Stub test
 `ListArticlesByPageQueryTests.cs` contains a single empty `[Fact]` with a `// TODO: Implement test` comment. This should either be implemented or removed to avoid green test counts obscuring real coverage.
 
-### 7.4 `RunScoped` lifetime risk
-
-**File:** `IntegrationTest.cs:81-88`
-
-```csharp
-protected Task<TResult> RunScoped<TService, TResult>(Func<TService, Task<TResult>> action)
-    where TService : notnull
-{
-    using var serviceScope = NewServiceScope();
-    var service = serviceScope.ServiceProvider.GetRequiredService<TService>();
-    return action(service);
-}
-```
-
-The `using var serviceScope` disposes the scope when `RunScoped` returns. But `action(service)` returns a `Task<TResult>` that may not have completed yet — the scope (and its scoped services, including `DbContext`) gets disposed *before* the task completes. This is a race condition. The fix is to `await` the action:
-
-```csharp
-protected async Task<TResult> RunScoped<TService, TResult>(Func<TService, Task<TResult>> action)
-    where TService : notnull
-{
-    using var serviceScope = NewServiceScope();
-    var service = serviceScope.ServiceProvider.GetRequiredService<TService>();
-    return await action(service);
-}
-```
-
-This is likely the most impactful bug in the test infrastructure — it may pass today because SQLite is fast enough that the task completes synchronously in practice, but it's fundamentally unsafe.
-
 ---
 
 ## 8. Maintainability and Housekeeping
@@ -447,27 +356,12 @@ public class Order  // not sealed
 
 Every other domain class (`Article`, `Item`, `PendingOrder`, `RetiredArticle`) is `sealed`. `Order` should be too for consistency and to signal that it's not designed for inheritance.
 
-### 8.6 `ArticleDto.From` uses `ToString()` for `Id`
-
-**File:** `Cashregister.Api/Articles/Models/ArticleDto.cs:13`
-
-```csharp
-article.Id.ToString()
-```
-
-`Identifier` is a `record(string Value)`, so `ToString()` returns `Identifier { Value = ... }` (the record's default `ToString`), not the raw ULID string. Every other DTO uses `.Value` directly. This should be `article.Id.Value`.
-
 ---
 
 ## 9. Summary Matrix
 
 | # | Category | Severity | Item |
 |---|----------|----------|------|
-| 3.1 | Bug | **High** | `ChangeArticle`/`DeleteArticle` return 204 on unrecognised errors |
-| 3.2 | Bug | **High** | `CreateOrder` returns request DTO instead of entity pointer |
-| 3.3 | Bug | Medium | `DbCommand` not disposed in pragma interceptor |
-| 3.6 | Bug | **High** | `ArticleDto.From` uses `ToString()` instead of `.Value` for Id (8.6) |
-| 7.4 | Bug | **High** | `RunScoped` disposes scope before async task completes |
 | 3.4 | Design | Medium | Inclusive cursor semantics may surprise maintainers |
 | 3.5 | Design | Low | `Result.Void()` nullability contract mismatch |
 | 4.1 | Smell | Medium | `Cashregister.Factories` namespace mismatch |
