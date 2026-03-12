@@ -1,10 +1,10 @@
 using System.Collections.Immutable;
 
 using Cashregister.Api.Articles.Models;
-using Cashregister.Api.Commons;
 using Cashregister.Api.Commons.Models;
 using Cashregister.Application.Articles.Data;
 using Cashregister.Application.Articles.Models.Input;
+using Cashregister.Application.Articles.Problems;
 using Cashregister.Application.Articles.Transactions;
 using Cashregister.Domain;
 
@@ -109,7 +109,7 @@ internal static class Handlers
         return TypedResults.Ok(articleDto);
     }
 
-    public static async Task<IResult> ChangeArticle(
+    public static async Task<Results<NotFound, StatusCodeHttpResult, NoContent>> ChangeArticle(
       IChangeArticleTransaction changeArticleTransaction,
       [FromRoute] string id,
       [FromBody] ChangeArticleRequestDto request
@@ -126,13 +126,17 @@ internal static class Handlers
 
         if (result.NotOk)
         {
-            return result.Error.ToHttpResult();
+            return result.Error switch
+            {
+                NoSuchArticleProblem => TypedResults.NotFound(),
+                _ => TypedResults.StatusCode(StatusCodes.Status500InternalServerError)
+            };
         }
 
         return TypedResults.NoContent();
     }
 
-    public static async Task<IResult> DeleteArticle(
+    public static async Task<Results<NotFound, StatusCodeHttpResult, NoContent>> DeleteArticle(
       IRetireArticleTransaction retireArticleTransaction,
       [FromRoute] string id
     )
@@ -143,7 +147,11 @@ internal static class Handlers
 
         if (result.NotOk)
         {
-            return result.Error.ToHttpResult();
+            return result.Error switch
+            {
+                NoSuchArticleProblem => TypedResults.NotFound(),
+                _ => TypedResults.StatusCode(StatusCodes.Status500InternalServerError)
+            };
         }
 
         return TypedResults.NoContent();
