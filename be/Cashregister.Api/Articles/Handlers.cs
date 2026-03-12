@@ -110,7 +110,7 @@ internal static class Handlers
         return TypedResults.Ok(articleDto);
     }
 
-    public static async Task<Results<NotFound, NoContent>> ChangeArticle(
+    public static async Task<Results<NotFound, StatusCodeHttpResult, NoContent>> ChangeArticle(
       IChangeArticleTransaction changeArticleTransaction,
       [FromRoute] string id,
       [FromBody] ChangeArticleRequestDto request
@@ -127,16 +127,17 @@ internal static class Handlers
 
         if (result.NotOk)
         {
-            if (result.Error is NoSuchArticleProblem)
+            return result.Error switch
             {
-                return TypedResults.NotFound();
-            }
+                NoSuchArticleProblem => TypedResults.NotFound(),
+                _ => TypedResults.StatusCode(StatusCodes.Status500InternalServerError)
+            };
         }
 
         return TypedResults.NoContent();
     }
 
-    public static async Task<Results<NotFound, NoContent>> DeleteArticle(
+    public static async Task<Results<NotFound, StatusCodeHttpResult, NoContent>> DeleteArticle(
       IRetireArticleTransaction retireArticleTransaction,
       [FromRoute] string id
     )
@@ -147,10 +148,11 @@ internal static class Handlers
 
         if (result.NotOk)
         {
-            if (result.Error is NoSuchArticleProblem)
+            return result.Error switch
             {
-                return TypedResults.NotFound();
-            }
+                NoSuchArticleProblem => TypedResults.NotFound(),
+                _ => TypedResults.StatusCode(StatusCodes.Status500InternalServerError)
+            };
         }
 
         return TypedResults.NoContent();
