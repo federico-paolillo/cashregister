@@ -1,6 +1,7 @@
 using System.Collections.Immutable;
 using System.Net;
 
+using Cashregister.Api.Commons.Models;
 using Cashregister.Api.Orders.Models;
 using Cashregister.Application.Articles.Models.Input;
 using Cashregister.Application.Articles.Transactions;
@@ -49,6 +50,13 @@ public sealed class OrdersEndpointTests(
 
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
         Assert.NotNull(response.Headers.Location);
+
+        var entityPointer = await response.Content.ReadFromJsonAsync<EntityPointerDto>();
+
+        Assert.NotNull(entityPointer);
+        Assert.NotEmpty(entityPointer.Id);
+        Assert.NotEmpty(entityPointer.Location);
+        Assert.Equal($"/orders/{entityPointer.Id}", entityPointer.Location);
     }
 
     [Fact]
