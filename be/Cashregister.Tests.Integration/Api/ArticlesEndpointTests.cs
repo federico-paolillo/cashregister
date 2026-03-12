@@ -1,4 +1,5 @@
 using System.Net;
+using System.Text.Json;
 
 using Cashregister.Api.Articles.Models;
 using Cashregister.Api.Commons.Models;
@@ -253,5 +254,38 @@ public sealed class ArticlesEndpointTests(
         Assert.NotEmpty(entityPointer.Location);
 
         Assert.Equal($"/articles/{entityPointer.Id}", entityPointer.Location);
+    }
+
+    [Fact]
+    public async Task GetArticle_ReturnsRawIdString_NotRecordToString()
+    {
+        await PrepareEnvironmentAsync();
+
+        var registerResult = await RunScoped<IRegisterArticleTransaction, Result<Identifier>>(tx =>
+            tx.ExecuteAsync(new ArticleDefinition
+            {
+                Description = "Article for Id test",
+                Price = Cents.From(500L)
+            })
+        );
+
+        Assert.True(registerResult.Ok);
+
+        var expectedId = registerResult.Value.Value;
+
+        using var httpClient = CreateHttpClient();
+
+        var response = await httpClient.GetAsync($"/articles/{expectedId}");
+
+        Assert.True(response.IsSuccessStatusCode);
+
+        // ArticleDto is internal, so deserialize as JsonDocument
+        using var doc = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync());
+
+        var idProperty = doc.RootElement.GetProperty("id").GetString();
+
+        Assert.Equal(expectedId, idProperty);
+        // Ensure it's the raw ULID string, not the record ToString() format like "Identifier { Value = ... }"
+        Assert.DoesNotContain("Identifier", idProperty ?? "");
     }
 }
