@@ -78,14 +78,14 @@ public abstract class IntegrationTest(
         return _webApplicationFactory.Services.CreateScope();
     }
 
-    protected Task<TResult> RunScoped<TService, TResult>(Func<TService, Task<TResult>> action)
+    protected async Task<TResult> RunScoped<TService, TResult>(Func<TService, Task<TResult>> action)
         where TService : notnull
     {
         using var serviceScope = NewServiceScope();
 
         var service = serviceScope.ServiceProvider.GetRequiredService<TService>();
 
-        return action(service);
+        return await action(service);
     }
 
     protected HttpClient CreateHttpClient()
