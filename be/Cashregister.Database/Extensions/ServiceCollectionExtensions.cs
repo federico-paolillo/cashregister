@@ -1,3 +1,4 @@
+using Cashregister.Application.Articles.Data;
 using Cashregister.Application.Articles.Models.Output;
 using Cashregister.Application.Orders.Data;
 using Cashregister.Application.Pagination;
