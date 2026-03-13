@@ -70,8 +70,8 @@ public sealed class FetchArticlesPageHandlerTests(
         Assert.True(firstPage.HasNext);
         Assert.NotNull(firstPage.Next);
 
-        // Items are in ascending ID order (ULID ordering, not necessarily creation order)
-        Assert.True(string.Compare(firstPage.Items[0].Id.Value, firstPage.Items[1].Id.Value, StringComparison.Ordinal) < 0);
+        Assert.Equal("Article A", firstPage.Items[0].Description);
+        Assert.Equal("Article B", firstPage.Items[1].Description);
 
         var page2Result = await RunScoped<IFetchArticlesPageHandler, Result<Page<ArticleListItem>>>(
             tx => tx.ExecuteAsync(new PageRequest
@@ -89,19 +89,8 @@ public sealed class FetchArticlesPageHandlerTests(
         Assert.False(secondPage.HasNext);
         Assert.Null(secondPage.Next);
 
-        // Items are in ascending ID order
-        Assert.True(string.Compare(secondPage.Items[0].Id.Value, secondPage.Items[1].Id.Value, StringComparison.Ordinal) < 0);
-
-        // All four articles appear exactly once across both pages
-        var allDescriptions = firstPage.Items.Concat(secondPage.Items)
-            .Select(a => a.Description)
-            .OrderBy(d => d)
-            .ToList();
-
-        Assert.Equal(["Article A", "Article B", "Article C", "Article D"], allDescriptions);
-
-        // No overlap: second page items have IDs strictly greater than first page items
-        Assert.True(string.Compare(firstPage.Items[^1].Id.Value, secondPage.Items[0].Id.Value, StringComparison.Ordinal) < 0);
+        Assert.Equal("Article C", secondPage.Items[0].Description);
+        Assert.Equal("Article D", secondPage.Items[1].Description);
     }
 
     [Fact]
@@ -224,8 +213,8 @@ public sealed class FetchArticlesPageHandlerTests(
         Assert.True(firstPage.HasNext);
         Assert.NotNull(firstPage.Next);
 
-        // Items are in ascending ID order (ULID ordering, not necessarily creation order)
-        Assert.True(string.Compare(firstPage.Items[0].Id.Value, firstPage.Items[1].Id.Value, StringComparison.Ordinal) < 0);
+        Assert.Equal("Article A", firstPage.Items[0].Description);
+        Assert.Equal("Article B", firstPage.Items[1].Description);
 
         var secondPageResult = await RunScoped<IFetchArticlesPageHandler, Result<Page<ArticleListItem>>>(
             tx => tx.ExecuteAsync(new PageRequest
@@ -243,16 +232,7 @@ public sealed class FetchArticlesPageHandlerTests(
         Assert.False(secondPage.HasNext);
         Assert.Null(secondPage.Next);
 
-        // Second page items come strictly after first page items
-        Assert.True(string.Compare(firstPage.Items[^1].Id.Value, secondPage.Items[0].Id.Value, StringComparison.Ordinal) < 0);
-
-        // All three articles appear exactly once across both pages
-        var allDescriptions = firstPage.Items.Concat(secondPage.Items)
-            .Select(a => a.Description)
-            .OrderBy(d => d)
-            .ToList();
-
-        Assert.Equal(["Article A", "Article B", "Article C"], allDescriptions);
+        Assert.Equal("Article C", secondPage.Items[0].Description);
     }
 
     [Fact]
@@ -291,14 +271,9 @@ public sealed class FetchArticlesPageHandlerTests(
         Assert.True(result.Ok);
         var page = result.Value;
 
-        // The page should contain the article at the cursor plus one more from the next page
         Assert.Equal(2, page.Size);
-
-        // All items are in ascending ID order
-        Assert.True(string.Compare(page.Items[0].Id.Value, page.Items[1].Id.Value, StringComparison.Ordinal) < 0);
-
-        // The cursor article is included
-        Assert.Contains(page.Items, a => a.Id.Value == articleAId.Value);
+        Assert.Equal("Article A", page.Items[0].Description);
+        Assert.Equal("Article B", page.Items[1].Description);
     }
 
     [Fact]
@@ -307,12 +282,12 @@ public sealed class FetchArticlesPageHandlerTests(
         await PrepareEnvironmentAsync();
 
         var articleAId = await CreateArticleAsync("Article A", 100);
-        await CreateArticleAsync("Article B", 200);
+        var articleBId = await CreateArticleAsync("Article B", 200);
         await CreateArticleAsync("Article C", 300);
         await CreateArticleAsync("Article D", 400);
 
-        // until=A_id with pageSize=1: historical items up to A, plus 1 item after A
-        // Next cursor should be the last item of the new page (the one item after A)
+        // until=A_id with pageSize=1: historical=[A], next page=[B], lookahead hits C
+        // Next cursor should be B (last item of the new page), not C
         var result = await RunScoped<IFetchArticlesPageHandler, Result<Page<ArticleListItem>>>(
             tx => tx.ExecuteAsync(new PageRequest
             {
@@ -327,9 +302,7 @@ public sealed class FetchArticlesPageHandlerTests(
 
         Assert.True(page.HasNext);
         Assert.NotNull(page.Next);
-
-        // The next cursor should point to an item strictly after the until cursor
-        Assert.True(string.Compare(articleAId.Value, page.Next.Value, StringComparison.Ordinal) < 0);
+        Assert.Equal(articleBId.Value, page.Next.Value);
     }
 
     [Fact]
@@ -403,9 +376,11 @@ public sealed class FetchArticlesPageHandlerTests(
         Assert.Equal(5, allDescriptions.Count);
         Assert.Equal(allDescriptions.Distinct().Count(), allDescriptions.Count);
 
-        // All five articles appear (order depends on ULID sort, not creation order)
-        var sortedDescriptions = allDescriptions.OrderBy(d => d).ToList();
-        Assert.Equal(["Article A", "Article B", "Article C", "Article D", "Article E"], sortedDescriptions);
+        Assert.Equal("Article A", allDescriptions[0]);
+        Assert.Equal("Article B", allDescriptions[1]);
+        Assert.Equal("Article C", allDescriptions[2]);
+        Assert.Equal("Article D", allDescriptions[3]);
+        Assert.Equal("Article E", allDescriptions[4]);
     }
 
     [Fact]
@@ -447,22 +422,12 @@ public sealed class FetchArticlesPageHandlerTests(
         Assert.True(untilResult.Ok);
         var untilPage = untilResult.Value;
 
-        // Should contain the historical items (up to cursor) plus the next page
+        // Should contain the historical items [A, B] plus the next page [C, D]
         Assert.Equal(4, untilPage.Size);
-
-        // All items are in ascending ID order
-        for (int i = 0; i < untilPage.Size - 1; i++)
-        {
-            Assert.True(string.Compare(untilPage.Items[i].Id.Value, untilPage.Items[i + 1].Id.Value, StringComparison.Ordinal) < 0);
-        }
-
-        // All four articles appear exactly once
-        var allDescriptions = untilPage.Items
-            .Select(a => a.Description)
-            .OrderBy(d => d)
-            .ToList();
-
-        Assert.Equal(["Article A", "Article B", "Article C", "Article D"], allDescriptions);
+        Assert.Equal("Article A", untilPage.Items[0].Description);
+        Assert.Equal("Article B", untilPage.Items[1].Description);
+        Assert.Equal("Article C", untilPage.Items[2].Description);
+        Assert.Equal("Article D", untilPage.Items[3].Description);
 
         Assert.False(untilPage.HasNext);
         Assert.Null(untilPage.Next);
