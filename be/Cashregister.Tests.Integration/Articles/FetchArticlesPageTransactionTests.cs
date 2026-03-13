@@ -136,7 +136,7 @@ public sealed class FetchArticlesPageTransactionTests(
 
         Assert.Equal(0, page.Size);
         Assert.True(page.HasNext); // When size is 0, it fetches 1 article to check if there are more
-        Assert.NotNull(page.Next);
+        Assert.Null(page.Next); // No cursor available from an empty page
     }
 
     [Fact]
@@ -251,17 +251,17 @@ public sealed class FetchArticlesPageTransactionTests(
     {
         await PrepareEnvironmentAsync();
 
-        // With pageSize=1: page 1 returns [A], next=B_id.
-        // Submitting until=B_id should extend the view to [A, B].
-        await CreateArticleAsync("Article A", 100);
-        var articleBId = await CreateArticleAsync("Article B", 200);
+        // With pageSize=1: page 1 returns [A], next=A_id (last item of current page).
+        // Submitting until=A_id should extend the view to [A, B].
+        var articleAId = await CreateArticleAsync("Article A", 100);
+        await CreateArticleAsync("Article B", 200);
         await CreateArticleAsync("Article C", 300);
 
         var result = await RunScoped<IFetchArticlesPageTransaction, Result<ArticlesPage>>(
             tx => tx.ExecuteAsync(new ArticlesPageRequest
             {
                 After = null,
-                Until = articleBId,
+                Until = articleAId,
                 Size = 1
             })
         );
@@ -275,21 +275,22 @@ public sealed class FetchArticlesPageTransactionTests(
     }
 
     [Fact]
-    public async Task FetchAsync_WithUntil_ShouldSetNextCursorToStartOfNextUnloadedPage()
+    public async Task FetchAsync_WithUntil_ShouldSetNextCursorToLastItemOfNewPage()
     {
         await PrepareEnvironmentAsync();
 
-        await CreateArticleAsync("Article A", 100);
+        var articleAId = await CreateArticleAsync("Article A", 100);
         var articleBId = await CreateArticleAsync("Article B", 200);
-        var articleCId = await CreateArticleAsync("Article C", 300);
+        await CreateArticleAsync("Article C", 300);
         await CreateArticleAsync("Article D", 400);
 
-        // until=B_id with pageSize=1: historical=[A], next page=[B], lookahead hits C
+        // until=A_id with pageSize=1: historical=[A], next page=[B], lookahead hits C
+        // Next cursor should be B (last item of the new page), not C
         var result = await RunScoped<IFetchArticlesPageTransaction, Result<ArticlesPage>>(
             tx => tx.ExecuteAsync(new ArticlesPageRequest
             {
                 After = null,
-                Until = articleBId,
+                Until = articleAId,
                 Size = 1
             })
         );
@@ -299,7 +300,7 @@ public sealed class FetchArticlesPageTransactionTests(
 
         Assert.True(page.HasNext);
         Assert.NotNull(page.Next);
-        Assert.Equal(articleCId.Value, page.Next.Value);
+        Assert.Equal(articleBId.Value, page.Next.Value);
     }
 
     [Fact]
@@ -329,6 +330,104 @@ public sealed class FetchArticlesPageTransactionTests(
         Assert.Equal(2, page.Size);
         Assert.False(page.HasNext);
         Assert.Null(page.Next);
+    }
+
+    [Fact]
+    public async Task FetchAsync_PaginatingThroughAllItems_ShouldNeverReturnDuplicates()
+    {
+        await PrepareEnvironmentAsync();
+
+        await CreateArticleAsync("Article A", 100);
+        await CreateArticleAsync("Article B", 200);
+        await CreateArticleAsync("Article C", 300);
+        await CreateArticleAsync("Article D", 400);
+        await CreateArticleAsync("Article E", 500);
+
+        var allDescriptions = new List<string>();
+        Identifier? cursor = null;
+
+        // Page through all articles with pageSize=2
+        for (var i = 0; i < 10; i++) // safety limit
+        {
+            var result = await RunScoped<IFetchArticlesPageTransaction, Result<ArticlesPage>>(
+                tx => tx.ExecuteAsync(new ArticlesPageRequest
+                {
+                    After = cursor,
+                    Size = 2
+                })
+            );
+
+            Assert.True(result.Ok);
+            var page = result.Value;
+
+            foreach (var article in page.Articles)
+            {
+                allDescriptions.Add(article.Description);
+            }
+
+            if (!page.HasNext)
+                break;
+
+            cursor = page.Next;
+        }
+
+        Assert.Equal(5, allDescriptions.Count);
+        Assert.Equal(allDescriptions.Distinct().Count(), allDescriptions.Count);
+
+        Assert.Equal("Article A", allDescriptions[0]);
+        Assert.Equal("Article B", allDescriptions[1]);
+        Assert.Equal("Article C", allDescriptions[2]);
+        Assert.Equal("Article D", allDescriptions[3]);
+        Assert.Equal("Article E", allDescriptions[4]);
+    }
+
+    [Fact]
+    public async Task FetchAsync_WithUntil_ShouldNotOverlapWithPreviousPage()
+    {
+        await PrepareEnvironmentAsync();
+
+        await CreateArticleAsync("Article A", 100);
+        await CreateArticleAsync("Article B", 200);
+        await CreateArticleAsync("Article C", 300);
+        await CreateArticleAsync("Article D", 400);
+
+        // Get page 1 with pageSize=2
+        var page1Result = await RunScoped<IFetchArticlesPageTransaction, Result<ArticlesPage>>(
+            tx => tx.ExecuteAsync(new ArticlesPageRequest
+            {
+                After = null,
+                Size = 2
+            })
+        );
+
+        Assert.True(page1Result.Ok);
+        var page1 = page1Result.Value;
+
+        Assert.Equal(2, page1.Size);
+        Assert.True(page1.HasNext);
+        Assert.NotNull(page1.Next);
+
+        // Use until with the Next cursor to get accumulated view
+        var untilResult = await RunScoped<IFetchArticlesPageTransaction, Result<ArticlesPage>>(
+            tx => tx.ExecuteAsync(new ArticlesPageRequest
+            {
+                Until = page1.Next,
+                Size = 2
+            })
+        );
+
+        Assert.True(untilResult.Ok);
+        var untilPage = untilResult.Value;
+
+        // Should contain the historical items [A, B] plus the next page [C, D]
+        Assert.Equal(4, untilPage.Size);
+        Assert.Equal("Article A", untilPage.Articles[0].Description);
+        Assert.Equal("Article B", untilPage.Articles[1].Description);
+        Assert.Equal("Article C", untilPage.Articles[2].Description);
+        Assert.Equal("Article D", untilPage.Articles[3].Description);
+
+        Assert.False(untilPage.HasNext);
+        Assert.Null(untilPage.Next);
     }
 
     private async Task<Identifier> CreateArticleAsync(string description, long priceInCents)

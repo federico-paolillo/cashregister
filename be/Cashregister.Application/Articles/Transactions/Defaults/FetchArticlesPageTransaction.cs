@@ -29,11 +29,13 @@ public sealed class FetchArticlesPageTransaction(
 
         var integerPageSize = (int)pageRequest.Size;
 
-        var maybeNext = hasMore ? articleListItemPlusOne[^1] : null;
-
         var actualArticleListItems = articleListItemPlusOne
           .Take(integerPageSize)
           .ToImmutableArray();
+
+        var maybeNext = hasMore && actualArticleListItems.Length > 0
+            ? actualArticleListItems[^1]
+            : null;
 
         var articlesPage = new ArticlesPage
         {
@@ -52,7 +54,9 @@ public sealed class FetchArticlesPageTransaction(
         var nextPagePlusOne = await articlesListFetcher.FetchAsync(pageSize + 1, until);
         var hasMore = nextPagePlusOne.Length > pageSize;
         var nextPageItems = nextPagePlusOne.Take((int)pageSize).ToImmutableArray();
-        var maybeNext = hasMore ? nextPagePlusOne[^1] : null;
+        var maybeNext = hasMore && nextPageItems.Length > 0
+            ? nextPageItems[^1]
+            : null;
 
         var articlesPage = new ArticlesPage
         {
