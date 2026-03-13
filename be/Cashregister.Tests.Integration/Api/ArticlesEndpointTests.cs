@@ -176,8 +176,6 @@ public sealed class ArticlesEndpointTests(
     {
         await PrepareEnvironmentAsync();
 
-        // pageSize=1: page 1 returns [Article 1], next=article2_id.
-        // until=article2_id should return [Article 1, Article 2] with next=article3_id.
         var article1Result = await RunScoped<IRegisterArticleTransaction, Result<Identifier>>(tx =>
             tx.ExecuteAsync(new ArticleDefinition
             {
@@ -208,7 +206,18 @@ public sealed class ArticlesEndpointTests(
 
         using var httpClient = CreateHttpClient();
 
-        var response = await httpClient.GetAsync($"/articles?pageSize=1&until={article2Result.Value.Value}");
+        // First get page 1 to obtain the Next cursor
+        var page1Response = await httpClient.GetAsync("/articles?pageSize=1");
+        Assert.True(page1Response.IsSuccessStatusCode);
+
+        var page1 = await page1Response.Content.ReadFromJsonAsync<ArticlesPageDto>();
+        Assert.NotNull(page1);
+        Assert.NotNull(page1.Next);
+
+        // Use the Next cursor from page 1 as the until parameter
+        // pageSize=1: page 1 returns [Article 1], next=article1_id (last item of page).
+        // until=article1_id should return [Article 1, Article 2] with next=article2_id.
+        var response = await httpClient.GetAsync($"/articles?pageSize=1&until={page1.Next}");
 
         Assert.True(response.IsSuccessStatusCode);
 
@@ -219,7 +228,7 @@ public sealed class ArticlesEndpointTests(
         Assert.Equal(article1Result.Value.Value, page.Items[0].Id);
         Assert.Equal(article2Result.Value.Value, page.Items[1].Id);
         Assert.True(page.HasNext);
-        Assert.Equal(article3Result.Value.Value, page.Next);
+        Assert.Equal(article2Result.Value.Value, page.Next);
     }
 
     [Fact]

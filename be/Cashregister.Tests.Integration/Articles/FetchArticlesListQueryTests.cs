@@ -45,7 +45,7 @@ public sealed class FetchArticlesListQueryTests(
     }
 
     [Fact]
-    public async Task FetchAsync_WithNext_ShouldReturnArticlesFromSpecifiedNext()
+    public async Task FetchAsync_WithAfter_ShouldReturnArticlesAfterCursorExclusive()
     {
         await PrepareEnvironmentAsync();
 
@@ -59,11 +59,10 @@ public sealed class FetchArticlesListQueryTests(
             fetcher => fetcher.FetchAsync(3, article2Id)
         );
 
-        Assert.Equal(3, result.Length);
+        Assert.Equal(2, result.Length);
 
-        Assert.Equal(article2Id.Value, result[0].Id.Value);
-        Assert.Equal(article3Id.Value, result[1].Id.Value);
-        Assert.Equal(article4Id.Value, result[2].Id.Value);
+        Assert.Equal(article3Id.Value, result[0].Id.Value);
+        Assert.Equal(article4Id.Value, result[1].Id.Value);
     }
 
     [Fact]
@@ -131,7 +130,7 @@ public sealed class FetchArticlesListQueryTests(
     }
 
     [Fact]
-    public async Task FetchUntilAsync_ShouldReturnArticlesStrictlyBeforeCursor()
+    public async Task FetchUntilAsync_ShouldReturnArticlesUpToAndIncludingCursor()
     {
         await PrepareEnvironmentAsync();
 
@@ -143,12 +142,13 @@ public sealed class FetchArticlesListQueryTests(
             fetcher => fetcher.FetchUntilAsync(article2Id)
         );
 
-        Assert.Single(result);
+        Assert.Equal(2, result.Length);
         Assert.Equal(article1Id.Value, result[0].Id.Value);
+        Assert.Equal(article2Id.Value, result[1].Id.Value);
     }
 
     [Fact]
-    public async Task FetchUntilAsync_WithCursorBeforeAllArticles_ShouldReturnEmpty()
+    public async Task FetchUntilAsync_WithCursorAtFirstArticle_ShouldReturnThatArticle()
     {
         await PrepareEnvironmentAsync();
 
@@ -159,7 +159,8 @@ public sealed class FetchArticlesListQueryTests(
             fetcher => fetcher.FetchUntilAsync(article1Id)
         );
 
-        Assert.Empty(result);
+        Assert.Single(result);
+        Assert.Equal(article1Id.Value, result[0].Id.Value);
     }
 
     private async Task<Identifier> CreateArticleAsync(string description, long priceInCents)
