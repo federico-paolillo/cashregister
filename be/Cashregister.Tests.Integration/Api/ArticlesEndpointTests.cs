@@ -1,5 +1,4 @@
 using System.Net;
-using System.Text.Json;
 
 using Cashregister.Api.Articles.Models;
 using Cashregister.Api.Commons.Models;
@@ -288,13 +287,11 @@ public sealed class ArticlesEndpointTests(
 
         Assert.True(response.IsSuccessStatusCode);
 
-        // ArticleDto is internal, so deserialize as JsonDocument
-        using var doc = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync());
+        var article = await response.Content.ReadFromJsonAsync<ArticleDto>();
 
-        var idProperty = doc.RootElement.GetProperty("id").GetString();
-
-        Assert.Equal(expectedId, idProperty);
+        Assert.NotNull(article);
+        Assert.Equal(expectedId, article.Id);
         // Ensure it's the raw ULID string, not the record ToString() format like "Identifier { Value = ... }"
-        Assert.DoesNotContain("Identifier", idProperty ?? "");
+        Assert.DoesNotContain("Identifier", article.Id);
     }
 }
