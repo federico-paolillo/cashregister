@@ -292,6 +292,6 @@ public sealed class ArticlesEndpointTests(
         Assert.NotNull(article);
         Assert.Equal(expectedId, article.Id);
         // Ensure it's the raw ULID string, not the record ToString() format like "Identifier { Value = ... }"
-        Assert.DoesNotContain("Identifier", article.Id);
+        Assert.DoesNotContain("Identifier", article.Id, StringComparison.Ordinal);
     }
 }

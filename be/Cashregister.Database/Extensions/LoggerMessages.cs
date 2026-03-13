@@ -4,6 +4,6 @@ namespace Cashregister.Database.Extensions;
 
 public static partial class LoggerMessages
 {
-    [LoggerMessage(LogLevel.Information, Message = "Issued PRAGMAs after connection open. Command used '{Command}'")]
+    [LoggerMessage(LogLevel.Debug, Message = "Issued PRAGMAs after connection open. Command used '{Command}'")]
     public static partial void ConnectionPragmasApplied(this ILogger logger, string command);
 }
