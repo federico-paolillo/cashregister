@@ -74,9 +74,9 @@ The `IntegrationTest` base class with per-test SQLite databases, `WebApplication
 .Where(a => afterValue == null || a.Id.CompareTo(afterValue) >= 0)
 ```
 
-The `>= 0` (inclusive) means the cursor item itself is included in the results. In `FetchArticlesPageTransaction`, the `Next` cursor is set to the last element of the over-fetched list (`articleListItemPlusOne[^1]`), which then becomes the first element of the *next* page — duplicating it across pages.
+The `>= 0` (inclusive) means the cursor item itself is included in the results. In `FetchArticlesPageHandler`, the `Next` cursor is set to the last element of the over-fetched list (`articleListItemPlusOne[^1]`), which then becomes the first element of the *next* page — duplicating it across pages.
 
-The test `FetchAsync_WithAfter_ShouldReturnNextPage` in `FetchArticlesPageTransactionTests.cs` actually passes because the `Next` cursor is set to the *extra* (N+1th) element, but this behaviour is fragile and counter to standard cursor-pagination convention where `after` means "strictly after." This cursor is inclusive, which is unusual and could surprise future maintainers. The naming `After` suggests exclusive semantics. Consider renaming to `From` or switching to strictly `> 0`.
+The test `FetchAsync_WithAfter_ShouldReturnNextPage` in `FetchArticlesPageHandlerTests.cs` actually passes because the `Next` cursor is set to the *extra* (N+1th) element, but this behaviour is fragile and counter to standard cursor-pagination convention where `after` means "strictly after." This cursor is inclusive, which is unusual and could surprise future maintainers. The naming `After` suggests exclusive semantics. Consider renaming to `From` or switching to strictly `> 0`.
 
 ### 3.5 [ISSUE] `Result.Void()` initialises `Value` with `default` (null for reference check)
 
@@ -118,16 +118,6 @@ The `ExecuteAsync` method accepts a `CancellationToken`, passes it to `StartAsyn
 ```csharp
 protected abstract Task<Result<TOutput>> InternalExecuteAsync(TInput input, CancellationToken cancellationToken);
 ```
-
-### 4.3 `FetchArticlesPageTransaction` does not extend `Transaction<,>` and is not a transaction
-
-**File:** `Cashregister.Application/Articles/Transactions/Defaults/FetchArticlesPageTransaction.cs`
-
-This class implements `IFetchArticlesPageTransaction` directly (without inheriting from `Transaction<,>`). It's a read-only query operation — not a transaction. Placing it in the `Transactions` folder and naming it a "Transaction" is misleading. Consider:
-- Moving it to a `Queries` or `UseCases` folder in the Application layer
-- Renaming the interface to `IFetchArticlesPageQuery` or `IFetchArticlesPageUseCase`
-
-The naming inconsistency is compounded by `IFetchArticlesPageTransaction.ExecuteAsync` not accepting a `CancellationToken`, unlike all the real Transaction-based interfaces.
 
 ### 4.4 `PrintReceiptTransaction` starts a UoW for a no-op
 
@@ -271,7 +261,7 @@ public async Task<Result<TOut>> BindAsync<TOut>(Func<TValue, Task<Result<TOut>>>
 
 ### 6.4 Extract cursor pagination into a reusable pattern
 
-`FetchArticlesPageTransaction` contains generic pagination logic (fetch N+1, detect `HasNext`, slice). If more entities need pagination (e.g., orders), consider extracting a `CursorPage<T>` helper.
+`FetchArticlesPageHandler` contains generic pagination logic (fetch N+1, detect `HasNext`, slice). If more entities need pagination (e.g., orders), consider extracting a `CursorPage<T>` helper.
 
 ### 6.5 Consider replacing `IApplicationDbContext` with direct constructor injection
 
@@ -366,7 +356,6 @@ Every other domain class (`Article`, `Item`, `PendingOrder`, `RetiredArticle`) i
 | 3.5 | Design | Low | `Result.Void()` nullability contract mismatch |
 | 4.1 | Smell | Medium | `Cashregister.Factories` namespace mismatch |
 | 4.2 | Design | Medium | `CancellationToken` not forwarded to `InternalExecuteAsync` |
-| 4.3 | Smell | Low | Read-only query named "Transaction" |
 | 4.4 | Smell | Low | `PrintReceiptTransaction` starts UoW for a no-op |
 | 4.5 | Smell | Low | Duplicate EF relationship configuration |
 | 4.6 | Smell | Low | Inconsistent DTO visibility (`internal` vs `public`) |
