@@ -2,6 +2,8 @@ using System.Globalization;
 
 using Cashregister.Application.Articles.Extensions;
 using Cashregister.Application.Orders.Extensions;
+
+using NUlid;
 using Cashregister.Application.Receipts.Extensions;
 using Cashregister.Database;
 using Cashregister.Database.Extensions;
