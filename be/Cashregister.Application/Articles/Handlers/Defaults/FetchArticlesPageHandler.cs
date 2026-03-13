@@ -6,11 +6,11 @@ using Cashregister.Application.Articles.Models.Output;
 using Cashregister.Domain;
 using Cashregister.Factories;
 
-namespace Cashregister.Application.Articles.Transactions.Defaults;
+namespace Cashregister.Application.Articles.Handlers.Defaults;
 
-public sealed class FetchArticlesPageTransaction(
+public sealed class FetchArticlesPageHandler(
   IFetchArticlesListQuery articlesListFetcher
-) : IFetchArticlesPageTransaction
+) : IFetchArticlesPageHandler
 {
     public async Task<Result<ArticlesPage>> ExecuteAsync(ArticlesPageRequest pageRequest)
     {

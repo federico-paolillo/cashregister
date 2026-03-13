@@ -5,6 +5,7 @@ using Cashregister.Api.Commons.Models;
 using Cashregister.Application.Articles.Data;
 using Cashregister.Application.Articles.Models.Input;
 using Cashregister.Application.Articles.Problems;
+using Cashregister.Application.Articles.Handlers;
 using Cashregister.Application.Articles.Transactions;
 using Cashregister.Domain;
 
@@ -16,7 +17,7 @@ namespace Cashregister.Api.Articles;
 internal static class Handlers
 {
     public static async Task<Results<BadRequest, Ok<ArticlesPageDto>>> GetArticlesPage(
-      IFetchArticlesPageTransaction fetchArticlesPageTransaction,
+      IFetchArticlesPageHandler fetchArticlesPageHandler,
       [FromQuery(Name = "pageSize")] uint pageSize = 50,
       [FromQuery(Name = "after")] string? after = null,
       [FromQuery(Name = "until")] string? until = null
@@ -37,7 +38,7 @@ internal static class Handlers
             Size = pageSize,
         };
 
-        var articlesPageResult = await fetchArticlesPageTransaction.ExecuteAsync(pageRequest);
+        var articlesPageResult = await fetchArticlesPageHandler.ExecuteAsync(pageRequest);
 
         if (articlesPageResult.NotOk)
         {

@@ -1,5 +1,6 @@
 using Cashregister.Application.Articles.Models.Input;
 using Cashregister.Application.Articles.Models.Output;
+using Cashregister.Application.Articles.Handlers;
 using Cashregister.Application.Articles.Transactions;
 using Cashregister.Domain;
 using Cashregister.Factories;
@@ -8,7 +9,7 @@ using Xunit.Abstractions;
 
 namespace Cashregister.Tests.Integration.Articles;
 
-public sealed class FetchArticlesPageTransactionTests(
+public sealed class FetchArticlesPageHandlerTests(
     ITestOutputHelper testOutputHelper
 ) : IntegrationTest(testOutputHelper)
 {
@@ -23,7 +24,7 @@ public sealed class FetchArticlesPageTransactionTests(
         var article3Id = await CreateArticleAsync("Article C", 300);
         var article4Id = await CreateArticleAsync("Article D", 400);
 
-        var result = await RunScoped<IFetchArticlesPageTransaction, Result<ArticlesPage>>(
+        var result = await RunScoped<IFetchArticlesPageHandler, Result<ArticlesPage>>(
             tx => tx.ExecuteAsync(new ArticlesPageRequest
             {
                 After = null,
@@ -52,7 +53,7 @@ public sealed class FetchArticlesPageTransactionTests(
         await CreateArticleAsync("Article C", 300);
         await CreateArticleAsync("Article D", 400);
 
-        var page1Result = await RunScoped<IFetchArticlesPageTransaction, Result<ArticlesPage>>(
+        var page1Result = await RunScoped<IFetchArticlesPageHandler, Result<ArticlesPage>>(
             tx => tx.ExecuteAsync(new ArticlesPageRequest
             {
                 After = null,
@@ -71,7 +72,7 @@ public sealed class FetchArticlesPageTransactionTests(
         Assert.Equal("Article A", firstPage.Articles[0].Description);
         Assert.Equal("Article B", firstPage.Articles[1].Description);
 
-        var page2Result = await RunScoped<IFetchArticlesPageTransaction, Result<ArticlesPage>>(
+        var page2Result = await RunScoped<IFetchArticlesPageHandler, Result<ArticlesPage>>(
             tx => tx.ExecuteAsync(new ArticlesPageRequest
             {
                 After = firstPage.Next,
@@ -99,7 +100,7 @@ public sealed class FetchArticlesPageTransactionTests(
         await CreateArticleAsync("Article A", 100);
         await CreateArticleAsync("Article B", 200);
 
-        var result = await RunScoped<IFetchArticlesPageTransaction, Result<ArticlesPage>>(
+        var result = await RunScoped<IFetchArticlesPageHandler, Result<ArticlesPage>>(
             tx => tx.ExecuteAsync(new ArticlesPageRequest
             {
                 After = null,
@@ -123,7 +124,7 @@ public sealed class FetchArticlesPageTransactionTests(
         await CreateArticleAsync("Article A", 100);
         await CreateArticleAsync("Article B", 200);
 
-        var result = await RunScoped<IFetchArticlesPageTransaction, Result<ArticlesPage>>(
+        var result = await RunScoped<IFetchArticlesPageHandler, Result<ArticlesPage>>(
             tx => tx.ExecuteAsync(new ArticlesPageRequest
             {
                 After = null,
@@ -144,7 +145,7 @@ public sealed class FetchArticlesPageTransactionTests(
     {
         await PrepareEnvironmentAsync();
 
-        var result = await RunScoped<IFetchArticlesPageTransaction, Result<ArticlesPage>>(
+        var result = await RunScoped<IFetchArticlesPageHandler, Result<ArticlesPage>>(
             tx => tx.ExecuteAsync(new ArticlesPageRequest
             {
                 After = null,
@@ -170,7 +171,7 @@ public sealed class FetchArticlesPageTransactionTests(
 
         var articleId = await CreateArticleAsync(description, price.Value);
 
-        var result = await RunScoped<IFetchArticlesPageTransaction, Result<ArticlesPage>>(
+        var result = await RunScoped<IFetchArticlesPageHandler, Result<ArticlesPage>>(
             tx => tx.ExecuteAsync(new ArticlesPageRequest
             {
                 After = null,
@@ -195,7 +196,7 @@ public sealed class FetchArticlesPageTransactionTests(
         await CreateArticleAsync("Article B", 200);
         await CreateArticleAsync("Article C", 300);
 
-        var firstPageResult = await RunScoped<IFetchArticlesPageTransaction, Result<ArticlesPage>>(
+        var firstPageResult = await RunScoped<IFetchArticlesPageHandler, Result<ArticlesPage>>(
             tx => tx.ExecuteAsync(new ArticlesPageRequest
             {
                 After = null,
@@ -214,7 +215,7 @@ public sealed class FetchArticlesPageTransactionTests(
         Assert.Equal("Article A", firstPage.Articles[0].Description);
         Assert.Equal("Article B", firstPage.Articles[1].Description);
 
-        var secondPageResult = await RunScoped<IFetchArticlesPageTransaction, Result<ArticlesPage>>(
+        var secondPageResult = await RunScoped<IFetchArticlesPageHandler, Result<ArticlesPage>>(
             tx => tx.ExecuteAsync(new ArticlesPageRequest
             {
                 After = firstPage.Next,
@@ -240,7 +241,7 @@ public sealed class FetchArticlesPageTransactionTests(
 
         await Assert.ThrowsAsync<ArgumentNullException>(async () =>
         {
-            await RunScoped<IFetchArticlesPageTransaction, Result<ArticlesPage>>(
+            await RunScoped<IFetchArticlesPageHandler, Result<ArticlesPage>>(
                 tx => tx.ExecuteAsync(null!)
             );
         });
@@ -257,7 +258,7 @@ public sealed class FetchArticlesPageTransactionTests(
         await CreateArticleAsync("Article B", 200);
         await CreateArticleAsync("Article C", 300);
 
-        var result = await RunScoped<IFetchArticlesPageTransaction, Result<ArticlesPage>>(
+        var result = await RunScoped<IFetchArticlesPageHandler, Result<ArticlesPage>>(
             tx => tx.ExecuteAsync(new ArticlesPageRequest
             {
                 After = null,
@@ -286,7 +287,7 @@ public sealed class FetchArticlesPageTransactionTests(
 
         // until=A_id with pageSize=1: historical=[A], next page=[B], lookahead hits C
         // Next cursor should be B (last item of the new page), not C
-        var result = await RunScoped<IFetchArticlesPageTransaction, Result<ArticlesPage>>(
+        var result = await RunScoped<IFetchArticlesPageHandler, Result<ArticlesPage>>(
             tx => tx.ExecuteAsync(new ArticlesPageRequest
             {
                 After = null,
@@ -315,7 +316,7 @@ public sealed class FetchArticlesPageTransactionTests(
         // has an ID >= this cursor.
         var beyondAllCursor = Identifier.New();
 
-        var result = await RunScoped<IFetchArticlesPageTransaction, Result<ArticlesPage>>(
+        var result = await RunScoped<IFetchArticlesPageHandler, Result<ArticlesPage>>(
             tx => tx.ExecuteAsync(new ArticlesPageRequest
             {
                 After = null,
@@ -349,7 +350,7 @@ public sealed class FetchArticlesPageTransactionTests(
         // Page through all articles with pageSize=2
         for (var i = 0; i < 10; i++) // safety limit
         {
-            var result = await RunScoped<IFetchArticlesPageTransaction, Result<ArticlesPage>>(
+            var result = await RunScoped<IFetchArticlesPageHandler, Result<ArticlesPage>>(
                 tx => tx.ExecuteAsync(new ArticlesPageRequest
                 {
                     After = cursor,
@@ -392,7 +393,7 @@ public sealed class FetchArticlesPageTransactionTests(
         await CreateArticleAsync("Article D", 400);
 
         // Get page 1 with pageSize=2
-        var page1Result = await RunScoped<IFetchArticlesPageTransaction, Result<ArticlesPage>>(
+        var page1Result = await RunScoped<IFetchArticlesPageHandler, Result<ArticlesPage>>(
             tx => tx.ExecuteAsync(new ArticlesPageRequest
             {
                 After = null,
@@ -408,7 +409,7 @@ public sealed class FetchArticlesPageTransactionTests(
         Assert.NotNull(page1.Next);
 
         // Use until with the Next cursor to get accumulated view
-        var untilResult = await RunScoped<IFetchArticlesPageTransaction, Result<ArticlesPage>>(
+        var untilResult = await RunScoped<IFetchArticlesPageHandler, Result<ArticlesPage>>(
             tx => tx.ExecuteAsync(new ArticlesPageRequest
             {
                 Until = page1.Next,
