@@ -1,8 +1,9 @@
+using Cashregister.Application.Pagination;
 using Cashregister.Domain;
 
 namespace Cashregister.Application.Articles.Models.Output;
 
-public sealed class ArticleListItem
+public sealed class ArticleListItem : IPageItem
 {
     public required Identifier Id { get; init; }
 

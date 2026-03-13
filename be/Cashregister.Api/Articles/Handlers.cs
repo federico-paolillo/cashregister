@@ -7,6 +7,7 @@ using Cashregister.Application.Articles.Models.Input;
 using Cashregister.Application.Articles.Problems;
 using Cashregister.Application.Articles.Handlers;
 using Cashregister.Application.Articles.Transactions;
+using Cashregister.Application.Pagination;
 using Cashregister.Domain;
 
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -31,7 +32,7 @@ internal static class Handlers
         var afterIdentifier = after is not null ? Identifier.From(after) : null;
         var untilIdentifier = until is not null ? Identifier.From(until) : null;
 
-        var pageRequest = new ArticlesPageRequest
+        var pageRequest = new PageRequest
         {
             After = afterIdentifier,
             Until = untilIdentifier,
@@ -47,7 +48,7 @@ internal static class Handlers
 
         var articlesPage = articlesPageResult.Value;
 
-        var articlesListItemDto = articlesPage.Articles
+        var articlesListItemDto = articlesPage.Items
           .Select(ArticleListItemDto.From)
           .ToImmutableArray();
 

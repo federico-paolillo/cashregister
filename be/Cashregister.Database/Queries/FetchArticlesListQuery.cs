@@ -1,7 +1,7 @@
 using System.Collections.Immutable;
 
-using Cashregister.Application.Articles.Data;
 using Cashregister.Application.Articles.Models.Output;
+using Cashregister.Application.Pagination;
 using Cashregister.Domain;
 
 using Microsoft.EntityFrameworkCore;
@@ -10,7 +10,7 @@ namespace Cashregister.Database.Queries;
 
 public sealed class FetchArticlesListQuery(
     IApplicationDbContext applicationDbContext
-) : IFetchArticlesListQuery
+) : IPaginationQuery<ArticleListItem>
 {
     public async Task<ImmutableArray<ArticleListItem>> FetchAsync(uint count, Identifier? after = null)
     {
