@@ -1,8 +1,8 @@
 using Cashregister.Domain;
 
-namespace Cashregister.Application.Articles.Models.Input;
+namespace Cashregister.Application.Pagination;
 
-public sealed class ArticlesPageRequest
+public sealed class PageRequest
 {
     public required Identifier? After { get; init; }
 

@@ -3,16 +3,16 @@ using System.Diagnostics.CodeAnalysis;
 
 using Cashregister.Domain;
 
-namespace Cashregister.Application.Articles.Models.Output;
+namespace Cashregister.Application.Pagination;
 
-public sealed class ArticlesPage
+public sealed class Page<T> where T : class, IPageItem
 {
     [MemberNotNullWhen(true, nameof(Next))]
     public required bool HasNext { get; init; }
 
     public required Identifier? Next { get; init; }
 
-    public required ImmutableArray<ArticleListItem> Articles { get; init; }
+    public required ImmutableArray<T> Items { get; init; }
 
-    public int Size => Articles.Length;
+    public int Size => Items.Length;
 }

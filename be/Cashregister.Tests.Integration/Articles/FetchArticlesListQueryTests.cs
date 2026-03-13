@@ -1,9 +1,9 @@
 using System.Collections.Immutable;
 
-using Cashregister.Application.Articles.Data;
 using Cashregister.Application.Articles.Models.Input;
 using Cashregister.Application.Articles.Models.Output;
 using Cashregister.Application.Articles.Transactions;
+using Cashregister.Application.Pagination;
 using Cashregister.Domain;
 using Cashregister.Factories;
 
@@ -25,7 +25,7 @@ public sealed class FetchArticlesListQueryTests(
         var article2Id = await CreateArticleAsync("Article B", 200);
         var article3Id = await CreateArticleAsync("Article C", 300);
 
-        var result = await RunScoped<IFetchArticlesListQuery, ImmutableArray<ArticleListItem>>(
+        var result = await RunScoped<IPaginationQuery<ArticleListItem>, ImmutableArray<ArticleListItem>>(
             fetcher => fetcher.FetchAsync(2)
         );
 
@@ -55,7 +55,7 @@ public sealed class FetchArticlesListQueryTests(
         var article3Id = await CreateArticleAsync("Article C", 300);
         var article4Id = await CreateArticleAsync("Article D", 400);
 
-        var result = await RunScoped<IFetchArticlesListQuery, ImmutableArray<ArticleListItem>>(
+        var result = await RunScoped<IPaginationQuery<ArticleListItem>, ImmutableArray<ArticleListItem>>(
             fetcher => fetcher.FetchAsync(3, article2Id)
         );
 
@@ -73,7 +73,7 @@ public sealed class FetchArticlesListQueryTests(
         var article1Id = await CreateArticleAsync("Article A", 100);
         var article2Id = await CreateArticleAsync("Article B", 200);
 
-        var result = await RunScoped<IFetchArticlesListQuery, ImmutableArray<ArticleListItem>>(
+        var result = await RunScoped<IPaginationQuery<ArticleListItem>, ImmutableArray<ArticleListItem>>(
             fetcher => fetcher.FetchAsync(10)
         );
 
@@ -91,7 +91,7 @@ public sealed class FetchArticlesListQueryTests(
         await CreateArticleAsync("Article A", 100);
         await CreateArticleAsync("Article B", 200);
 
-        var result = await RunScoped<IFetchArticlesListQuery, ImmutableArray<ArticleListItem>>(
+        var result = await RunScoped<IPaginationQuery<ArticleListItem>, ImmutableArray<ArticleListItem>>(
             fetcher => fetcher.FetchAsync(0)
         );
 
@@ -103,7 +103,7 @@ public sealed class FetchArticlesListQueryTests(
     {
         await PrepareEnvironmentAsync();
 
-        var result = await RunScoped<IFetchArticlesListQuery, ImmutableArray<ArticleListItem>>(
+        var result = await RunScoped<IPaginationQuery<ArticleListItem>, ImmutableArray<ArticleListItem>>(
             fetcher => fetcher.FetchAsync(5)
         );
 
@@ -120,7 +120,7 @@ public sealed class FetchArticlesListQueryTests(
 
         var articleId = await CreateArticleAsync(description, price.Value);
 
-        var result = await RunScoped<IFetchArticlesListQuery, ImmutableArray<ArticleListItem>>(
+        var result = await RunScoped<IPaginationQuery<ArticleListItem>, ImmutableArray<ArticleListItem>>(
             fetcher => fetcher.FetchAsync(1)
         );
 
@@ -138,7 +138,7 @@ public sealed class FetchArticlesListQueryTests(
         var article2Id = await CreateArticleAsync("Article B", 200);
         _ = await CreateArticleAsync("Article C", 300);
 
-        var result = await RunScoped<IFetchArticlesListQuery, ImmutableArray<ArticleListItem>>(
+        var result = await RunScoped<IPaginationQuery<ArticleListItem>, ImmutableArray<ArticleListItem>>(
             fetcher => fetcher.FetchUntilAsync(article2Id)
         );
 
@@ -155,7 +155,7 @@ public sealed class FetchArticlesListQueryTests(
         var article1Id = await CreateArticleAsync("Article A", 100);
         _ = await CreateArticleAsync("Article B", 200);
 
-        var result = await RunScoped<IFetchArticlesListQuery, ImmutableArray<ArticleListItem>>(
+        var result = await RunScoped<IPaginationQuery<ArticleListItem>, ImmutableArray<ArticleListItem>>(
             fetcher => fetcher.FetchUntilAsync(article1Id)
         );
 
