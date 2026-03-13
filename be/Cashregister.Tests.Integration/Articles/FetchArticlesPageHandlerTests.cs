@@ -413,6 +413,7 @@ public sealed class FetchArticlesPageHandlerTests(
         var untilResult = await RunScoped<IFetchArticlesPageHandler, Result<Page<ArticleListItem>>>(
             tx => tx.ExecuteAsync(new PageRequest
             {
+                After = null,
                 Until = page1.Next,
                 Size = 2
             })

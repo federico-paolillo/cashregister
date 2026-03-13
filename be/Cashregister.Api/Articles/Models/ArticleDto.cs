@@ -10,6 +10,8 @@ public sealed record ArticleDto(
 {
     public static ArticleDto From(Article article)
     {
+        ArgumentNullException.ThrowIfNull(article);
+
         return new ArticleDto(
             article.Id.Value,
             article.Description,
