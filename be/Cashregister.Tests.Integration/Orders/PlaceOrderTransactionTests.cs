@@ -2,7 +2,6 @@ using Cashregister.Application.Articles.Models.Input;
 using Cashregister.Application.Articles.Transactions;
 using Cashregister.Application.Orders.Data;
 using Cashregister.Application.Orders.Models.Input;
-using Cashregister.Application.Orders.Models.Output;
 using Cashregister.Application.Orders.Transactions;
 using Cashregister.Domain;
 using Cashregister.Factories;
@@ -51,11 +50,14 @@ public sealed class PlaceOrderTransactionTests(
 
         var orderId = placeOrderResult.Value;
 
-        var orderSummary = await RunScoped<IFetchOrderSummaryQuery, OrderSummary?>(
+        var order = await RunScoped<IFetchOrderQuery, Order?>(
             q => q.FetchAsync(orderId)
         );
 
-        Assert.NotNull(orderSummary);
-        Assert.Equal(Cents.From(21L), orderSummary.Total);
+        Assert.NotNull(order);
+        Assert.Equal(Cents.From(21L), order.Total());
+        Assert.Single(order.Items);
+        Assert.Equal("Some test article", order.Items[0].Description);
+        Assert.Equal(21u, order.Items[0].Quantity);
     }
 }
