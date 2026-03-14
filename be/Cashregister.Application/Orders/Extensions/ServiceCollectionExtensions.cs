@@ -1,3 +1,5 @@
+using Cashregister.Application.Orders.Handlers;
+using Cashregister.Application.Orders.Handlers.Defaults;
 using Cashregister.Application.Orders.Transactions;
 using Cashregister.Application.Orders.Transactions.Defaults;
 
@@ -10,6 +12,7 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddCashregisterOrders(this IServiceCollection serviceCollection)
     {
         serviceCollection.AddScoped<IPlaceOrderTransaction, PlaceOrderTransaction>();
+        serviceCollection.AddScoped<IFetchOrdersPageHandler, FetchOrdersPageHandler>();
 
         return serviceCollection;
     }

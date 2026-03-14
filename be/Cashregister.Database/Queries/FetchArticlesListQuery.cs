@@ -1,54 +1,25 @@
-using System.Collections.Immutable;
+using System.Linq.Expressions;
 
 using Cashregister.Application.Articles.Models.Output;
-using Cashregister.Application.Pagination;
+using Cashregister.Database.Entities;
 using Cashregister.Domain;
-
-using Microsoft.EntityFrameworkCore;
 
 namespace Cashregister.Database.Queries;
 
 public sealed class FetchArticlesListQuery(
     IApplicationDbContext applicationDbContext
-) : IPaginationQuery<ArticleListItem>
+) : PaginationQuery<ArticleEntity, ArticleListItem>
 {
-    public async Task<ImmutableArray<ArticleListItem>> FetchAsync(uint count, Identifier? after = null)
+    protected override IQueryable<ArticleEntity> GetQueryable()
     {
-        var integerCount = (int)count;
-        var afterValue = after?.Value;
-
-        var articleListItems = await applicationDbContext.Articles
-            .Where(a => afterValue == null || a.Id.CompareTo(afterValue) > 0)
-            .OrderBy(a => a.Id)
-            .Take(integerCount)
-            .Select(a => new ArticleListItem
-            {
-                Id = Identifier.From(a.Id),
-                Description = a.Description,
-                Price = Cents.From(a.Price)
-            })
-            .ToArrayAsync();
-
-        return [.. articleListItems];
+        return applicationDbContext.Articles;
     }
 
-    public async Task<ImmutableArray<ArticleListItem>> FetchUntilAsync(Identifier until)
-    {
-        ArgumentNullException.ThrowIfNull(until);
-
-        var untilValue = until.Value;
-
-        var articleListItems = await applicationDbContext.Articles
-            .Where(a => a.Id.CompareTo(untilValue) <= 0)
-            .OrderBy(a => a.Id)
-            .Select(a => new ArticleListItem
-            {
-                Id = Identifier.From(a.Id),
-                Description = a.Description,
-                Price = Cents.From(a.Price)
-            })
-            .ToArrayAsync();
-
-        return [.. articleListItems];
-    }
+    protected override Expression<Func<ArticleEntity, ArticleListItem>> Projection =>
+        a => new ArticleListItem
+        {
+            Id = Identifier.From(a.Id),
+            Description = a.Description,
+            Price = Cents.From(a.Price)
+        };
 }

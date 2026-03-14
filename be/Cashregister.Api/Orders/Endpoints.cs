@@ -6,6 +6,9 @@ internal static class Endpoints
     {
         var routeGroup = webApplication.MapGroup("/orders");
 
+        routeGroup.MapGet("/", Handlers.GetOrdersPage)
+          .WithName("GetOrdersPage");
+
         routeGroup.MapPost("/", Handlers.CreateOrder)
           .WithName("CreateOrder");
 
