@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Cashregister.Database.Entities;
 
-public sealed class OrderEntity
+public sealed class OrderEntity : IIdentifiableEntity
 {
     public required string Id { get; init; }
 

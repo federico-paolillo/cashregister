@@ -11,4 +11,11 @@ public class Order
     public required TimeStamp Date { get; init; }
 
     public required ImmutableArray<Item> Items { get; init; } = [];
+
+    public Cents Total()
+    {
+        long total = Items.Sum(item => item.Price.Value * item.Quantity);
+
+        return Cents.From(total);
+    }
 }

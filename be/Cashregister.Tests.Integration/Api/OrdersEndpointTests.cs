@@ -179,4 +179,167 @@ public sealed class OrdersEndpointTests(
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
         Assert.NotNull(response.Headers.Location);
     }
+
+    [Fact]
+    public async Task GetOrders_ReturnsEmptyList_WhenNoOrdersExist()
+    {
+        await PrepareEnvironmentAsync();
+
+        using var httpClient = CreateHttpClient();
+
+        var response = await httpClient.GetAsync("/orders");
+
+        Assert.True(response.IsSuccessStatusCode);
+
+        var ordersPage = await response.Content.ReadFromJsonAsync<OrdersPageDto>();
+
+        Assert.NotNull(ordersPage);
+        Assert.Empty(ordersPage.Items);
+        Assert.False(ordersPage.HasNext);
+        Assert.Null(ordersPage.Next);
+    }
+
+    [Fact]
+    public async Task GetOrders_ReturnsOrders_WhenOrdersExist()
+    {
+        await PrepareEnvironmentAsync();
+
+        var articleId = await CreateArticleForOrderAsync("Test article", 500L);
+
+        var orderId = await PlaceOrderAsync(articleId, 3);
+
+        using var httpClient = CreateHttpClient();
+
+        var response = await httpClient.GetAsync("/orders");
+
+        Assert.True(response.IsSuccessStatusCode);
+
+        var ordersPage = await response.Content.ReadFromJsonAsync<OrdersPageDto>();
+
+        Assert.NotNull(ordersPage);
+        Assert.Single(ordersPage.Items);
+        Assert.Equal(orderId.Value, ordersPage.Items[0].Id);
+        Assert.NotEmpty(ordersPage.Items[0].Number);
+        Assert.Equal(15m, ordersPage.Items[0].Total);
+        Assert.True(ordersPage.Items[0].Date > 0);
+    }
+
+    [Fact]
+    public async Task GetOrders_ReturnsOrders_WhenOrdersExist_WithPagination()
+    {
+        await PrepareEnvironmentAsync();
+
+        var articleId = await CreateArticleForOrderAsync("Test article", 100L);
+
+        var order1Id = await PlaceOrderAsync(articleId, 1);
+        var order2Id = await PlaceOrderAsync(articleId, 2);
+
+        using var httpClient = CreateHttpClient();
+
+        var response = await httpClient.GetAsync("/orders?pageSize=1");
+
+        Assert.True(response.IsSuccessStatusCode);
+
+        var ordersPage1 = await response.Content.ReadFromJsonAsync<OrdersPageDto>();
+
+        Assert.NotNull(ordersPage1);
+        Assert.NotNull(ordersPage1.Next);
+        Assert.True(ordersPage1.HasNext);
+        Assert.Single(ordersPage1.Items);
+        Assert.Equal(order1Id.Value, ordersPage1.Items[0].Id);
+
+        response = await httpClient.GetAsync($"/orders?pageSize=1&after={ordersPage1.Next}");
+
+        Assert.True(response.IsSuccessStatusCode);
+
+        var ordersPage2 = await response.Content.ReadFromJsonAsync<OrdersPageDto>();
+
+        Assert.NotNull(ordersPage2);
+        Assert.Null(ordersPage2.Next);
+        Assert.False(ordersPage2.HasNext);
+        Assert.Single(ordersPage2.Items);
+        Assert.Equal(order2Id.Value, ordersPage2.Items[0].Id);
+    }
+
+    [Fact]
+    public async Task GetOrders_WithUntil_ReturnsAccumulatedViewPlusOneMorePage()
+    {
+        await PrepareEnvironmentAsync();
+
+        var articleId = await CreateArticleForOrderAsync("Test article", 100L);
+
+        var order1Id = await PlaceOrderAsync(articleId, 1);
+        var order2Id = await PlaceOrderAsync(articleId, 2);
+        await PlaceOrderAsync(articleId, 3);
+
+        using var httpClient = CreateHttpClient();
+
+        // Get page 1 to obtain the Next cursor
+        var page1Response = await httpClient.GetAsync("/orders?pageSize=1");
+        Assert.True(page1Response.IsSuccessStatusCode);
+
+        var page1 = await page1Response.Content.ReadFromJsonAsync<OrdersPageDto>();
+        Assert.NotNull(page1);
+        Assert.NotNull(page1.Next);
+
+        // Use the Next cursor from page 1 as the until parameter
+        var response = await httpClient.GetAsync($"/orders?pageSize=1&until={page1.Next}");
+
+        Assert.True(response.IsSuccessStatusCode);
+
+        var page = await response.Content.ReadFromJsonAsync<OrdersPageDto>();
+
+        Assert.NotNull(page);
+        Assert.Equal(2, page.Items.Length);
+        Assert.Equal(order1Id.Value, page.Items[0].Id);
+        Assert.Equal(order2Id.Value, page.Items[1].Id);
+        Assert.True(page.HasNext);
+        Assert.Equal(order2Id.Value, page.Next);
+    }
+
+    [Fact]
+    public async Task GetOrders_WithBothAfterAndUntil_ReturnsBadRequest()
+    {
+        await PrepareEnvironmentAsync();
+
+        using var httpClient = CreateHttpClient();
+
+        var response = await httpClient.GetAsync("/orders?after=somecursor&until=anothercursor");
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    private async Task<Identifier> CreateArticleForOrderAsync(string description, long priceInCents)
+    {
+        var registerArticleResult = await RunScoped<IRegisterArticleTransaction, Result<Identifier>>(tx =>
+            tx.ExecuteAsync(new ArticleDefinition
+            {
+                Description = description,
+                Price = Cents.From(priceInCents)
+            })
+        );
+
+        Assert.True(registerArticleResult.Ok);
+        return registerArticleResult.Value;
+    }
+
+    private async Task<Identifier> PlaceOrderAsync(Identifier articleId, uint quantity)
+    {
+        var placeOrderResult = await RunScoped<IPlaceOrderTransaction, Result<Identifier>>(tx =>
+            tx.ExecuteAsync(new OrderRequest
+            {
+                Items =
+                [
+                    new OrderRequestItem
+                    {
+                        Article = articleId,
+                        Quantity = quantity
+                    }
+                ]
+            })
+        );
+
+        Assert.True(placeOrderResult.Ok);
+        return placeOrderResult.Value;
+    }
 }

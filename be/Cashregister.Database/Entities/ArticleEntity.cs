@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Cashregister.Database.Entities;
 
-public sealed class ArticleEntity
+public sealed class ArticleEntity : IIdentifiableEntity
 {
     public required string Id { get; init; }
 
