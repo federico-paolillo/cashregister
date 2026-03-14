@@ -6,7 +6,6 @@ using Cashregister.Api.Orders.Models;
 using Cashregister.Application.Articles.Models.Input;
 using Cashregister.Application.Articles.Transactions;
 using Cashregister.Application.Orders.Models.Input;
-using Cashregister.Application.Orders.Models.Output;
 using Cashregister.Application.Orders.Transactions;
 using Cashregister.Domain;
 using Cashregister.Factories;
@@ -120,12 +119,62 @@ public sealed class OrdersEndpointTests(
 
         Assert.True(response.IsSuccessStatusCode);
 
-        var orderSummary = await response.Content.ReadFromJsonAsync<OrderSummaryDto>();
+        var order = await response.Content.ReadFromJsonAsync<OrderDto>();
 
-        Assert.NotNull(orderSummary);
-        Assert.Equal(placeOrderResult.Value.Value, orderSummary.Id);
-        // Note: We can't assert Number, Date, and Total since PlaceOrderTransaction only returns the ID
-        // The actual values would depend on the implementation and current time
+        Assert.NotNull(order);
+        Assert.Equal(placeOrderResult.Value.Value, order.Id);
+        Assert.NotEmpty(order.Number);
+        Assert.True(order.Date > 0);
+        Assert.Equal(15m, order.Total);
+        Assert.Single(order.Items);
+        Assert.Equal("Test article for order", order.Items[0].Description);
+        Assert.Equal(5m, order.Items[0].Price);
+        Assert.Equal(3u, order.Items[0].Quantity);
+    }
+
+    [Fact]
+    public async Task GetOrder_ReturnsOrderWithMultipleItems_WhenOrderHasMultipleItems()
+    {
+        await PrepareEnvironmentAsync();
+
+        var article1Id = await CreateArticleForOrderAsync("Article A", 1000L);
+        var article2Id = await CreateArticleForOrderAsync("Article B", 2500L);
+
+        var orderRequest = new OrderRequest
+        {
+            Items = [
+                new OrderRequestItem { Article = article1Id, Quantity = 2 },
+                new OrderRequestItem { Article = article2Id, Quantity = 1 }
+            ]
+        };
+
+        var placeOrderResult = await RunScoped<IPlaceOrderTransaction, Result<Identifier>>(tx =>
+            tx.ExecuteAsync(orderRequest)
+        );
+
+        Assert.True(placeOrderResult.Ok);
+
+        using var httpClient = CreateHttpClient();
+
+        var response = await httpClient.GetAsync($"/orders/{placeOrderResult.Value.Value}");
+
+        Assert.True(response.IsSuccessStatusCode);
+
+        var order = await response.Content.ReadFromJsonAsync<OrderDto>();
+
+        Assert.NotNull(order);
+        Assert.Equal(2, order.Items.Length);
+        Assert.Equal(45m, order.Total);
+
+        var itemA = order.Items.Single(i => i.Description == "Article A");
+        Assert.Equal(10m, itemA.Price);
+        Assert.Equal(2u, itemA.Quantity);
+        Assert.Equal(article1Id.Value, itemA.Article);
+
+        var itemB = order.Items.Single(i => i.Description == "Article B");
+        Assert.Equal(25m, itemB.Price);
+        Assert.Equal(1u, itemB.Quantity);
+        Assert.Equal(article2Id.Value, itemB.Article);
     }
 
     [Fact]

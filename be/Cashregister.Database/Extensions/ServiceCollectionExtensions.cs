@@ -1,7 +1,6 @@
 using Cashregister.Application.Articles.Data;
 using Cashregister.Application.Articles.Models.Output;
 using Cashregister.Application.Orders.Data;
-using Cashregister.Application.Orders.Models.Output;
 using Cashregister.Application.Pagination;
 using Cashregister.Database.Commands;
 using Cashregister.Database.Interceptors;
@@ -71,7 +70,7 @@ public static class ServiceCollectionExtensions
     {
         services.AddScoped<ISaveOrderCommand, SaveOrderCommand>();
         services.AddScoped<IFetchArticlesQuery, FetchArticlesQuery>();
-        services.AddScoped<IFetchOrderSummaryQuery, FetchOrderSummaryQuery>();
+        services.AddScoped<IFetchOrderQuery, FetchOrderQuery>();
         services.AddScoped<IFetchArticleQuery, FetchArticleQuery>();
         services.AddScoped<ISaveArticleCommand, SaveArticleCommand>();
         services.AddScoped<IPaginationQuery<ArticleListItem>, FetchArticlesListQuery>();

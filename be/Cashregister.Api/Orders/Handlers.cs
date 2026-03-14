@@ -101,22 +101,22 @@ internal static class Handlers
         return TypedResults.Created(getOrderUrl, orderPointerDto);
     }
 
-    public static async Task<Results<NotFound, Ok<OrderSummaryDto>>> GetOrder(
-      IFetchOrderSummaryQuery fetchOrderSummaryQuery,
+    public static async Task<Results<NotFound, Ok<OrderDto>>> GetOrder(
+      IFetchOrderQuery fetchOrderQuery,
       [FromRoute] string id
       )
     {
         var identifier = Identifier.From(id);
 
-        var orderSummary = await fetchOrderSummaryQuery.FetchAsync(identifier);
+        var order = await fetchOrderQuery.FetchAsync(identifier);
 
-        if (orderSummary is null)
+        if (order is null)
         {
             return TypedResults.NotFound();
         }
 
-        var orderSummaryDto = OrderSummaryDto.From(orderSummary);
+        var orderDto = OrderDto.From(order);
 
-        return TypedResults.Ok(orderSummaryDto);
+        return TypedResults.Ok(orderDto);
     }
 }
