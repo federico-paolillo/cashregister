@@ -1,7 +1,6 @@
 using System.Collections.Immutable;
 
 using Cashregister.Application.Orders.Models.Output;
-using Cashregister.Domain;
 
 namespace Cashregister.Api.Orders.Models;
 
@@ -24,9 +23,9 @@ public sealed record OrderListItemDto(
 
         return new OrderListItemDto(
           order.Id.Value,
-          OrderNumber.From(order.Number).Value,
-          Cents.From(order.Total).AsPayableMoney(),
-          order.Date
+          order.Number.Value,
+          order.Total.AsPayableMoney(),
+          order.Date.Value
         );
     }
 }

@@ -131,9 +131,9 @@ public sealed class FetchOrdersListQueryTests(
 
         Assert.Single(result);
         Assert.Equal(orderId.Value, result[0].Id.Value);
-        Assert.Equal(1500L, result[0].Total);
-        Assert.True(result[0].Number > 0);
-        Assert.True(result[0].Date > 0);
+        Assert.Equal(Cents.From(1500), result[0].Total);
+        Assert.NotNull(result[0].Number);
+        Assert.True(result[0].Date.Value > 0);
     }
 
     [Fact]
@@ -194,8 +194,8 @@ public sealed class FetchOrdersListQueryTests(
         var domainOrder = new Order
         {
             Id = result[0].Id,
-            Number = OrderNumber.From(result[0].Number),
-            Date = TimeStamp.From(result[0].Date),
+            Number = result[0].Number,
+            Date = result[0].Date,
             Items =
             [
                 new Item
@@ -209,7 +209,7 @@ public sealed class FetchOrdersListQueryTests(
             ]
         };
 
-        Assert.Equal(domainOrder.Total().Value, projectedTotal);
+        Assert.Equal(domainOrder.Total(), projectedTotal);
     }
 
     private async Task<Identifier> CreateArticleAsync(string description, long priceInCents)

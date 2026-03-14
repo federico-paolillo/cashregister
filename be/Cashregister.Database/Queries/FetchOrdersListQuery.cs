@@ -21,8 +21,8 @@ public sealed class FetchOrdersListQuery(
         o => new OrderListItem
         {
             Id = Identifier.From(o.Id),
-            Number = o.RowId,
-            Date = o.Date,
-            Total = o.Items.Sum(i => (long)(i.Quantity * i.Price))
+            Number = OrderNumber.From(o.RowId),
+            Date = TimeStamp.From(o.Date),
+            Total = Cents.From(o.Items.Sum(i => (long)(i.Quantity * i.Price)))
         };
 }
