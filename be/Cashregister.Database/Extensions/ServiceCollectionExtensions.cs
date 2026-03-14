@@ -1,6 +1,7 @@
 using Cashregister.Application.Articles.Data;
 using Cashregister.Application.Articles.Models.Output;
 using Cashregister.Application.Orders.Data;
+using Cashregister.Application.Orders.Models.Output;
 using Cashregister.Application.Pagination;
 using Cashregister.Database.Commands;
 using Cashregister.Database.Interceptors;

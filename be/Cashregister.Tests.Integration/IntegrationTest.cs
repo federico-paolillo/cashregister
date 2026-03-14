@@ -1,5 +1,6 @@
 using System.Globalization;
 
+using Cashregister.Api;
 using Cashregister.Application.Articles.Extensions;
 using Cashregister.Application.Orders.Extensions;
 

@@ -17,10 +17,10 @@ namespace Cashregister.Api.Orders;
 internal static class Handlers
 {
     public static async Task<Results<BadRequest, Ok<OrdersPageDto>>> GetOrdersPage(
-      IFetchOrdersPageHandler fetchOrdersPageHandler,
-      [FromQuery(Name = "pageSize")] uint pageSize = 50,
-      [FromQuery(Name = "after")] string? after = null,
-      [FromQuery(Name = "until")] string? until = null
+        IFetchOrdersPageHandler fetchOrdersPageHandler,
+        [FromQuery(Name = "pageSize")] uint pageSize = 50,
+        [FromQuery(Name = "after")] string? after = null,
+        [FromQuery(Name = "until")] string? until = null
     )
     {
         if (after is not null && until is not null)
@@ -48,31 +48,32 @@ internal static class Handlers
         var ordersPage = ordersPageResult.Value;
 
         var orderListItemDtos = ordersPage.Items
-          .Select(OrderListItemDto.From)
-          .ToImmutableArray();
+            .Select(OrderListItemDto.From)
+            .ToImmutableArray();
 
         var ordersPageDto = new OrdersPageDto(
-          ordersPage.Next?.Value,
-          ordersPage.HasNext,
-          orderListItemDtos
+            ordersPage.Next?.Value,
+            ordersPage.HasNext,
+            orderListItemDtos
         );
 
         return TypedResults.Ok(ordersPageDto);
     }
 
     public static async Task<Results<BadRequest, Created<EntityPointerDto>>> CreateOrder(
-      IPlaceOrderTransaction placeOrderTransaction,
-      LinkGenerator linkGenerator,
-      [FromBody] OrderRequestDto orderRequestDto
+        IPlaceOrderTransaction placeOrderTransaction,
+        LinkGenerator linkGenerator,
+        [FromBody] OrderRequestDto orderRequestDto
     )
     {
-        ImmutableArray<OrderRequestItem> orderItems = [
-          .. orderRequestDto.Items.Select(item =>
-      new OrderRequestItem
-      {
-        Article = Identifier.From(item.Article),
-        Quantity = item.Quantity
-      })
+        ImmutableArray<OrderRequestItem> orderItems =
+        [
+            .. orderRequestDto.Items.Select(item =>
+                new OrderRequestItem
+                {
+                    Article = Identifier.From(item.Article),
+                    Quantity = item.Quantity
+                })
         ];
 
         var orderRequest = new OrderRequest
@@ -88,9 +89,17 @@ internal static class Handlers
         }
 
         var getOrderUrl = linkGenerator.GetPathByName(
-          "GetOrder",
-          new { id = orderResult.Value.Value }
-        ) ?? throw new InvalidOperationException("Failed to generate location for order");
+            "GetOrder",
+            new
+            {
+                id = orderResult.Value.Value
+            }
+        );
+
+        if (getOrderUrl is null)
+        {
+            throw new InvalidOperationException("Failed to generate location for order");
+        }
 
         var orderPointerDto = new EntityPointerDto
         {
@@ -102,9 +111,9 @@ internal static class Handlers
     }
 
     public static async Task<Results<NotFound, Ok<OrderDto>>> GetOrder(
-      IFetchOrderQuery fetchOrderQuery,
-      [FromRoute] string id
-      )
+        IFetchOrderQuery fetchOrderQuery,
+        [FromRoute] string id
+    )
     {
         var identifier = Identifier.From(id);
 

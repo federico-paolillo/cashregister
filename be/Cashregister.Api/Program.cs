@@ -34,10 +34,19 @@ var app = builder.Build();
 app.MapArticles();
 app.MapOrders();
 
-using var scope = app.Services.CreateScope();
-
-using var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-
-await dbContext.Database.MigrateAsync();
+await ApplyMigrationsAsync(app);
 
 await app.RunAsync();
+
+return;
+
+async Task ApplyMigrationsAsync(WebApplication webApplication)
+{
+    // A local function ensures that the scope and the DbContext for migrations gets released before continuing
+    
+    using var scope = webApplication.Services.CreateScope();
+
+    await using var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+    await dbContext.Database.MigrateAsync();
+}
