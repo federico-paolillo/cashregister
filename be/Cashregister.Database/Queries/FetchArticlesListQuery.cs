@@ -15,7 +15,7 @@ public sealed class FetchArticlesListQuery(
         return applicationDbContext.Articles;
     }
 
-    protected override Expression<Func<ArticleEntity, ArticleListItem>> Projection =>
+    protected override Expression<Func<ArticleEntity, ArticleListItem>> GetProjection() =>
         a => new ArticleListItem
         {
             Id = Identifier.From(a.Id),
