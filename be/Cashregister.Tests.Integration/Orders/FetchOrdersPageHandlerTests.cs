@@ -186,7 +186,7 @@ public sealed class FetchOrdersPageHandlerTests(
 
         Assert.Equal(1, page.Size);
         Assert.Equal(orderId.Value, page.Items[0].Id.Value);
-        Assert.Equal(1500L, page.Items[0].Total);
+        Assert.Equal(Cents.From(1500), page.Items[0].Total);
     }
 
     [Fact]
