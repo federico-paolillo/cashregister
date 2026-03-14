@@ -37,12 +37,12 @@ public sealed class OrdersEndpointTests(
         using var httpClient = CreateHttpClient();
 
         var orderRequest = new OrderRequestDto(
-          [
-            new OrderRequestItemDto(
-              registerArticleResult.Value.Value,
-              2u
-            )
-          ]
+            [
+                new OrderRequestItemDto(
+                    registerArticleResult.Value.Value,
+                    2u
+                )
+            ]
         );
 
         var response = await httpClient.PostAsJsonAsync("/orders", orderRequest);
@@ -66,12 +66,12 @@ public sealed class OrdersEndpointTests(
         using var httpClient = CreateHttpClient();
 
         var orderRequest = new OrderRequestDto(
-          [
-            new OrderRequestItemDto(
-            "nonexistent-article-id",
-            1u
-          )
-          ]
+            [
+                new OrderRequestItemDto(
+                    "nonexistent-article-id",
+                    1u
+                )
+            ]
         );
 
         var response = await httpClient.PostAsJsonAsync("/orders", orderRequest);
@@ -98,13 +98,14 @@ public sealed class OrdersEndpointTests(
         // Create an order using the transaction directly
         var orderRequest = new OrderRequest
         {
-            Items = [
-            new OrderRequestItem
-        {
-          Article = registerArticleResult.Value,
-          Quantity = 3
-        }
-          ]
+            Items =
+            [
+                new OrderRequestItem
+                {
+                    Article = registerArticleResult.Value,
+                    Quantity = 3
+                }
+            ]
         };
 
         var placeOrderResult = await RunScoped<IPlaceOrderTransaction, Result<Identifier>>(tx =>
@@ -142,9 +143,18 @@ public sealed class OrdersEndpointTests(
 
         var orderRequest = new OrderRequest
         {
-            Items = [
-                new OrderRequestItem { Article = article1Id, Quantity = 2 },
-                new OrderRequestItem { Article = article2Id, Quantity = 1 }
+            Items =
+            [
+                new OrderRequestItem
+                {
+                    Article = article1Id,
+                    Quantity = 2
+                },
+                new OrderRequestItem
+                {
+                    Article = article2Id,
+                    Quantity = 1
+                }
             ]
         };
 
@@ -217,10 +227,10 @@ public sealed class OrdersEndpointTests(
         using var httpClient = CreateHttpClient();
 
         var orderRequest = new OrderRequestDto(
-          [
-            new OrderRequestItemDto(article1Result.Value.Value, 2u),
-        new OrderRequestItemDto(article2Result.Value.Value, 1u)
-          ]
+            [
+                new OrderRequestItemDto(article1Result.Value.Value, 2u),
+                new OrderRequestItemDto(article2Result.Value.Value, 1u)
+            ]
         );
 
         var response = await httpClient.PostAsJsonAsync("/orders", orderRequest);

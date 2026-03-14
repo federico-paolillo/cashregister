@@ -38,7 +38,6 @@ public sealed class PlaceOrderTransaction(
                 item.Quantity
             };
 
-
         ImmutableArray<Item> orderItems =
         [
             ..articlesWithQuantity
