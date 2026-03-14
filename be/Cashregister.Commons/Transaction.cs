@@ -28,7 +28,7 @@ public abstract class Transaction<TInput, TOutput>(
 
             return result;
         }
-#pragma warning disable CA1031 
+#pragma warning disable CA1031
         // We want to have a global unhandled exception handler
         catch (Exception ex)
 #pragma warning restore CA1031

@@ -1,4 +1,3 @@
-using Cashregister.Application;
 using Cashregister.Database.Entities;
 using Cashregister.Factories;
 
@@ -16,13 +15,6 @@ public sealed class ApplicationDbContext(
 
     public DbSet<OrderItemEntity> OrderItems { get; set; }
 
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
-    {
-        ArgumentNullException.ThrowIfNull(modelBuilder);
-
-        modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
-    }
-
     public Task StartAsync(CancellationToken cancellationToken = default)
     {
         // In Entity Framework, creating the Database Context begins the Unit of Work
@@ -37,5 +29,12 @@ public sealed class ApplicationDbContext(
         // Therefore this method is a no-op in this implementation
 
         return Task.CompletedTask;
+    }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        ArgumentNullException.ThrowIfNull(modelBuilder);
+
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
     }
 }

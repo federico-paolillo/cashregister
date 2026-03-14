@@ -9,8 +9,8 @@ public sealed record Identifier(string Value)
 
     public static Identifier New()
     {
-        Ulid ulid = Ulid.NewUlid(Rng);
-        string ulidString = ulid.ToString();
+        var ulid = Ulid.NewUlid(Rng);
+        var ulidString = ulid.ToString();
 
         return new Identifier(ulidString);
     }

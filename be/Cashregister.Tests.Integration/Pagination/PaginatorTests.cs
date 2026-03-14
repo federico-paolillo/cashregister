@@ -2,7 +2,6 @@ using System.Collections.Immutable;
 
 using Cashregister.Application.Pagination;
 using Cashregister.Domain;
-using Cashregister.Factories;
 
 namespace Cashregister.Tests.Integration.Pagination;
 
@@ -15,7 +14,7 @@ public sealed class PaginatorTests
         [
             MakeItem("01"),
             MakeItem("02"),
-            MakeItem("03"),
+            MakeItem("03")
         ]);
 
         var result = await Paginator.FetchPageAsync(query, new PageRequest
@@ -41,7 +40,7 @@ public sealed class PaginatorTests
             MakeItem("01"),
             MakeItem("02"),
             MakeItem("03"),
-            MakeItem("04"),
+            MakeItem("04")
         ]);
 
         var result = await Paginator.FetchPageAsync(query, new PageRequest
@@ -66,7 +65,7 @@ public sealed class PaginatorTests
         var query = new FakePaginationQuery(
         [
             MakeItem("01"),
-            MakeItem("02"),
+            MakeItem("02")
         ]);
 
         var result = await Paginator.FetchPageAsync(query, new PageRequest
@@ -88,7 +87,7 @@ public sealed class PaginatorTests
     {
         var query = new FakePaginationQuery(
         [
-            MakeItem("01"),
+            MakeItem("01")
         ]);
 
         var result = await Paginator.FetchPageAsync(query, new PageRequest
@@ -129,16 +128,15 @@ public sealed class PaginatorTests
     {
         var query = new FakePaginationQuery([]);
 
-        await Assert.ThrowsAsync<ArgumentNullException>(
-            () => Paginator.FetchPageAsync(query, null!)
+        await Assert.ThrowsAsync<ArgumentNullException>(() => Paginator.FetchPageAsync(query, null!)
         );
     }
 
     [Fact]
     public async Task FetchPageAsync_WithNullQuery_ShouldThrowArgumentNullException()
     {
-        await Assert.ThrowsAsync<ArgumentNullException>(
-            () => Paginator.FetchPageAsync<FakePageItem>(null!, new PageRequest
+        await Assert.ThrowsAsync<ArgumentNullException>(() => Paginator.FetchPageAsync<FakePageItem>(null!,
+            new PageRequest
             {
                 After = null,
                 Size = 5
@@ -153,7 +151,7 @@ public sealed class PaginatorTests
         [
             MakeItem("01"),
             MakeItem("02"),
-            MakeItem("03"),
+            MakeItem("03")
         ]);
 
         var result = await Paginator.FetchPageAsync(query, new PageRequest
@@ -179,7 +177,7 @@ public sealed class PaginatorTests
             MakeItem("01"),
             MakeItem("02"),
             MakeItem("03"),
-            MakeItem("04"),
+            MakeItem("04")
         ]);
 
         var result = await Paginator.FetchPageAsync(query, new PageRequest
@@ -203,7 +201,7 @@ public sealed class PaginatorTests
         var query = new FakePaginationQuery(
         [
             MakeItem("01"),
-            MakeItem("02"),
+            MakeItem("02")
         ]);
 
         var result = await Paginator.FetchPageAsync(query, new PageRequest
@@ -222,7 +220,10 @@ public sealed class PaginatorTests
 
     private static FakePageItem MakeItem(string id)
     {
-        return new FakePageItem { Id = Identifier.From(id) };
+        return new FakePageItem
+        {
+            Id = Identifier.From(id)
+        };
     }
 
     private sealed class FakePageItem : IPageItem

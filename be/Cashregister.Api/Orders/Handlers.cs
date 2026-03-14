@@ -35,7 +35,7 @@ internal static class Handlers
         {
             After = afterIdentifier,
             Until = untilIdentifier,
-            Size = pageSize,
+            Size = pageSize
         };
 
         var ordersPageResult = await fetchOrdersPageHandler.ExecuteAsync(pageRequest);

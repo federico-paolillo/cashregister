@@ -17,7 +17,7 @@ public sealed class Result<TValue>
     [MemberNotNullWhen(true, nameof(Error))]
     [MemberNotNullWhen(false, nameof(Value))]
     public bool NotOk => Error is not null;
-
+    
     internal Result(TValue value)
     {
         Value = value;

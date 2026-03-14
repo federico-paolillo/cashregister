@@ -1,5 +1,3 @@
-using System.Collections.Immutable;
-
 using Cashregister.Domain;
 
 namespace Cashregister.Tests.Integration.Orders;

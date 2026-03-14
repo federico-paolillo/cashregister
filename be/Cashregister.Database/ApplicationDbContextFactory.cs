@@ -7,7 +7,7 @@ public sealed class ApplicationDbContextFactory : IDesignTimeDbContextFactory<Ap
 {
     public ApplicationDbContext CreateDbContext(string[] args)
     {
-        DbContextOptionsBuilder<ApplicationDbContext> optsBuilder = new DbContextOptionsBuilder<ApplicationDbContext>()
+        var optsBuilder = new DbContextOptionsBuilder<ApplicationDbContext>()
             .UseSqlite("Data Source=:memory:")
             .EnableDetailedErrors()
             .EnableSensitiveDataLogging();

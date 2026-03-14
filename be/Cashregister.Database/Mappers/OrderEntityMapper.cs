@@ -11,7 +11,8 @@ public sealed class OrderEntityMapper
     {
         ArgumentNullException.ThrowIfNull(entity);
 
-        ImmutableArray<Item> items = [
+        ImmutableArray<Item> items =
+        [
             .. entity.Items.Select(i => new Item
             {
                 Id = Identifier.From(i.Id),
@@ -35,7 +36,8 @@ public sealed class OrderEntityMapper
     {
         ArgumentNullException.ThrowIfNull(pendingOrder);
 
-        List<OrderItemEntity> itemEntities = [
+        List<OrderItemEntity> itemEntities =
+        [
             .. pendingOrder.Items.Select(i => new OrderItemEntity
             {
                 Id = i.Id.Value,

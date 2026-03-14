@@ -4,7 +4,7 @@ public sealed record TimeStamp(long Value)
 {
     public static TimeStamp Now()
     {
-        long nowstamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        var nowstamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
 
         return new TimeStamp(nowstamp);
     }

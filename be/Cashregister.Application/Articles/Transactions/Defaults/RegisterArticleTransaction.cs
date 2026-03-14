@@ -22,7 +22,7 @@ public sealed class RegisterArticleTransaction(
         {
             Id = newArticleId,
             Description = articleDefinition.Description,
-            Price = articleDefinition.Price,
+            Price = articleDefinition.Price
         };
 
         await saveArticleCommand.SaveAsync(article);

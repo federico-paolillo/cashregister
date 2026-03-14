@@ -1,6 +1,6 @@
+using Cashregister.Application.Articles.Handlers;
 using Cashregister.Application.Articles.Models.Input;
 using Cashregister.Application.Articles.Models.Output;
-using Cashregister.Application.Articles.Handlers;
 using Cashregister.Application.Articles.Transactions;
 using Cashregister.Application.Pagination;
 using Cashregister.Domain;
@@ -25,8 +25,8 @@ public sealed class FetchArticlesPageHandlerTests(
         var article3Id = await CreateArticleAsync("Article C", 300);
         var article4Id = await CreateArticleAsync("Article D", 400);
 
-        var result = await RunScoped<IFetchArticlesPageHandler, Result<Page<ArticleListItem>>>(
-            tx => tx.ExecuteAsync(new PageRequest
+        var result = await RunScoped<IFetchArticlesPageHandler, Result<Page<ArticleListItem>>>(tx =>
+            tx.ExecuteAsync(new PageRequest
             {
                 After = null,
                 Size = 2
@@ -54,8 +54,8 @@ public sealed class FetchArticlesPageHandlerTests(
         await CreateArticleAsync("Article C", 300);
         await CreateArticleAsync("Article D", 400);
 
-        var page1Result = await RunScoped<IFetchArticlesPageHandler, Result<Page<ArticleListItem>>>(
-            tx => tx.ExecuteAsync(new PageRequest
+        var page1Result = await RunScoped<IFetchArticlesPageHandler, Result<Page<ArticleListItem>>>(tx =>
+            tx.ExecuteAsync(new PageRequest
             {
                 After = null,
                 Size = 2
@@ -73,8 +73,8 @@ public sealed class FetchArticlesPageHandlerTests(
         Assert.Equal("Article A", firstPage.Items[0].Description);
         Assert.Equal("Article B", firstPage.Items[1].Description);
 
-        var page2Result = await RunScoped<IFetchArticlesPageHandler, Result<Page<ArticleListItem>>>(
-            tx => tx.ExecuteAsync(new PageRequest
+        var page2Result = await RunScoped<IFetchArticlesPageHandler, Result<Page<ArticleListItem>>>(tx =>
+            tx.ExecuteAsync(new PageRequest
             {
                 After = firstPage.Next,
                 Size = 2
@@ -101,8 +101,8 @@ public sealed class FetchArticlesPageHandlerTests(
         await CreateArticleAsync("Article A", 100);
         await CreateArticleAsync("Article B", 200);
 
-        var result = await RunScoped<IFetchArticlesPageHandler, Result<Page<ArticleListItem>>>(
-            tx => tx.ExecuteAsync(new PageRequest
+        var result = await RunScoped<IFetchArticlesPageHandler, Result<Page<ArticleListItem>>>(tx =>
+            tx.ExecuteAsync(new PageRequest
             {
                 After = null,
                 Size = 10
@@ -125,8 +125,8 @@ public sealed class FetchArticlesPageHandlerTests(
         await CreateArticleAsync("Article A", 100);
         await CreateArticleAsync("Article B", 200);
 
-        var result = await RunScoped<IFetchArticlesPageHandler, Result<Page<ArticleListItem>>>(
-            tx => tx.ExecuteAsync(new PageRequest
+        var result = await RunScoped<IFetchArticlesPageHandler, Result<Page<ArticleListItem>>>(tx =>
+            tx.ExecuteAsync(new PageRequest
             {
                 After = null,
                 Size = 0
@@ -146,8 +146,8 @@ public sealed class FetchArticlesPageHandlerTests(
     {
         await PrepareEnvironmentAsync();
 
-        var result = await RunScoped<IFetchArticlesPageHandler, Result<Page<ArticleListItem>>>(
-            tx => tx.ExecuteAsync(new PageRequest
+        var result = await RunScoped<IFetchArticlesPageHandler, Result<Page<ArticleListItem>>>(tx =>
+            tx.ExecuteAsync(new PageRequest
             {
                 After = null,
                 Size = 5
@@ -172,8 +172,8 @@ public sealed class FetchArticlesPageHandlerTests(
 
         var articleId = await CreateArticleAsync(description, price.Value);
 
-        var result = await RunScoped<IFetchArticlesPageHandler, Result<Page<ArticleListItem>>>(
-            tx => tx.ExecuteAsync(new PageRequest
+        var result = await RunScoped<IFetchArticlesPageHandler, Result<Page<ArticleListItem>>>(tx =>
+            tx.ExecuteAsync(new PageRequest
             {
                 After = null,
                 Size = 1
@@ -197,8 +197,8 @@ public sealed class FetchArticlesPageHandlerTests(
         await CreateArticleAsync("Article B", 200);
         await CreateArticleAsync("Article C", 300);
 
-        var firstPageResult = await RunScoped<IFetchArticlesPageHandler, Result<Page<ArticleListItem>>>(
-            tx => tx.ExecuteAsync(new PageRequest
+        var firstPageResult = await RunScoped<IFetchArticlesPageHandler, Result<Page<ArticleListItem>>>(tx =>
+            tx.ExecuteAsync(new PageRequest
             {
                 After = null,
                 Size = 2
@@ -216,8 +216,8 @@ public sealed class FetchArticlesPageHandlerTests(
         Assert.Equal("Article A", firstPage.Items[0].Description);
         Assert.Equal("Article B", firstPage.Items[1].Description);
 
-        var secondPageResult = await RunScoped<IFetchArticlesPageHandler, Result<Page<ArticleListItem>>>(
-            tx => tx.ExecuteAsync(new PageRequest
+        var secondPageResult = await RunScoped<IFetchArticlesPageHandler, Result<Page<ArticleListItem>>>(tx =>
+            tx.ExecuteAsync(new PageRequest
             {
                 After = firstPage.Next,
                 Size = 2
@@ -242,8 +242,7 @@ public sealed class FetchArticlesPageHandlerTests(
 
         await Assert.ThrowsAsync<ArgumentNullException>(async () =>
         {
-            await RunScoped<IFetchArticlesPageHandler, Result<Page<ArticleListItem>>>(
-                tx => tx.ExecuteAsync(null!)
+            await RunScoped<IFetchArticlesPageHandler, Result<Page<ArticleListItem>>>(tx => tx.ExecuteAsync(null!)
             );
         });
     }
@@ -259,8 +258,8 @@ public sealed class FetchArticlesPageHandlerTests(
         await CreateArticleAsync("Article B", 200);
         await CreateArticleAsync("Article C", 300);
 
-        var result = await RunScoped<IFetchArticlesPageHandler, Result<Page<ArticleListItem>>>(
-            tx => tx.ExecuteAsync(new PageRequest
+        var result = await RunScoped<IFetchArticlesPageHandler, Result<Page<ArticleListItem>>>(tx =>
+            tx.ExecuteAsync(new PageRequest
             {
                 After = null,
                 Until = articleAId,
@@ -288,8 +287,8 @@ public sealed class FetchArticlesPageHandlerTests(
 
         // until=A_id with pageSize=1: historical=[A], next page=[B], lookahead hits C
         // Next cursor should be B (last item of the new page), not C
-        var result = await RunScoped<IFetchArticlesPageHandler, Result<Page<ArticleListItem>>>(
-            tx => tx.ExecuteAsync(new PageRequest
+        var result = await RunScoped<IFetchArticlesPageHandler, Result<Page<ArticleListItem>>>(tx =>
+            tx.ExecuteAsync(new PageRequest
             {
                 After = null,
                 Until = articleAId,
@@ -317,8 +316,8 @@ public sealed class FetchArticlesPageHandlerTests(
         // has an ID >= this cursor.
         var beyondAllCursor = Identifier.New();
 
-        var result = await RunScoped<IFetchArticlesPageHandler, Result<Page<ArticleListItem>>>(
-            tx => tx.ExecuteAsync(new PageRequest
+        var result = await RunScoped<IFetchArticlesPageHandler, Result<Page<ArticleListItem>>>(tx =>
+            tx.ExecuteAsync(new PageRequest
             {
                 After = null,
                 Until = beyondAllCursor,
@@ -351,8 +350,8 @@ public sealed class FetchArticlesPageHandlerTests(
         // Page through all articles with pageSize=2
         for (var i = 0; i < 10; i++) // safety limit
         {
-            var result = await RunScoped<IFetchArticlesPageHandler, Result<Page<ArticleListItem>>>(
-                tx => tx.ExecuteAsync(new PageRequest
+            var result = await RunScoped<IFetchArticlesPageHandler, Result<Page<ArticleListItem>>>(tx =>
+                tx.ExecuteAsync(new PageRequest
                 {
                     After = cursor,
                     Size = 2
@@ -368,7 +367,9 @@ public sealed class FetchArticlesPageHandlerTests(
             }
 
             if (!page.HasNext)
+            {
                 break;
+            }
 
             cursor = page.Next;
         }
@@ -394,8 +395,8 @@ public sealed class FetchArticlesPageHandlerTests(
         await CreateArticleAsync("Article D", 400);
 
         // Get page 1 with pageSize=2
-        var page1Result = await RunScoped<IFetchArticlesPageHandler, Result<Page<ArticleListItem>>>(
-            tx => tx.ExecuteAsync(new PageRequest
+        var page1Result = await RunScoped<IFetchArticlesPageHandler, Result<Page<ArticleListItem>>>(tx =>
+            tx.ExecuteAsync(new PageRequest
             {
                 After = null,
                 Size = 2
@@ -410,8 +411,8 @@ public sealed class FetchArticlesPageHandlerTests(
         Assert.NotNull(page1.Next);
 
         // Use until with the Next cursor to get accumulated view
-        var untilResult = await RunScoped<IFetchArticlesPageHandler, Result<Page<ArticleListItem>>>(
-            tx => tx.ExecuteAsync(new PageRequest
+        var untilResult = await RunScoped<IFetchArticlesPageHandler, Result<Page<ArticleListItem>>>(tx =>
+            tx.ExecuteAsync(new PageRequest
             {
                 After = null,
                 Until = page1.Next,
@@ -435,8 +436,8 @@ public sealed class FetchArticlesPageHandlerTests(
 
     private async Task<Identifier> CreateArticleAsync(string description, long priceInCents)
     {
-        var registerArticleResult = await RunScoped<IRegisterArticleTransaction, Result<Identifier>>(
-            tx => tx.ExecuteAsync(new ArticleDefinition
+        var registerArticleResult = await RunScoped<IRegisterArticleTransaction, Result<Identifier>>(tx =>
+            tx.ExecuteAsync(new ArticleDefinition
             {
                 Description = description,
                 Price = Cents.From(priceInCents)

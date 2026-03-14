@@ -28,8 +28,8 @@ public static class Paginator
         var integerPageSize = (int)pageRequest.Size;
 
         var actualItems = itemsPlusOne
-          .Take(integerPageSize)
-          .ToImmutableArray();
+            .Take(integerPageSize)
+            .ToImmutableArray();
 
         var maybeNext = hasMore && actualItems.Length > 0
             ? actualItems[^1]

@@ -32,7 +32,7 @@ public static class ServiceCollectionExtensions
 
     private static void AddDbContext(IServiceCollection services, IConfiguration configuration)
     {
-        string? dataSource = configuration.GetValue<string>("DataSource");
+        var dataSource = configuration.GetValue<string>("DataSource");
 
         if (string.IsNullOrWhiteSpace(dataSource))
         {
@@ -47,7 +47,7 @@ public static class ServiceCollectionExtensions
             Pooling = true
         };
 
-        string connectionString = connectionStringBuilder.ToString();
+        var connectionString = connectionStringBuilder.ToString();
 
         if (string.IsNullOrWhiteSpace(connectionString))
         {

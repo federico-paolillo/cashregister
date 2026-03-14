@@ -2,7 +2,6 @@
 using Cashregister.Database.Entities;
 
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 
 using Xunit.Abstractions;
 
@@ -25,19 +24,19 @@ public sealed class ArticleEntityTests(
             Retired = false
         };
 
-        using IServiceScope wScope = NewServiceScope();
+        using var wScope = NewServiceScope();
 
-        ApplicationDbContext wDbContext = wScope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        var wDbContext = wScope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
         wDbContext.Articles.Add(wArticleEntity);
 
         await wDbContext.SaveChangesAsync();
 
-        using IServiceScope rScope = NewServiceScope();
+        using var rScope = NewServiceScope();
 
-        ApplicationDbContext rDbContext = rScope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        var rDbContext = rScope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
-        ArticleEntity? rArticleEntity = await rDbContext.Articles.SingleOrDefaultAsync(a => a.Id == "some-id");
+        var rArticleEntity = await rDbContext.Articles.SingleOrDefaultAsync(a => a.Id == "some-id");
 
         Assert.NotNull(rArticleEntity);
 

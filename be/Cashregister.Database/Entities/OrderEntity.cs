@@ -5,13 +5,13 @@ namespace Cashregister.Database.Entities;
 
 public sealed class OrderEntity : IIdentifiableEntity
 {
-    public required string Id { get; init; }
-
     public long RowId { get; private set; }
 
     public required long Date { get; init; }
 
     public required List<OrderItemEntity> Items { get; init; } = [];
+    
+    public required string Id { get; init; }
 
     public sealed class OrderEntityTypeConfiguration : IEntityTypeConfiguration<OrderEntity>
     {

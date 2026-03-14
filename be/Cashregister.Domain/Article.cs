@@ -12,7 +12,7 @@ public sealed class Article
     {
         return new RetiredArticle
         {
-            Id = Id,
+            Id = Id
         };
     }
 }

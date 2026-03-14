@@ -3,9 +3,9 @@ using System.Collections.Immutable;
 using Cashregister.Api.Articles.Models;
 using Cashregister.Api.Commons.Models;
 using Cashregister.Application.Articles.Data;
+using Cashregister.Application.Articles.Handlers;
 using Cashregister.Application.Articles.Models.Input;
 using Cashregister.Application.Articles.Problems;
-using Cashregister.Application.Articles.Handlers;
 using Cashregister.Application.Articles.Transactions;
 using Cashregister.Application.Pagination;
 using Cashregister.Domain;
@@ -18,10 +18,10 @@ namespace Cashregister.Api.Articles;
 internal static class Handlers
 {
     public static async Task<Results<BadRequest, Ok<ArticlesPageDto>>> GetArticlesPage(
-      IFetchArticlesPageHandler fetchArticlesPageHandler,
-      [FromQuery(Name = "pageSize")] uint pageSize = 50,
-      [FromQuery(Name = "after")] string? after = null,
-      [FromQuery(Name = "until")] string? until = null
+        IFetchArticlesPageHandler fetchArticlesPageHandler,
+        [FromQuery(Name = "pageSize")] uint pageSize = 50,
+        [FromQuery(Name = "after")] string? after = null,
+        [FromQuery(Name = "until")] string? until = null
     )
     {
         if (after is not null && until is not null)
@@ -36,7 +36,7 @@ internal static class Handlers
         {
             After = afterIdentifier,
             Until = untilIdentifier,
-            Size = pageSize,
+            Size = pageSize
         };
 
         var articlesPageResult = await fetchArticlesPageHandler.ExecuteAsync(pageRequest);
@@ -49,22 +49,22 @@ internal static class Handlers
         var articlesPage = articlesPageResult.Value;
 
         var articlesListItemDto = articlesPage.Items
-          .Select(ArticleListItemDto.From)
-          .ToImmutableArray();
+            .Select(ArticleListItemDto.From)
+            .ToImmutableArray();
 
         var articlesPageDto = new ArticlesPageDto(
-          articlesPage.Next?.Value,
-          articlesPage.HasNext,
-          articlesListItemDto
+            articlesPage.Next?.Value,
+            articlesPage.HasNext,
+            articlesListItemDto
         );
 
         return TypedResults.Ok(articlesPageDto);
     }
 
     public static async Task<Results<BadRequest, Created<EntityPointerDto>>> RegisterArticle(
-      IRegisterArticleTransaction registerArticleTransaction,
-      LinkGenerator linkGenerator,
-      [FromBody] RegisterArticleRequestDto request
+        IRegisterArticleTransaction registerArticleTransaction,
+        LinkGenerator linkGenerator,
+        [FromBody] RegisterArticleRequestDto request
     )
     {
         var articleDefinition = new ArticleDefinition
@@ -80,8 +80,11 @@ internal static class Handlers
             return TypedResults.BadRequest();
         }
 
-        var location = linkGenerator.GetPathByName("GetArticle", new { id = result.Value.Value })
-            ?? throw new InvalidOperationException("Failed to generate location for article");
+        var location = linkGenerator.GetPathByName("GetArticle", new
+                       {
+                           id = result.Value.Value
+                       })
+                       ?? throw new InvalidOperationException("Failed to generate location for article");
 
         var orderPointerDto = new EntityPointerDto
         {
@@ -93,8 +96,8 @@ internal static class Handlers
     }
 
     public static async Task<Results<BadRequest, NotFound, Ok<ArticleDto>>> GetArticle(
-      IFetchArticleQuery fetchArticleQuery,
-      [FromRoute] string id
+        IFetchArticleQuery fetchArticleQuery,
+        [FromRoute] string id
     )
     {
         var identifier = Identifier.From(id);
@@ -112,9 +115,9 @@ internal static class Handlers
     }
 
     public static async Task<Results<NotFound, StatusCodeHttpResult, NoContent>> ChangeArticle(
-      IChangeArticleTransaction changeArticleTransaction,
-      [FromRoute] string id,
-      [FromBody] ChangeArticleRequestDto request
+        IChangeArticleTransaction changeArticleTransaction,
+        [FromRoute] string id,
+        [FromBody] ChangeArticleRequestDto request
     )
     {
         var articleChange = new ArticleChange
@@ -139,8 +142,8 @@ internal static class Handlers
     }
 
     public static async Task<Results<NotFound, StatusCodeHttpResult, NoContent>> DeleteArticle(
-      IRetireArticleTransaction retireArticleTransaction,
-      [FromRoute] string id
+        IRetireArticleTransaction retireArticleTransaction,
+        [FromRoute] string id
     )
     {
         var identifier = Identifier.From(id);

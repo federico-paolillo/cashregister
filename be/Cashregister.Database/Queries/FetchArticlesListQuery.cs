@@ -15,11 +15,13 @@ public sealed class FetchArticlesListQuery(
         return applicationDbContext.Articles;
     }
 
-    protected override Expression<Func<ArticleEntity, ArticleListItem>> GetProjection() =>
-        a => new ArticleListItem
+    protected override Expression<Func<ArticleEntity, ArticleListItem>> GetProjection()
+    {
+        return a => new ArticleListItem
         {
             Id = Identifier.From(a.Id),
             Description = a.Description,
             Price = Cents.From(a.Price)
         };
+    }
 }

@@ -24,7 +24,8 @@ public sealed record OrderDto(
     {
         ArgumentNullException.ThrowIfNull(order);
 
-        ImmutableArray<OrderItemDto> items = [
+        ImmutableArray<OrderItemDto> items =
+        [
             .. order.Items.Select(item => new OrderItemDto(
                 item.Id.Value,
                 item.Article.Value,

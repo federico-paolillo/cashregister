@@ -1,5 +1,4 @@
 using Cashregister.Application.Orders.Data;
-using Cashregister.Database.Entities;
 using Cashregister.Database.Mappers;
 using Cashregister.Domain;
 
@@ -16,7 +15,7 @@ public sealed class FetchArticlesQuery(
     {
         string[] rawIdentifiers = [.. identifiers.Select(x => x.Value)];
 
-        ArticleEntity[] articleEntities = await dbContext.Articles
+        var articleEntities = await dbContext.Articles
             .Where(a => rawIdentifiers.Contains(a.Id))
             .AsNoTracking()
             .ToArrayAsync();

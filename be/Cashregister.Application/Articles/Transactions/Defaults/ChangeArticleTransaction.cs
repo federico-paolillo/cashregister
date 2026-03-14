@@ -11,8 +11,8 @@ public sealed class ChangeArticleTransaction(
     IFetchArticleQuery fetchArticleQuery,
     ISaveArticleCommand saveArticleCommand
 ) :
-  Transaction<ArticleChange, Unit>(unitOfWork),
-  IChangeArticleTransaction
+    Transaction<ArticleChange, Unit>(unitOfWork),
+    IChangeArticleTransaction
 {
     protected override async Task<Result<Unit>> InternalExecuteAsync(ArticleChange change)
     {

@@ -5,7 +5,7 @@ using Cashregister.Factories;
 namespace Cashregister.Application.Orders.Handlers.Defaults;
 
 public sealed class FetchOrdersPageHandler(
-  IPaginationQuery<OrderListItem> ordersListFetcher
+    IPaginationQuery<OrderListItem> ordersListFetcher
 ) : IFetchOrdersPageHandler
 {
     public async Task<Result<Page<OrderListItem>>> ExecuteAsync(PageRequest pageRequest)

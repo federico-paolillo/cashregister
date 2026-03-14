@@ -28,8 +28,8 @@ public sealed class FetchOrdersPageHandlerTests(
         await CreateOrderAsync(articleId, 3);
         await CreateOrderAsync(articleId, 4);
 
-        var result = await RunScoped<IFetchOrdersPageHandler, Result<Page<OrderListItem>>>(
-            handler => handler.ExecuteAsync(new PageRequest
+        var result = await RunScoped<IFetchOrdersPageHandler, Result<Page<OrderListItem>>>(handler =>
+            handler.ExecuteAsync(new PageRequest
             {
                 After = null,
                 Size = 2
@@ -59,8 +59,8 @@ public sealed class FetchOrdersPageHandlerTests(
         await CreateOrderAsync(articleId, 3);
         await CreateOrderAsync(articleId, 4);
 
-        var page1Result = await RunScoped<IFetchOrdersPageHandler, Result<Page<OrderListItem>>>(
-            handler => handler.ExecuteAsync(new PageRequest
+        var page1Result = await RunScoped<IFetchOrdersPageHandler, Result<Page<OrderListItem>>>(handler =>
+            handler.ExecuteAsync(new PageRequest
             {
                 After = null,
                 Size = 2
@@ -75,8 +75,8 @@ public sealed class FetchOrdersPageHandlerTests(
         Assert.True(firstPage.HasNext);
         Assert.NotNull(firstPage.Next);
 
-        var page2Result = await RunScoped<IFetchOrdersPageHandler, Result<Page<OrderListItem>>>(
-            handler => handler.ExecuteAsync(new PageRequest
+        var page2Result = await RunScoped<IFetchOrdersPageHandler, Result<Page<OrderListItem>>>(handler =>
+            handler.ExecuteAsync(new PageRequest
             {
                 After = firstPage.Next,
                 Size = 2
@@ -102,8 +102,8 @@ public sealed class FetchOrdersPageHandlerTests(
         await CreateOrderAsync(articleId, 1);
         await CreateOrderAsync(articleId, 2);
 
-        var result = await RunScoped<IFetchOrdersPageHandler, Result<Page<OrderListItem>>>(
-            handler => handler.ExecuteAsync(new PageRequest
+        var result = await RunScoped<IFetchOrdersPageHandler, Result<Page<OrderListItem>>>(handler =>
+            handler.ExecuteAsync(new PageRequest
             {
                 After = null,
                 Size = 10
@@ -127,8 +127,8 @@ public sealed class FetchOrdersPageHandlerTests(
 
         await CreateOrderAsync(articleId, 1);
 
-        var result = await RunScoped<IFetchOrdersPageHandler, Result<Page<OrderListItem>>>(
-            handler => handler.ExecuteAsync(new PageRequest
+        var result = await RunScoped<IFetchOrdersPageHandler, Result<Page<OrderListItem>>>(handler =>
+            handler.ExecuteAsync(new PageRequest
             {
                 After = null,
                 Size = 0
@@ -148,8 +148,8 @@ public sealed class FetchOrdersPageHandlerTests(
     {
         await PrepareEnvironmentAsync();
 
-        var result = await RunScoped<IFetchOrdersPageHandler, Result<Page<OrderListItem>>>(
-            handler => handler.ExecuteAsync(new PageRequest
+        var result = await RunScoped<IFetchOrdersPageHandler, Result<Page<OrderListItem>>>(handler =>
+            handler.ExecuteAsync(new PageRequest
             {
                 After = null,
                 Size = 5
@@ -173,8 +173,8 @@ public sealed class FetchOrdersPageHandlerTests(
 
         var orderId = await CreateOrderAsync(articleId, 3);
 
-        var result = await RunScoped<IFetchOrdersPageHandler, Result<Page<OrderListItem>>>(
-            handler => handler.ExecuteAsync(new PageRequest
+        var result = await RunScoped<IFetchOrdersPageHandler, Result<Page<OrderListItem>>>(handler =>
+            handler.ExecuteAsync(new PageRequest
             {
                 After = null,
                 Size = 1
@@ -200,8 +200,8 @@ public sealed class FetchOrdersPageHandlerTests(
         await CreateOrderAsync(articleId, 2);
         await CreateOrderAsync(articleId, 3);
 
-        var firstPageResult = await RunScoped<IFetchOrdersPageHandler, Result<Page<OrderListItem>>>(
-            handler => handler.ExecuteAsync(new PageRequest
+        var firstPageResult = await RunScoped<IFetchOrdersPageHandler, Result<Page<OrderListItem>>>(handler =>
+            handler.ExecuteAsync(new PageRequest
             {
                 After = null,
                 Size = 2
@@ -216,8 +216,8 @@ public sealed class FetchOrdersPageHandlerTests(
         Assert.True(firstPage.HasNext);
         Assert.NotNull(firstPage.Next);
 
-        var secondPageResult = await RunScoped<IFetchOrdersPageHandler, Result<Page<OrderListItem>>>(
-            handler => handler.ExecuteAsync(new PageRequest
+        var secondPageResult = await RunScoped<IFetchOrdersPageHandler, Result<Page<OrderListItem>>>(handler =>
+            handler.ExecuteAsync(new PageRequest
             {
                 After = firstPage.Next,
                 Size = 2
@@ -240,8 +240,7 @@ public sealed class FetchOrdersPageHandlerTests(
 
         await Assert.ThrowsAsync<ArgumentNullException>(async () =>
         {
-            await RunScoped<IFetchOrdersPageHandler, Result<Page<OrderListItem>>>(
-                handler => handler.ExecuteAsync(null!)
+            await RunScoped<IFetchOrdersPageHandler, Result<Page<OrderListItem>>>(handler => handler.ExecuteAsync(null!)
             );
         });
     }
@@ -257,8 +256,8 @@ public sealed class FetchOrdersPageHandlerTests(
         await CreateOrderAsync(articleId, 2);
         await CreateOrderAsync(articleId, 3);
 
-        var result = await RunScoped<IFetchOrdersPageHandler, Result<Page<OrderListItem>>>(
-            handler => handler.ExecuteAsync(new PageRequest
+        var result = await RunScoped<IFetchOrdersPageHandler, Result<Page<OrderListItem>>>(handler =>
+            handler.ExecuteAsync(new PageRequest
             {
                 After = null,
                 Until = order1Id,
@@ -291,8 +290,8 @@ public sealed class FetchOrdersPageHandlerTests(
 
         for (var i = 0; i < 10; i++)
         {
-            var result = await RunScoped<IFetchOrdersPageHandler, Result<Page<OrderListItem>>>(
-                handler => handler.ExecuteAsync(new PageRequest
+            var result = await RunScoped<IFetchOrdersPageHandler, Result<Page<OrderListItem>>>(handler =>
+                handler.ExecuteAsync(new PageRequest
                 {
                     After = cursor,
                     Size = 2
@@ -308,7 +307,9 @@ public sealed class FetchOrdersPageHandlerTests(
             }
 
             if (!page.HasNext)
+            {
                 break;
+            }
 
             cursor = page.Next;
         }
@@ -319,8 +320,8 @@ public sealed class FetchOrdersPageHandlerTests(
 
     private async Task<Identifier> CreateArticleAsync(string description, long priceInCents)
     {
-        var registerArticleResult = await RunScoped<IRegisterArticleTransaction, Result<Identifier>>(
-            tx => tx.ExecuteAsync(new ArticleDefinition
+        var registerArticleResult = await RunScoped<IRegisterArticleTransaction, Result<Identifier>>(tx =>
+            tx.ExecuteAsync(new ArticleDefinition
             {
                 Description = description,
                 Price = Cents.From(priceInCents)
@@ -333,8 +334,8 @@ public sealed class FetchOrdersPageHandlerTests(
 
     private async Task<Identifier> CreateOrderAsync(Identifier articleId, uint quantity)
     {
-        var placeOrderResult = await RunScoped<IPlaceOrderTransaction, Result<Identifier>>(
-            tx => tx.ExecuteAsync(new OrderRequest
+        var placeOrderResult = await RunScoped<IPlaceOrderTransaction, Result<Identifier>>(tx =>
+            tx.ExecuteAsync(new OrderRequest
             {
                 Items =
                 [

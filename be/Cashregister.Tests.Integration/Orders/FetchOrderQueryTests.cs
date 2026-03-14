@@ -19,9 +19,9 @@ public sealed class FetchOrderQueryTests(
     {
         await PrepareEnvironmentAsync();
 
-        var result = await RunScoped<IFetchOrderQuery, Order?>(
-            q => q.FetchAsync(Identifier.From("nonexistent-order-id"))
-        );
+        var result =
+            await RunScoped<IFetchOrderQuery, Order?>(q => q.FetchAsync(Identifier.From("nonexistent-order-id"))
+            );
 
         Assert.Null(result);
     }
@@ -35,8 +35,7 @@ public sealed class FetchOrderQueryTests(
 
         var orderId = await CreateOrderAsync(articleId, 4);
 
-        var order = await RunScoped<IFetchOrderQuery, Order?>(
-            q => q.FetchAsync(orderId)
+        var order = await RunScoped<IFetchOrderQuery, Order?>(q => q.FetchAsync(orderId)
         );
 
         Assert.NotNull(order);
@@ -63,8 +62,7 @@ public sealed class FetchOrderQueryTests(
 
         var orderId = await CreateOrderWithMultipleItemsAsync(article1Id, 2, article2Id, 3);
 
-        var order = await RunScoped<IFetchOrderQuery, Order?>(
-            q => q.FetchAsync(orderId)
+        var order = await RunScoped<IFetchOrderQuery, Order?>(q => q.FetchAsync(orderId)
         );
 
         Assert.NotNull(order);
@@ -84,8 +82,8 @@ public sealed class FetchOrderQueryTests(
 
     private async Task<Identifier> CreateArticleAsync(string description, long priceInCents)
     {
-        var registerArticleResult = await RunScoped<IRegisterArticleTransaction, Result<Identifier>>(
-            tx => tx.ExecuteAsync(new ArticleDefinition
+        var registerArticleResult = await RunScoped<IRegisterArticleTransaction, Result<Identifier>>(tx =>
+            tx.ExecuteAsync(new ArticleDefinition
             {
                 Description = description,
                 Price = Cents.From(priceInCents)
@@ -98,8 +96,8 @@ public sealed class FetchOrderQueryTests(
 
     private async Task<Identifier> CreateOrderAsync(Identifier articleId, uint quantity)
     {
-        var placeOrderResult = await RunScoped<IPlaceOrderTransaction, Result<Identifier>>(
-            tx => tx.ExecuteAsync(new OrderRequest
+        var placeOrderResult = await RunScoped<IPlaceOrderTransaction, Result<Identifier>>(tx =>
+            tx.ExecuteAsync(new OrderRequest
             {
                 Items =
                 [
@@ -120,13 +118,21 @@ public sealed class FetchOrderQueryTests(
         Identifier article1Id, uint quantity1,
         Identifier article2Id, uint quantity2)
     {
-        var placeOrderResult = await RunScoped<IPlaceOrderTransaction, Result<Identifier>>(
-            tx => tx.ExecuteAsync(new OrderRequest
+        var placeOrderResult = await RunScoped<IPlaceOrderTransaction, Result<Identifier>>(tx =>
+            tx.ExecuteAsync(new OrderRequest
             {
                 Items =
                 [
-                    new OrderRequestItem { Article = article1Id, Quantity = quantity1 },
-                    new OrderRequestItem { Article = article2Id, Quantity = quantity2 }
+                    new OrderRequestItem
+                    {
+                        Article = article1Id,
+                        Quantity = quantity1
+                    },
+                    new OrderRequestItem
+                    {
+                        Article = article2Id,
+                        Quantity = quantity2
+                    }
                 ]
             })
         );

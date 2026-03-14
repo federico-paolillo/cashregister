@@ -19,8 +19,8 @@ public sealed class PlaceOrderTransactionTests(
     {
         await PrepareEnvironmentAsync();
 
-        var registerArticleResult = await RunScoped<IRegisterArticleTransaction, Result<Identifier>>(
-            tx => tx.ExecuteAsync(new ArticleDefinition
+        var registerArticleResult = await RunScoped<IRegisterArticleTransaction, Result<Identifier>>(tx =>
+            tx.ExecuteAsync(new ArticleDefinition
             {
                 Description = "Some test article",
                 Price = Cents.From(1L)
@@ -31,10 +31,10 @@ public sealed class PlaceOrderTransactionTests(
 
         var articleId = registerArticleResult.Value;
 
-        var placeOrderResult = await RunScoped<IPlaceOrderTransaction, Result<Identifier>>(
-            tx => tx.ExecuteAsync(new OrderRequest
-            {
-                Items =
+        var placeOrderResult = await RunScoped<IPlaceOrderTransaction, Result<Identifier>>(tx =>
+            tx.ExecuteAsync(new OrderRequest
+                {
+                    Items =
                     [
                         new OrderRequestItem
                         {
@@ -42,7 +42,7 @@ public sealed class PlaceOrderTransactionTests(
                             Quantity = 21
                         }
                     ]
-            }
+                }
             )
         );
 
@@ -50,8 +50,7 @@ public sealed class PlaceOrderTransactionTests(
 
         var orderId = placeOrderResult.Value;
 
-        var order = await RunScoped<IFetchOrderQuery, Order?>(
-            q => q.FetchAsync(orderId)
+        var order = await RunScoped<IFetchOrderQuery, Order?>(q => q.FetchAsync(orderId)
         );
 
         Assert.NotNull(order);

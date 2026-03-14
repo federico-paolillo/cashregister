@@ -25,9 +25,10 @@ public sealed class FetchArticlesListQueryTests(
         var article2Id = await CreateArticleAsync("Article B", 200);
         var article3Id = await CreateArticleAsync("Article C", 300);
 
-        var result = await RunScoped<IPaginationQuery<ArticleListItem>, ImmutableArray<ArticleListItem>>(
-            fetcher => fetcher.FetchAsync(2)
-        );
+        var result =
+            await RunScoped<IPaginationQuery<ArticleListItem>, ImmutableArray<ArticleListItem>>(fetcher =>
+                fetcher.FetchAsync(2)
+            );
 
         Assert.Equal(2, result.Length);
 
@@ -35,7 +36,12 @@ public sealed class FetchArticlesListQueryTests(
         Assert.True(string.Compare(result[0].Id.Value, result[1].Id.Value, StringComparison.Ordinal) < 0);
 
         // Verify the first two articles are returned
-        Identifier[] expectedIds = new[] { article1Id, article2Id, article3Id }
+        var expectedIds = new[]
+            {
+                article1Id,
+                article2Id,
+                article3Id
+            }
             .OrderBy(id => id.Value)
             .Take(2)
             .ToArray();
@@ -55,9 +61,10 @@ public sealed class FetchArticlesListQueryTests(
         var article3Id = await CreateArticleAsync("Article C", 300);
         var article4Id = await CreateArticleAsync("Article D", 400);
 
-        var result = await RunScoped<IPaginationQuery<ArticleListItem>, ImmutableArray<ArticleListItem>>(
-            fetcher => fetcher.FetchAsync(3, article2Id)
-        );
+        var result =
+            await RunScoped<IPaginationQuery<ArticleListItem>, ImmutableArray<ArticleListItem>>(fetcher =>
+                fetcher.FetchAsync(3, article2Id)
+            );
 
         Assert.Equal(2, result.Length);
 
@@ -73,9 +80,10 @@ public sealed class FetchArticlesListQueryTests(
         var article1Id = await CreateArticleAsync("Article A", 100);
         var article2Id = await CreateArticleAsync("Article B", 200);
 
-        var result = await RunScoped<IPaginationQuery<ArticleListItem>, ImmutableArray<ArticleListItem>>(
-            fetcher => fetcher.FetchAsync(10)
-        );
+        var result =
+            await RunScoped<IPaginationQuery<ArticleListItem>, ImmutableArray<ArticleListItem>>(fetcher =>
+                fetcher.FetchAsync(10)
+            );
 
         Assert.Equal(2, result.Length);
 
@@ -91,9 +99,10 @@ public sealed class FetchArticlesListQueryTests(
         await CreateArticleAsync("Article A", 100);
         await CreateArticleAsync("Article B", 200);
 
-        var result = await RunScoped<IPaginationQuery<ArticleListItem>, ImmutableArray<ArticleListItem>>(
-            fetcher => fetcher.FetchAsync(0)
-        );
+        var result =
+            await RunScoped<IPaginationQuery<ArticleListItem>, ImmutableArray<ArticleListItem>>(fetcher =>
+                fetcher.FetchAsync(0)
+            );
 
         Assert.Empty(result);
     }
@@ -103,9 +112,10 @@ public sealed class FetchArticlesListQueryTests(
     {
         await PrepareEnvironmentAsync();
 
-        var result = await RunScoped<IPaginationQuery<ArticleListItem>, ImmutableArray<ArticleListItem>>(
-            fetcher => fetcher.FetchAsync(5)
-        );
+        var result =
+            await RunScoped<IPaginationQuery<ArticleListItem>, ImmutableArray<ArticleListItem>>(fetcher =>
+                fetcher.FetchAsync(5)
+            );
 
         Assert.Empty(result);
     }
@@ -120,9 +130,10 @@ public sealed class FetchArticlesListQueryTests(
 
         var articleId = await CreateArticleAsync(description, price.Value);
 
-        var result = await RunScoped<IPaginationQuery<ArticleListItem>, ImmutableArray<ArticleListItem>>(
-            fetcher => fetcher.FetchAsync(1)
-        );
+        var result =
+            await RunScoped<IPaginationQuery<ArticleListItem>, ImmutableArray<ArticleListItem>>(fetcher =>
+                fetcher.FetchAsync(1)
+            );
 
         Assert.Single(result);
         Assert.Equal(articleId.Value, result[0].Id.Value);
@@ -138,9 +149,10 @@ public sealed class FetchArticlesListQueryTests(
         var article2Id = await CreateArticleAsync("Article B", 200);
         _ = await CreateArticleAsync("Article C", 300);
 
-        var result = await RunScoped<IPaginationQuery<ArticleListItem>, ImmutableArray<ArticleListItem>>(
-            fetcher => fetcher.FetchUntilAsync(article2Id)
-        );
+        var result =
+            await RunScoped<IPaginationQuery<ArticleListItem>, ImmutableArray<ArticleListItem>>(fetcher =>
+                fetcher.FetchUntilAsync(article2Id)
+            );
 
         Assert.Equal(2, result.Length);
         Assert.Equal(article1Id.Value, result[0].Id.Value);
@@ -155,9 +167,10 @@ public sealed class FetchArticlesListQueryTests(
         var article1Id = await CreateArticleAsync("Article A", 100);
         _ = await CreateArticleAsync("Article B", 200);
 
-        var result = await RunScoped<IPaginationQuery<ArticleListItem>, ImmutableArray<ArticleListItem>>(
-            fetcher => fetcher.FetchUntilAsync(article1Id)
-        );
+        var result =
+            await RunScoped<IPaginationQuery<ArticleListItem>, ImmutableArray<ArticleListItem>>(fetcher =>
+                fetcher.FetchUntilAsync(article1Id)
+            );
 
         Assert.Single(result);
         Assert.Equal(article1Id.Value, result[0].Id.Value);
@@ -165,8 +178,8 @@ public sealed class FetchArticlesListQueryTests(
 
     private async Task<Identifier> CreateArticleAsync(string description, long priceInCents)
     {
-        var registerArticleResult = await RunScoped<IRegisterArticleTransaction, Result<Identifier>>(
-            tx => tx.ExecuteAsync(new ArticleDefinition
+        var registerArticleResult = await RunScoped<IRegisterArticleTransaction, Result<Identifier>>(tx =>
+            tx.ExecuteAsync(new ArticleDefinition
             {
                 Description = description,
                 Price = Cents.From(priceInCents)

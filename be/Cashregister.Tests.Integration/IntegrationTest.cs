@@ -1,17 +1,11 @@
 using System.Globalization;
 
-using Cashregister.Api;
-using Cashregister.Application.Articles.Extensions;
-using Cashregister.Application.Orders.Extensions;
-
-using NUlid;
-using Cashregister.Application.Receipts.Extensions;
 using Cashregister.Database;
-using Cashregister.Database.Extensions;
-using Cashregister.Factories;
 
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
+
+using NUlid;
 
 using Xunit.Abstractions;
 
@@ -64,9 +58,9 @@ public abstract class IntegrationTest(
             throw new InvalidOperationException("No WebApplicationFactory Did you call PrepareEnvironmentAsync()?");
         }
 
-        using IServiceScope scope = NewServiceScope();
+        using var scope = NewServiceScope();
 
-        await using ApplicationDbContext dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        await using var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
         await dbContext.Database.MigrateAsync();
     }
@@ -103,7 +97,7 @@ public abstract class IntegrationTest(
 
     private static string GenerateDatabaseName()
     {
-        string now = DateTime.UtcNow.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+        var now = DateTime.UtcNow.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
 
         return $"{Ulid.NewUlid()}-{now}.sqlite3";
     }

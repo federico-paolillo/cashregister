@@ -5,5 +5,5 @@ namespace Cashregister.Application.Receipts.Data;
 
 public interface IFetchOrderPrintDataQuery
 {
-    public Task<OrderPrintData> Fetch(Identifier orderId);
+    Task<OrderPrintData> Fetch(Identifier orderId);
 }

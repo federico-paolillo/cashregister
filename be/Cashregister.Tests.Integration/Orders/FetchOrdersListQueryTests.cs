@@ -28,9 +28,10 @@ public sealed class FetchOrdersListQueryTests(
         var order2Id = await CreateOrderAsync(articleId, 2);
         _ = await CreateOrderAsync(articleId, 3);
 
-        var result = await RunScoped<IPaginationQuery<OrderListItem>, ImmutableArray<OrderListItem>>(
-            fetcher => fetcher.FetchAsync(2)
-        );
+        var result =
+            await RunScoped<IPaginationQuery<OrderListItem>, ImmutableArray<OrderListItem>>(fetcher =>
+                fetcher.FetchAsync(2)
+            );
 
         Assert.Equal(2, result.Length);
 
@@ -38,7 +39,11 @@ public sealed class FetchOrdersListQueryTests(
         Assert.True(string.Compare(result[0].Id.Value, result[1].Id.Value, StringComparison.Ordinal) < 0);
 
         // Verify the first two orders are returned
-        Identifier[] expectedIds = new[] { order1Id, order2Id }
+        var expectedIds = new[]
+            {
+                order1Id,
+                order2Id
+            }
             .OrderBy(id => id.Value)
             .ToArray();
 
@@ -58,9 +63,10 @@ public sealed class FetchOrdersListQueryTests(
         var order3Id = await CreateOrderAsync(articleId, 3);
         var order4Id = await CreateOrderAsync(articleId, 4);
 
-        var result = await RunScoped<IPaginationQuery<OrderListItem>, ImmutableArray<OrderListItem>>(
-            fetcher => fetcher.FetchAsync(3, order2Id)
-        );
+        var result =
+            await RunScoped<IPaginationQuery<OrderListItem>, ImmutableArray<OrderListItem>>(fetcher =>
+                fetcher.FetchAsync(3, order2Id)
+            );
 
         Assert.Equal(2, result.Length);
 
@@ -78,9 +84,10 @@ public sealed class FetchOrdersListQueryTests(
         await CreateOrderAsync(articleId, 1);
         await CreateOrderAsync(articleId, 2);
 
-        var result = await RunScoped<IPaginationQuery<OrderListItem>, ImmutableArray<OrderListItem>>(
-            fetcher => fetcher.FetchAsync(10)
-        );
+        var result =
+            await RunScoped<IPaginationQuery<OrderListItem>, ImmutableArray<OrderListItem>>(fetcher =>
+                fetcher.FetchAsync(10)
+            );
 
         Assert.Equal(2, result.Length);
 
@@ -97,9 +104,10 @@ public sealed class FetchOrdersListQueryTests(
 
         await CreateOrderAsync(articleId, 1);
 
-        var result = await RunScoped<IPaginationQuery<OrderListItem>, ImmutableArray<OrderListItem>>(
-            fetcher => fetcher.FetchAsync(0)
-        );
+        var result =
+            await RunScoped<IPaginationQuery<OrderListItem>, ImmutableArray<OrderListItem>>(fetcher =>
+                fetcher.FetchAsync(0)
+            );
 
         Assert.Empty(result);
     }
@@ -109,9 +117,10 @@ public sealed class FetchOrdersListQueryTests(
     {
         await PrepareEnvironmentAsync();
 
-        var result = await RunScoped<IPaginationQuery<OrderListItem>, ImmutableArray<OrderListItem>>(
-            fetcher => fetcher.FetchAsync(5)
-        );
+        var result =
+            await RunScoped<IPaginationQuery<OrderListItem>, ImmutableArray<OrderListItem>>(fetcher =>
+                fetcher.FetchAsync(5)
+            );
 
         Assert.Empty(result);
     }
@@ -125,9 +134,10 @@ public sealed class FetchOrdersListQueryTests(
 
         var orderId = await CreateOrderAsync(articleId, 3);
 
-        var result = await RunScoped<IPaginationQuery<OrderListItem>, ImmutableArray<OrderListItem>>(
-            fetcher => fetcher.FetchAsync(1)
-        );
+        var result =
+            await RunScoped<IPaginationQuery<OrderListItem>, ImmutableArray<OrderListItem>>(fetcher =>
+                fetcher.FetchAsync(1)
+            );
 
         Assert.Single(result);
         Assert.Equal(orderId.Value, result[0].Id.Value);
@@ -147,9 +157,10 @@ public sealed class FetchOrdersListQueryTests(
         var order2Id = await CreateOrderAsync(articleId, 2);
         _ = await CreateOrderAsync(articleId, 3);
 
-        var result = await RunScoped<IPaginationQuery<OrderListItem>, ImmutableArray<OrderListItem>>(
-            fetcher => fetcher.FetchUntilAsync(order2Id)
-        );
+        var result =
+            await RunScoped<IPaginationQuery<OrderListItem>, ImmutableArray<OrderListItem>>(fetcher =>
+                fetcher.FetchUntilAsync(order2Id)
+            );
 
         Assert.Equal(2, result.Length);
         Assert.Equal(order1Id.Value, result[0].Id.Value);
@@ -166,9 +177,10 @@ public sealed class FetchOrdersListQueryTests(
         var order1Id = await CreateOrderAsync(articleId, 1);
         _ = await CreateOrderAsync(articleId, 2);
 
-        var result = await RunScoped<IPaginationQuery<OrderListItem>, ImmutableArray<OrderListItem>>(
-            fetcher => fetcher.FetchUntilAsync(order1Id)
-        );
+        var result =
+            await RunScoped<IPaginationQuery<OrderListItem>, ImmutableArray<OrderListItem>>(fetcher =>
+                fetcher.FetchUntilAsync(order1Id)
+            );
 
         Assert.Single(result);
         Assert.Equal(order1Id.Value, result[0].Id.Value);
@@ -183,9 +195,10 @@ public sealed class FetchOrdersListQueryTests(
 
         await CreateOrderAsync(articleId, 4);
 
-        var result = await RunScoped<IPaginationQuery<OrderListItem>, ImmutableArray<OrderListItem>>(
-            fetcher => fetcher.FetchAsync(1)
-        );
+        var result =
+            await RunScoped<IPaginationQuery<OrderListItem>, ImmutableArray<OrderListItem>>(fetcher =>
+                fetcher.FetchAsync(1)
+            );
 
         Assert.Single(result);
 
@@ -214,8 +227,8 @@ public sealed class FetchOrdersListQueryTests(
 
     private async Task<Identifier> CreateArticleAsync(string description, long priceInCents)
     {
-        var registerArticleResult = await RunScoped<IRegisterArticleTransaction, Result<Identifier>>(
-            tx => tx.ExecuteAsync(new ArticleDefinition
+        var registerArticleResult = await RunScoped<IRegisterArticleTransaction, Result<Identifier>>(tx =>
+            tx.ExecuteAsync(new ArticleDefinition
             {
                 Description = description,
                 Price = Cents.From(priceInCents)
@@ -228,8 +241,8 @@ public sealed class FetchOrdersListQueryTests(
 
     private async Task<Identifier> CreateOrderAsync(Identifier articleId, uint quantity)
     {
-        var placeOrderResult = await RunScoped<IPlaceOrderTransaction, Result<Identifier>>(
-            tx => tx.ExecuteAsync(new OrderRequest
+        var placeOrderResult = await RunScoped<IPlaceOrderTransaction, Result<Identifier>>(tx =>
+            tx.ExecuteAsync(new OrderRequest
             {
                 Items =
                 [

@@ -13,10 +13,6 @@ public abstract class PaginationQuery<TEntity, TListItem> : IPaginationQuery<TLi
     where TEntity : class, IIdentifiableEntity
     where TListItem : class, IPageItem
 {
-    protected abstract IQueryable<TEntity> GetQueryable();
-
-    protected abstract Expression<Func<TEntity, TListItem>> GetProjection();
-
     public async Task<ImmutableArray<TListItem>> FetchAsync(uint count, Identifier? after = null)
     {
         var integerCount = (int)count;
@@ -46,4 +42,8 @@ public abstract class PaginationQuery<TEntity, TListItem> : IPaginationQuery<TLi
 
         return [.. items];
     }
+
+    protected abstract IQueryable<TEntity> GetQueryable();
+
+    protected abstract Expression<Func<TEntity, TListItem>> GetProjection();
 }

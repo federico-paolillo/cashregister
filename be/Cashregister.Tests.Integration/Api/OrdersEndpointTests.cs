@@ -1,4 +1,3 @@
-using System.Collections.Immutable;
 using System.Net;
 
 using Cashregister.Api.Commons.Models;

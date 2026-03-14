@@ -22,7 +22,7 @@ public sealed class PlaceOrderTransaction(
 
         Identifier[] articlesRequested = [.. orderRequest.Items.Select(item => item.Article)];
 
-        Article[] articles = await fetchArticlesQuery.FetchAsync(articlesRequested);
+        var articles = await fetchArticlesQuery.FetchAsync(articlesRequested);
 
         if (articles.Length != orderRequest.Items.Length)
         {

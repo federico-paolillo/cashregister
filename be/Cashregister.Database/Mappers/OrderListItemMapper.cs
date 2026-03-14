@@ -15,7 +15,7 @@ public sealed class OrderListItemMapper
             Id = Identifier.From(entity.Id),
             Number = OrderNumber.From(entity.RowId),
             Date = TimeStamp.From(entity.Date),
-            Total = Cents.From(entity.Items.Sum(i => (long)(i.Quantity * i.Price)))
+            Total = Cents.From(entity.Items.Sum(i => i.Quantity * i.Price))
         };
     }
 }

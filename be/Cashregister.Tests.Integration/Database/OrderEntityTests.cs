@@ -2,7 +2,6 @@
 using Cashregister.Database.Entities;
 
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 
 using Xunit.Abstractions;
 
@@ -43,20 +42,20 @@ public sealed class OrderEntityTests(
             ]
         };
 
-        using IServiceScope wScope = NewServiceScope();
+        using var wScope = NewServiceScope();
 
-        ApplicationDbContext wDbContext = wScope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        var wDbContext = wScope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
         wDbContext.Articles.Add(wArticleEntity);
         wDbContext.Orders.Add(wOrderEntity);
 
         await wDbContext.SaveChangesAsync();
 
-        using IServiceScope rScope = NewServiceScope();
+        using var rScope = NewServiceScope();
 
-        ApplicationDbContext rDbContext = rScope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        var rDbContext = rScope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
-        OrderEntity? rOrderEntity = await rDbContext.Orders
+        var rOrderEntity = await rDbContext.Orders
             .Include(orderEntity => orderEntity.Items)
             .SingleOrDefaultAsync(a => a.Id == "some-id");
 

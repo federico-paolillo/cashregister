@@ -14,7 +14,7 @@ public class Order
 
     public Cents Total()
     {
-        long total = Items.Sum(item => item.Price.Value * item.Quantity);
+        var total = Items.Sum(item => item.Price.Value * item.Quantity);
 
         return Cents.From(total);
     }

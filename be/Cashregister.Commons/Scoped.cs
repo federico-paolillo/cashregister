@@ -8,9 +8,9 @@ public sealed class Scoped<TService>(IServiceProvider serviceProvider) where TSe
     {
         ArgumentNullException.ThrowIfNull(action);
 
-        using IServiceScope? scope = serviceProvider.CreateScope();
+        using var scope = serviceProvider.CreateScope();
 
-        TService? service = scope.ServiceProvider.GetRequiredService<TService>();
+        var service = scope.ServiceProvider.GetRequiredService<TService>();
 
         return await action(service);
     }
@@ -26,5 +26,4 @@ public sealed class Scoped<TService>(IServiceProvider serviceProvider) where TSe
 
         _ = await ExecuteAsync(ExecuteReturningNothingAsync);
     }
-
 }

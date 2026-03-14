@@ -18,7 +18,7 @@ public sealed class ArticleEntityMapper
         {
             Id = Identifier.From(entity.Id),
             Description = entity.Description,
-            Price = Cents.From(entity.Price),
+            Price = Cents.From(entity.Price)
         };
     }
 

@@ -11,23 +11,22 @@ using Microsoft.Extensions.Logging.Console;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Logging.ClearProviders();
-builder.Logging.AddSimpleConsole(
-  options =>
-  {
-      options.SingleLine = true;
-      options.TimestampFormat = "HH:mm:ss ";
-      options.UseUtcTimestamp = true;
-      options.ColorBehavior = LoggerColorBehavior.Disabled;
-      options.IncludeScopes = true;
-  }
+builder.Logging.AddSimpleConsole(options =>
+    {
+        options.SingleLine = true;
+        options.TimestampFormat = "HH:mm:ss ";
+        options.UseUtcTimestamp = true;
+        options.ColorBehavior = LoggerColorBehavior.Disabled;
+        options.IncludeScopes = true;
+    }
 );
 
 builder.Configuration.AddEnvironmentVariables("CASHREGISTER_");
 
 builder.Services
-  .AddCashregisterDatabase(builder.Configuration)
-  .AddCashregisterArticles()
-  .AddCashregisterOrders();
+    .AddCashregisterDatabase(builder.Configuration)
+    .AddCashregisterArticles()
+    .AddCashregisterOrders();
 
 var app = builder.Build();
 
@@ -43,7 +42,7 @@ return;
 async Task ApplyMigrationsAsync(WebApplication webApplication)
 {
     // A local function ensures that the scope and the DbContext for migrations gets released before continuing
-    
+
     using var scope = webApplication.Services.CreateScope();
 
     await using var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();

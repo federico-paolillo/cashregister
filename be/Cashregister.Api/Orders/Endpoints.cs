@@ -7,13 +7,13 @@ internal static class Endpoints
         var routeGroup = webApplication.MapGroup("/orders");
 
         routeGroup.MapGet("/", Handlers.GetOrdersPage)
-          .WithName("GetOrdersPage");
+            .WithName("GetOrdersPage");
 
         routeGroup.MapPost("/", Handlers.CreateOrder)
-          .WithName("CreateOrder");
+            .WithName("CreateOrder");
 
         routeGroup.MapGet("/{id}", Handlers.GetOrder)
-          .WithName("GetOrder");
+            .WithName("GetOrder");
 
         return routeGroup;
     }

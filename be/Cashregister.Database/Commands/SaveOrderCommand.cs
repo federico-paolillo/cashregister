@@ -1,5 +1,4 @@
 using Cashregister.Application.Orders.Data;
-using Cashregister.Database.Entities;
 using Cashregister.Database.Mappers;
 using Cashregister.Domain;
 
