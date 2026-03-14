@@ -15,7 +15,7 @@ public abstract class PaginationQuery<TEntity, TListItem> : IPaginationQuery<TLi
 {
     protected abstract IQueryable<TEntity> GetQueryable();
 
-    protected abstract Expression<Func<TEntity, TListItem>> Projection { get; }
+    protected abstract Expression<Func<TEntity, TListItem>> GetProjection();
 
     public async Task<ImmutableArray<TListItem>> FetchAsync(uint count, Identifier? after = null)
     {
@@ -26,7 +26,7 @@ public abstract class PaginationQuery<TEntity, TListItem> : IPaginationQuery<TLi
             .Where(e => afterValue == null || e.Id.CompareTo(afterValue) > 0)
             .OrderBy(e => e.Id)
             .Take(integerCount)
-            .Select(Projection)
+            .Select(GetProjection())
             .ToArrayAsync();
 
         return [.. items];
@@ -41,7 +41,7 @@ public abstract class PaginationQuery<TEntity, TListItem> : IPaginationQuery<TLi
         var items = await GetQueryable()
             .Where(e => e.Id.CompareTo(untilValue) <= 0)
             .OrderBy(e => e.Id)
-            .Select(Projection)
+            .Select(GetProjection())
             .ToArrayAsync();
 
         return [.. items];

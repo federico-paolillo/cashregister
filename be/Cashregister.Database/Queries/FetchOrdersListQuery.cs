@@ -17,12 +17,12 @@ public sealed class FetchOrdersListQuery(
         return applicationDbContext.Orders.Include(o => o.Items);
     }
 
-    protected override Expression<Func<OrderEntity, OrderListItem>> Projection =>
+    protected override Expression<Func<OrderEntity, OrderListItem>> GetProjection() =>
         o => new OrderListItem
         {
             Id = Identifier.From(o.Id),
-            Number = OrderNumber.From(o.RowId),
-            Date = TimeStamp.From(o.Date),
-            Total = Cents.From(o.Items.Sum(i => i.Quantity * i.Price))
+            Number = o.RowId,
+            Date = o.Date,
+            Total = o.Items.Sum(i => (long)(i.Quantity * i.Price))
         };
 }
