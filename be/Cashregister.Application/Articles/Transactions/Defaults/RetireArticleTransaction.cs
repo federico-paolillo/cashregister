@@ -13,7 +13,8 @@ public sealed class RetireArticleTransaction(
     Transaction<Identifier, Unit>(unitOfWork),
     IRetireArticleTransaction
 {
-    protected override async Task<Result<Unit>> InternalExecuteAsync(Identifier articleId)
+    protected override async Task<Result<Unit>> InternalExecuteAsync(Identifier articleId,
+        CancellationToken cancellationToken)
     {
         var maybeArticle = await fetchArticleQuery.FetchAsync(articleId);
 

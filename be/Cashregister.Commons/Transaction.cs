@@ -15,7 +15,7 @@ public abstract class Transaction<TInput, TOutput>(
         {
             await unitOfWork.StartAsync(cancellationToken);
 
-            var result = await InternalExecuteAsync(input);
+            var result = await InternalExecuteAsync(input, cancellationToken);
 
             if (result.Ok)
             {
@@ -39,5 +39,8 @@ public abstract class Transaction<TInput, TOutput>(
         }
     }
 
-    protected abstract Task<Result<TOutput>> InternalExecuteAsync(TInput input);
+    protected abstract Task<Result<TOutput>> InternalExecuteAsync(
+        TInput input,
+        CancellationToken cancellationToken
+    );
 }

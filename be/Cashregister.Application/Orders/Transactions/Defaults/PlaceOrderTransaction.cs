@@ -16,7 +16,8 @@ public sealed class PlaceOrderTransaction(
     Transaction<OrderRequest, Identifier>(unitOfWork),
     IPlaceOrderTransaction
 {
-    protected override async Task<Result<Identifier>> InternalExecuteAsync(OrderRequest orderRequest)
+    protected override async Task<Result<Identifier>> InternalExecuteAsync(OrderRequest orderRequest,
+        CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(orderRequest);
 

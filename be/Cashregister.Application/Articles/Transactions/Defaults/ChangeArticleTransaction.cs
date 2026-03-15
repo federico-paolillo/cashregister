@@ -14,7 +14,8 @@ public sealed class ChangeArticleTransaction(
     Transaction<ArticleChange, Unit>(unitOfWork),
     IChangeArticleTransaction
 {
-    protected override async Task<Result<Unit>> InternalExecuteAsync(ArticleChange change)
+    protected override async Task<Result<Unit>> InternalExecuteAsync(ArticleChange change,
+        CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(change);
 

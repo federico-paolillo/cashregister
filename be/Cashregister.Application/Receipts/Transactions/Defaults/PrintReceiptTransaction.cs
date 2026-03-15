@@ -9,7 +9,7 @@ public sealed class PrintReceiptTransaction(
     Transaction<Identifier, Unit>(unitOfWork),
     IPrintReceiptTransaction
 {
-    protected override Task<Result<Unit>> InternalExecuteAsync(Identifier orderId)
+    protected override Task<Result<Unit>> InternalExecuteAsync(Identifier orderId, CancellationToken cancellationToken)
     {
         // TODO: Implement actual receipt printing
 

@@ -12,7 +12,8 @@ public sealed class RegisterArticleTransaction(
     Transaction<ArticleDefinition, Identifier>(unitOfWork),
     IRegisterArticleTransaction
 {
-    protected override async Task<Result<Identifier>> InternalExecuteAsync(ArticleDefinition articleDefinition)
+    protected override async Task<Result<Identifier>> InternalExecuteAsync(ArticleDefinition articleDefinition,
+        CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(articleDefinition);
 
