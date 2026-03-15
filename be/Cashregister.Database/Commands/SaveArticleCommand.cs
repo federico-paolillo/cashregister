@@ -20,7 +20,7 @@ public sealed class SaveArticleCommand(
         {
             var articleEntity = articleEntityMapper.ToEntity(article);
 
-            await applicationDbContext.Articles.AddAsync(articleEntity);
+            applicationDbContext.Articles.Add(articleEntity);
         }
         else
         {
