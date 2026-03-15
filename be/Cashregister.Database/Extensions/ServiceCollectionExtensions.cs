@@ -18,6 +18,8 @@ namespace Cashregister.Database.Extensions;
 
 public static class ServiceCollectionExtensions
 {
+    private const string ConnectionStringName = "DataSource";
+
     public static IServiceCollection AddCashregisterDatabase(
         this IServiceCollection services,
         IConfiguration configuration
@@ -32,11 +34,11 @@ public static class ServiceCollectionExtensions
 
     private static void AddDbContext(IServiceCollection services, IConfiguration configuration)
     {
-        var dataSource = configuration.GetValue<string>("DataSource");
+        var dataSource = configuration.GetValue<string>(ConnectionStringName);
 
         if (string.IsNullOrWhiteSpace(dataSource))
         {
-            throw new InvalidOperationException("Configuration setting 'DataSource' is required.");
+            throw new InvalidOperationException($"Configuration setting '{ConnectionStringName}' is required.");
         }
 
         SqliteConnectionStringBuilder connectionStringBuilder = new()
@@ -51,7 +53,7 @@ public static class ServiceCollectionExtensions
 
         if (string.IsNullOrWhiteSpace(connectionString))
         {
-            throw new InvalidOperationException("The database connection string 'CashRegister' is missing.");
+            throw new InvalidOperationException($"The database connection string '{ConnectionStringName}' is missing.");
         }
 
         services.AddScoped<SqlitePragmasDbConnectionInterceptor>();
