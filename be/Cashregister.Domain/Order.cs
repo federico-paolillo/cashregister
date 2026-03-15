@@ -2,7 +2,7 @@ using System.Collections.Immutable;
 
 namespace Cashregister.Domain;
 
-public class Order
+public sealed class Order
 {
     public required Identifier Id { get; init; }
 
