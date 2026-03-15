@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 const settingsSchema = z.object({
-  apiBaseUrl: z.string().default("")
+  apiBaseUrl: z.string().default("/api")
 });
 
 export type Settings = z.infer<typeof settingsSchema>;

@@ -22,6 +22,7 @@ export interface ChangeArticleRequestDto {
 
 export interface PlaceOrderRequestDto {
   items: PlaceOrderItemDto[];
+  totalOverride?: number;
 }
 
 export interface PlaceOrderItemDto {

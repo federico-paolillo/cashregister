@@ -10,7 +10,9 @@ public sealed class OrderEntity : IIdentifiableEntity
     public required long Date { get; init; }
 
     public required List<OrderItemEntity> Items { get; init; } = [];
-    
+
+    public long? TotalOverride { get; set; }
+
     public required string Id { get; init; }
 
     public sealed class OrderEntityTypeConfiguration : IEntityTypeConfiguration<OrderEntity>

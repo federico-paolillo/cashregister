@@ -7,7 +7,7 @@ describe("mustParseConfiguration", () => {
 
     const settings = mustParseConfiguration();
 
-    expect(settings.apiBaseUrl).toBe("");
+    expect(settings.apiBaseUrl).toBe("/api");
     vi.unstubAllEnvs();
   });
 

@@ -56,7 +56,8 @@ public sealed class PlaceOrderTransaction(
         {
             Id = Identifier.New(),
             Date = TimeStamp.Now(),
-            Items = orderItems
+            Items = orderItems,
+            TotalOverride = orderRequest.TotalOverride
         };
 
         await saveOrderCommand.SaveAsync(pendingOrder);

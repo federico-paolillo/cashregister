@@ -17,6 +17,7 @@ public sealed record OrderDto(
     string Number,
     long Date,
     decimal Total,
+    decimal? TotalOverride,
     ImmutableArray<OrderItemDto> Items
 )
 {
@@ -40,6 +41,7 @@ public sealed record OrderDto(
             order.Number.Value,
             order.Date.Value,
             order.Total().AsPayableMoney(),
+            order.TotalOverride?.AsPayableMoney(),
             items
         );
     }

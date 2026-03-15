@@ -2,11 +2,14 @@ import { Fragment, useEffect, useState } from "react";
 import { Form, useNavigation } from "react-router";
 import { useErrorMessages } from "@cashregister/components/use-error-messages";
 import { deps } from "@cashregister/deps";
+import { decimalToCents } from "@cashregister/money";
 import type {
   ArticleListItemDto,
   ArticlesPageDto,
   PlaceOrderRequestDto,
 } from "@cashregister/model";
+import { ArticleSelector } from "./components/article-selector";
+import { OrderSummary } from "./components/order-summary";
 import type { Route } from "./+types/order";
 
 export async function clientLoader() {
@@ -23,12 +26,14 @@ export async function clientAction({ request }: Route.ClientActionArgs) {
 
   const articleIds = formData.getAll("articleId") as string[];
   const quantities = formData.getAll("quantity") as string[];
+  const totalOverrideRaw = formData.get("totalOverride") as string | null;
 
   const body: PlaceOrderRequestDto = {
     items: articleIds.map((article, i) => ({
       article,
       quantity: Number(quantities[i]),
     })),
+    ...(totalOverrideRaw ? { totalOverride: Number(totalOverrideRaw) } : {}),
   };
 
   const result = await deps.apiClient.post("/orders", body);
@@ -45,30 +50,30 @@ interface CartEntry {
   quantity: number;
 }
 
-function formatPrice(price: number): string {
-  return price.toLocaleString(undefined, {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
-}
-
 export default function Order({ loaderData, actionData }: Route.ComponentProps) {
   const navigation = useNavigation();
   const { addError } = useErrorMessages();
 
   const [cart, setCart] = useState<Map<string, CartEntry>>(new Map());
+  const [totalOverride, setTotalOverride] = useState<string>("");
 
   const articles = loaderData;
   const isPending = navigation.state !== "idle";
   const cartEntries = Array.from(cart.values());
-  const total = cartEntries.reduce(
+  const computedTotal = cartEntries.reduce(
     (sum, e) => sum + e.article.price * e.quantity,
     0,
   );
+  const hasOverride = totalOverride !== "" && !isNaN(Number(totalOverride));
+  const displayTotal = hasOverride ? Number(totalOverride) : computedTotal;
+  const totalOverrideCents = hasOverride
+    ? decimalToCents(Number(totalOverride))
+    : null;
 
   useEffect(() => {
     if (actionData?.ok === true) {
       setCart(new Map());
+      setTotalOverride("");
     } else if (actionData?.ok === false) {
       addError(actionData.message);
     }
@@ -116,26 +121,7 @@ export default function Order({ loaderData, actionData }: Route.ComponentProps) 
       </header>
       <div className="flex flex-1 overflow-hidden">
         <div className="flex-7 overflow-auto p-4 border-r">
-          <div className="grid grid-cols-3 gap-3">
-            {articles.map((article) => (
-              <button
-                key={article.id}
-                type="button"
-                onClick={() => addToCart(article)}
-                className="rounded border border-gray-200 p-4 text-left hover:bg-blue-50 active:bg-blue-100"
-              >
-                <div className="font-medium text-sm">{article.description}</div>
-                <div className="text-sm text-gray-500">
-                  {formatPrice(article.price)}
-                </div>
-              </button>
-            ))}
-            {articles.length === 0 && (
-              <p className="col-span-3 text-sm italic text-gray-500">
-                No articles available.
-              </p>
-            )}
-          </div>
+          <ArticleSelector articles={articles} onSelect={addToCart} />
         </div>
         <div className="flex-3 flex flex-col">
           <Form method="post" className="flex h-full flex-col">
@@ -153,50 +139,22 @@ export default function Order({ loaderData, actionData }: Route.ComponentProps) 
                 />
               </Fragment>
             ))}
-            <div className="flex-1 overflow-auto p-4">
-              <h2 className="mb-3 font-semibold">Order Summary</h2>
-              {cartEntries.length === 0 ? (
-                <p className="text-sm italic text-gray-500">No items yet.</p>
-              ) : (
-                <>
-                  {cartEntries.map((entry) => (
-                    <div
-                      key={entry.article.id}
-                      className="flex items-center justify-between border-b py-1 text-sm"
-                    >
-                      <span>
-                        {entry.article.description} × {entry.quantity}
-                      </span>
-                      <div className="flex items-center gap-2">
-                        <button
-                          type="button"
-                          aria-label={`Decrease ${entry.article.description}`}
-                          onClick={() => decreaseQuantity(entry.article.id)}
-                          className="cursor-pointer text-gray-400 hover:text-blue-600"
-                        >
-                          −
-                        </button>
-                        <span>
-                          {formatPrice(entry.article.price * entry.quantity)}
-                        </span>
-                        <button
-                          type="button"
-                          aria-label={`Remove ${entry.article.description}`}
-                          onClick={() => removeFromCart(entry.article.id)}
-                          className="cursor-pointer text-gray-400 hover:text-red-600"
-                        >
-                          ✕
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                  <div className="mt-3 flex justify-between pt-3 font-semibold">
-                    <span>Total</span>
-                    <span>{formatPrice(total)}</span>
-                  </div>
-                </>
-              )}
-            </div>
+            {totalOverrideCents !== null && (
+              <input
+                type="hidden"
+                name="totalOverride"
+                value={String(totalOverrideCents)}
+              />
+            )}
+            <OrderSummary
+              cartEntries={cartEntries}
+              hasOverride={hasOverride}
+              displayTotal={displayTotal}
+              totalOverride={totalOverride}
+              onTotalOverrideChange={setTotalOverride}
+              onDecrease={decreaseQuantity}
+              onRemove={removeFromCart}
+            />
             <div className="p-4 border-t">
               <button
                 type="submit"

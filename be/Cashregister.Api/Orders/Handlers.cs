@@ -78,7 +78,10 @@ internal static class Handlers
 
         var orderRequest = new OrderRequest
         {
-            Items = orderItems
+            Items = orderItems,
+            TotalOverride = orderRequestDto.TotalOverride is not null
+                ? Cents.From(orderRequestDto.TotalOverride.Value)
+                : null
         };
 
         var orderResult = await placeOrderTransaction.ExecuteAsync(orderRequest);

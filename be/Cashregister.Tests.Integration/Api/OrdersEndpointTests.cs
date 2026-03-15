@@ -367,6 +367,63 @@ public sealed class OrdersEndpointTests(
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
+    [Fact]
+    public async Task CreateAndGetOrder_WithTotalOverride_ReturnsOverrideFields()
+    {
+        await PrepareEnvironmentAsync();
+
+        var articleId = await CreateArticleForOrderAsync("Override article", 500L);
+
+        using var httpClient = CreateHttpClient();
+
+        var orderRequest = new OrderRequestDto(
+            [new OrderRequestItemDto(articleId.Value, 3u)],
+            TotalOverride: 1000L
+        );
+
+        var createResponse = await httpClient.PostAsJsonAsync("/orders", orderRequest);
+        Assert.Equal(HttpStatusCode.Created, createResponse.StatusCode);
+
+        var entityPointer = await createResponse.Content.ReadFromJsonAsync<EntityPointerDto>();
+        Assert.NotNull(entityPointer);
+
+        var getResponse = await httpClient.GetAsync($"/orders/{entityPointer.Id}");
+        Assert.True(getResponse.IsSuccessStatusCode);
+
+        var order = await getResponse.Content.ReadFromJsonAsync<OrderDto>();
+        Assert.NotNull(order);
+        Assert.Equal(10.00m, order.TotalOverride);
+        Assert.Equal(10.00m, order.Total);
+    }
+
+    [Fact]
+    public async Task CreateAndGetOrder_WithoutTotalOverride_ReturnsNullOverrideAndComputedTotal()
+    {
+        await PrepareEnvironmentAsync();
+
+        var articleId = await CreateArticleForOrderAsync("No override article", 500L);
+
+        using var httpClient = CreateHttpClient();
+
+        var orderRequest = new OrderRequestDto(
+            [new OrderRequestItemDto(articleId.Value, 3u)]
+        );
+
+        var createResponse = await httpClient.PostAsJsonAsync("/orders", orderRequest);
+        Assert.Equal(HttpStatusCode.Created, createResponse.StatusCode);
+
+        var entityPointer = await createResponse.Content.ReadFromJsonAsync<EntityPointerDto>();
+        Assert.NotNull(entityPointer);
+
+        var getResponse = await httpClient.GetAsync($"/orders/{entityPointer.Id}");
+        Assert.True(getResponse.IsSuccessStatusCode);
+
+        var order = await getResponse.Content.ReadFromJsonAsync<OrderDto>();
+        Assert.NotNull(order);
+        Assert.Null(order.TotalOverride);
+        Assert.Equal(15m, order.Total);
+    }
+
     private async Task<Identifier> CreateArticleForOrderAsync(string description, long priceInCents)
     {
         var registerArticleResult = await RunScoped<IRegisterArticleTransaction, Result<Identifier>>(tx =>

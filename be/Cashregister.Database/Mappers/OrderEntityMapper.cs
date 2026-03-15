@@ -28,7 +28,8 @@ public sealed class OrderEntityMapper
             Id = Identifier.From(entity.Id),
             Number = OrderNumber.From(entity.RowId),
             Date = TimeStamp.From(entity.Date),
-            Items = items
+            Items = items,
+            TotalOverride = entity.TotalOverride is not null ? Cents.From(entity.TotalOverride.Value) : null
         };
     }
 
@@ -53,7 +54,8 @@ public sealed class OrderEntityMapper
         {
             Id = pendingOrder.Id.Value,
             Date = pendingOrder.Date.Value,
-            Items = itemEntities
+            Items = itemEntities,
+            TotalOverride = pendingOrder.TotalOverride?.Value
         };
     }
 }

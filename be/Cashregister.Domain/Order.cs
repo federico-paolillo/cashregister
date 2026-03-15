@@ -12,10 +12,10 @@ public sealed class Order
 
     public required ImmutableArray<Item> Items { get; init; } = [];
 
+    public Cents? TotalOverride { get; init; }
+
     public Cents Total()
     {
-        var total = Items.Sum(item => item.Price.Value * item.Quantity);
-
-        return Cents.From(total);
+        return TotalOverride ?? Cents.From(Items.Sum(item => item.Price.Value * item.Quantity));
     }
 }

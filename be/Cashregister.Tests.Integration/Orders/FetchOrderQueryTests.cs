@@ -114,6 +114,43 @@ public sealed class FetchOrderQueryTests(
         return placeOrderResult.Value;
     }
 
+    [Fact]
+    public async Task FetchAsync_ReturnsOrderWithTotalOverride_WhenOverrideIsSet()
+    {
+        await PrepareEnvironmentAsync();
+
+        var articleId = await CreateArticleAsync("Override Article", 200);
+
+        var orderId = await CreateOrderWithOverrideAsync(articleId, 3, Cents.From(400L));
+
+        var order = await RunScoped<IFetchOrderQuery, Order?>(q => q.FetchAsync(orderId));
+
+        Assert.NotNull(order);
+        Assert.Equal(Cents.From(400L), order.Total());
+        Assert.Equal(Cents.From(400L), order.TotalOverride);
+    }
+
+    private async Task<Identifier> CreateOrderWithOverrideAsync(Identifier articleId, uint quantity, Cents totalOverride)
+    {
+        var placeOrderResult = await RunScoped<IPlaceOrderTransaction, Result<Identifier>>(tx =>
+            tx.ExecuteAsync(new OrderRequest
+            {
+                Items =
+                [
+                    new OrderRequestItem
+                    {
+                        Article = articleId,
+                        Quantity = quantity
+                    }
+                ],
+                TotalOverride = totalOverride
+            })
+        );
+
+        Assert.True(placeOrderResult.Ok);
+        return placeOrderResult.Value;
+    }
+
     private async Task<Identifier> CreateOrderWithMultipleItemsAsync(
         Identifier article1Id, uint quantity1,
         Identifier article2Id, uint quantity2)

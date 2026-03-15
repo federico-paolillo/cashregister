@@ -54,4 +54,58 @@ public sealed class OrderTests
 
         Assert.Equal(Cents.From(0), total);
     }
+
+    [Fact]
+    public void Total_WithTotalOverride_ShouldReturnOverride()
+    {
+        var order = new Order
+        {
+            Id = Identifier.New(),
+            Number = OrderNumber.From(1),
+            Date = TimeStamp.Now(),
+            Items =
+            [
+                new Item
+                {
+                    Id = Identifier.New(),
+                    Article = Identifier.New(),
+                    Description = "Article A",
+                    Price = Cents.From(500),
+                    Quantity = 2
+                }
+            ],
+            TotalOverride = Cents.From(750)
+        };
+
+        var total = order.Total();
+
+        Assert.Equal(Cents.From(750), total);
+    }
+
+    [Fact]
+    public void Total_WithNoTotalOverride_ShouldReturnComputedTotal()
+    {
+        var order = new Order
+        {
+            Id = Identifier.New(),
+            Number = OrderNumber.From(1),
+            Date = TimeStamp.Now(),
+            Items =
+            [
+                new Item
+                {
+                    Id = Identifier.New(),
+                    Article = Identifier.New(),
+                    Description = "Article A",
+                    Price = Cents.From(500),
+                    Quantity = 2
+                }
+            ],
+            TotalOverride = null
+        };
+
+        var total = order.Total();
+
+        Assert.Equal(Cents.From(1000), total);
+    }
 }

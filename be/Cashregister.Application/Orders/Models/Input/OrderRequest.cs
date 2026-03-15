@@ -7,6 +7,8 @@ namespace Cashregister.Application.Orders.Models.Input;
 public sealed class OrderRequest
 {
     public required ImmutableArray<OrderRequestItem> Items { get; init; } = [];
+
+    public Cents? TotalOverride { get; init; }
 }
 
 public sealed class OrderRequestItem

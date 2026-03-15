@@ -170,6 +170,40 @@ describe("Order", () => {
     expect(screen.queryByText(/Espresso × 1/)).toBeNull();
     expect(screen.getByText("No items yet.")).toBeDefined();
   });
+
+  it("renders total override input when cart has items", () => {
+    renderOrder();
+    fireEvent.click(screen.getByRole("button", { name: /^Espresso/i }));
+    expect(screen.getByLabelText("Custom total")).toBeDefined();
+  });
+
+  it("shows italic total when override is entered", () => {
+    renderOrder();
+    fireEvent.click(screen.getByRole("button", { name: /^Espresso/i }));
+    const input = screen.getByLabelText("Custom total");
+    fireEvent.change(input, { target: { value: "1.50" } });
+
+    const totalSpans = screen.getAllByText("1.50");
+    const italicSpan = totalSpans.find((el) =>
+      el.classList.contains("italic"),
+    );
+    expect(italicSpan).toBeDefined();
+  });
+
+  it("reverts to computed total when override is cleared", () => {
+    renderOrder();
+    fireEvent.click(screen.getByRole("button", { name: /^Espresso/i }));
+    const input = screen.getByLabelText("Custom total");
+    fireEvent.change(input, { target: { value: "1.50" } });
+    fireEvent.change(input, { target: { value: "" } });
+
+    // The total span is inside the "Total" row, next to the "Total" label
+    const totalLabel = screen.getByText("Total");
+    const totalRow = totalLabel.parentElement!;
+    const totalValueSpan = totalRow.querySelector("span:last-child")!;
+    expect(totalValueSpan.textContent).toBe("3.00");
+    expect(totalValueSpan.classList.contains("italic")).toBe(false);
+  });
 });
 
 function buildOrderRequest(
@@ -226,6 +260,46 @@ describe("clientAction", () => {
     );
 
     expect(result).toEqual({ ok: true });
+  });
+
+  it("sends totalOverride when present in form data", async () => {
+    vi.mocked(deps.apiClient.post).mockResolvedValue({
+      ok: true,
+      value: undefined,
+    });
+
+    const formData = new FormData();
+    formData.append("articleId", "art1");
+    formData.append("quantity", "2");
+    formData.append("totalOverride", "550");
+
+    await clientAction({
+      request: new Request("http://localhost/order", {
+        method: "POST",
+        body: formData,
+      }),
+      params: {},
+    } as Route.ClientActionArgs);
+
+    expect(deps.apiClient.post).toHaveBeenCalledWith("/orders", {
+      items: [{ article: "art1", quantity: 2 }],
+      totalOverride: 550,
+    });
+  });
+
+  it("does not send totalOverride when not in form data", async () => {
+    vi.mocked(deps.apiClient.post).mockResolvedValue({
+      ok: true,
+      value: undefined,
+    });
+
+    await clientAction(
+      buildOrderRequest([{ articleId: "art1", quantity: "1" }]),
+    );
+
+    expect(deps.apiClient.post).toHaveBeenCalledWith("/orders", {
+      items: [{ article: "art1", quantity: 1 }],
+    });
   });
 
   it("returns ok:false with message on failure", async () => {

@@ -225,6 +225,46 @@ public sealed class FetchOrdersListQueryTests(
         Assert.Equal(domainOrder.Total(), projectedTotal);
     }
 
+    [Fact]
+    public async Task FetchAsync_WithTotalOverride_ShouldReturnOverrideAsTotal()
+    {
+        await PrepareEnvironmentAsync();
+
+        var articleId = await CreateArticleAsync("Override Article", 500);
+
+        var orderId = await CreateOrderWithOverrideAsync(articleId, 4, Cents.From(999L));
+
+        var result =
+            await RunScoped<IPaginationQuery<OrderListItem>, ImmutableArray<OrderListItem>>(fetcher =>
+                fetcher.FetchAsync(1)
+            );
+
+        Assert.Single(result);
+        Assert.Equal(orderId.Value, result[0].Id.Value);
+        Assert.Equal(Cents.From(999L), result[0].Total);
+    }
+
+    private async Task<Identifier> CreateOrderWithOverrideAsync(Identifier articleId, uint quantity, Cents totalOverride)
+    {
+        var placeOrderResult = await RunScoped<IPlaceOrderTransaction, Result<Identifier>>(tx =>
+            tx.ExecuteAsync(new OrderRequest
+            {
+                Items =
+                [
+                    new OrderRequestItem
+                    {
+                        Article = articleId,
+                        Quantity = quantity
+                    }
+                ],
+                TotalOverride = totalOverride
+            })
+        );
+
+        Assert.True(placeOrderResult.Ok);
+        return placeOrderResult.Value;
+    }
+
     private async Task<Identifier> CreateArticleAsync(string description, long priceInCents)
     {
         var registerArticleResult = await RunScoped<IRegisterArticleTransaction, Result<Identifier>>(tx =>

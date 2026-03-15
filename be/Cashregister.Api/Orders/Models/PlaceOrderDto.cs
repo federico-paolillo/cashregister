@@ -3,7 +3,8 @@ using System.Collections.Immutable;
 namespace Cashregister.Api.Orders.Models;
 
 public sealed record OrderRequestDto(
-    ImmutableArray<OrderRequestItemDto> Items
+    ImmutableArray<OrderRequestItemDto> Items,
+    long? TotalOverride = null
 );
 
 public sealed record OrderRequestItemDto(
