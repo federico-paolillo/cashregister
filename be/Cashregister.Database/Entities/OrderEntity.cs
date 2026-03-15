@@ -33,7 +33,7 @@ public sealed class OrderEntity : IIdentifiableEntity
 
             builder.Property(x => x.RowId)
                 .HasColumnName("_rowid_")
-                .IsRowVersion()
+                .ValueGeneratedOnAdd()
                 .IsRequired();
         }
     }
