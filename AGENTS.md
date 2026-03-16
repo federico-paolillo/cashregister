@@ -8,10 +8,11 @@ This document provides development guidelines and project structure information 
 cashregister/
 ├── Cashregister.Api/           # ASP.NET Core Minimal API
 ├── Cashregister.Application/   # Business logic and transactions
+├── Cashregister.Commons/       # Cross-cutting infrastructure (Result, Transaction, UoW, Scoped)
+├── Cashregister.Activities/    # Orchestration layer (pending implementation)
 ├── Cashregister.Database/      # Entity Framework Core persistence
 ├── Cashregister.Domain/        # Domain models and value objects
 ├── Cashregister.Tests.*/       # Test projects
-├── escpos/                     # ESC/POS printer library
 └── ui/                         # React frontend
 ```
 
@@ -38,6 +39,8 @@ ui/
 │   ├── deps.ts                # Composition root (single entry point for all dependencies)
 │   ├── env.d.ts               # Vite environment variable types
 │   ├── model.ts               # All shared DTO types
+│   ├── money.ts               # Price formatting utilities
+│   ├── settings.ts            # Application settings
 │   ├── routes.ts              # Route definitions (registers all routes)
 │   ├── root.tsx               # Root layout component
 │   ├── components/            # Cross-cutting, reusable components only
@@ -61,7 +64,10 @@ ui/
 │       │   └── components/
 │       │       └── bulk-row.tsx
 │       └── order/
-│           └── order.tsx      # Order creation (/order)
+│           ├── order.tsx      # Order creation (/order)
+│           └── components/
+│               ├── article-selector.tsx  # Article selection for orders
+│               └── order-summary.tsx     # Order summary display
 ├── react-router.config.ts     # React Router configuration
 ├── vite.config.ts             # Vite configuration
 ├── tsconfig.json              # TypeScript configuration (defines @cashregister/* paths)
@@ -139,14 +145,14 @@ npm run test:watch # Run tests in watch mode (vitest)
 
 ### API Client
 
-The frontend uses a `fetch()`-based API client located in `app/api/`. It implements a lightweight `Result<T>` pattern mirroring the backend's approach.
+The frontend uses a `fetch()`-based API client located in `app/api-client.ts`. It implements a lightweight `Result<T>` pattern mirroring the backend's approach.
 
 #### Usage
 
 Import the singleton `apiClient` directly wherever needed — in `clientLoader`, `action`, components, or any other module:
 
 ```ts
-import { deps } from "~/deps";
+import { deps } from "@cashregister/deps";
 
 export async function clientLoader() {
   const result = await deps.apiClient.get<ArticlesPage>("/articles");
