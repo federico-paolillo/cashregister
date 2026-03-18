@@ -29,6 +29,28 @@ public sealed class BinaryEncoder : IEncoder<byte[]>
                     byte underlineN = underline.Enabled ? (byte)underline.Thickness : (byte)0;
                     stream.Write([0x1B, 0x2D, underlineN]); // ESC - n
                     break;
+                case EmphasizeInstruction emphasize:
+                    byte emphasizeN = emphasize.Enabled ? (byte)0x01 : (byte)0x00;
+                    stream.Write([0x1B, 0x45, emphasizeN]); // ESC E n
+                    break;
+                case DoubleStrikeInstruction doubleStrike:
+                    byte doubleStrikeN = doubleStrike.Enabled ? (byte)0x01 : (byte)0x00;
+                    stream.Write([0x1B, 0x47, doubleStrikeN]); // ESC G n
+                    break;
+                case SelectFontInstruction selectFont:
+                    stream.Write([0x1B, 0x4D, (byte)selectFont.Font]); // ESC M n
+                    break;
+                case RotationInstruction rotation:
+                    byte rotationN = rotation.Enabled ? (byte)0x01 : (byte)0x00;
+                    stream.Write([0x1B, 0x56, rotationN]); // ESC V n
+                    break;
+                case UpsideDownInstruction upsideDown:
+                    byte upsideDownN = upsideDown.Enabled ? (byte)0x01 : (byte)0x00;
+                    stream.Write([0x1B, 0x7B, upsideDownN]); // ESC { n
+                    break;
+                case FontSizeInstruction fontSize:
+                    stream.Write([0x1D, 0x21, fontSize.Size]); // GS ! n
+                    break;
                 default:
                     throw new NotSupportedException(
                         $"Instruction {instruction.GetType().Name} is not supported by this encoder.");

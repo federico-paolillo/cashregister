@@ -117,4 +117,148 @@ public sealed class StringEncoderTests
         Assert.True(result.Ok);
         Assert.Equal("[INIT][UNDERLINE:2DOT]", result.Value);
     }
+
+    [Fact]
+    public void Encode_EmphasizeOn_ProducesBoldOnToken()
+    {
+        var program = new PrintProgramBuilder().EmphasizeOn().Build();
+        var encoder = new StringEncoder();
+
+        var result = encoder.Encode(program);
+
+        Assert.True(result.Ok);
+        Assert.Equal("[INIT][BOLD:ON]", result.Value);
+    }
+
+    [Fact]
+    public void Encode_EmphasizeOff_ProducesBoldOffToken()
+    {
+        var program = new PrintProgramBuilder().EmphasizeOff().Build();
+        var encoder = new StringEncoder();
+
+        var result = encoder.Encode(program);
+
+        Assert.True(result.Ok);
+        Assert.Equal("[INIT][BOLD:OFF]", result.Value);
+    }
+
+    [Fact]
+    public void Encode_DoubleStrikeOn_ProducesCorrectToken()
+    {
+        var program = new PrintProgramBuilder().DoubleStrikeOn().Build();
+        var encoder = new StringEncoder();
+
+        var result = encoder.Encode(program);
+
+        Assert.True(result.Ok);
+        Assert.Equal("[INIT][DOUBLE_STRIKE:ON]", result.Value);
+    }
+
+    [Fact]
+    public void Encode_DoubleStrikeOff_ProducesCorrectToken()
+    {
+        var program = new PrintProgramBuilder().DoubleStrikeOff().Build();
+        var encoder = new StringEncoder();
+
+        var result = encoder.Encode(program);
+
+        Assert.True(result.Ok);
+        Assert.Equal("[INIT][DOUBLE_STRIKE:OFF]", result.Value);
+    }
+
+    [Fact]
+    public void Encode_SelectFontA_ProducesCorrectToken()
+    {
+        var program = new PrintProgramBuilder().SelectFontA().Build();
+        var encoder = new StringEncoder();
+
+        var result = encoder.Encode(program);
+
+        Assert.True(result.Ok);
+        Assert.Equal("[INIT][FONT:A]", result.Value);
+    }
+
+    [Fact]
+    public void Encode_SelectFontB_ProducesCorrectToken()
+    {
+        var program = new PrintProgramBuilder().SelectFontB().Build();
+        var encoder = new StringEncoder();
+
+        var result = encoder.Encode(program);
+
+        Assert.True(result.Ok);
+        Assert.Equal("[INIT][FONT:B]", result.Value);
+    }
+
+    [Fact]
+    public void Encode_NinetyDegsOn_ProducesCorrectToken()
+    {
+        var program = new PrintProgramBuilder().NinetyDegsOn().Build();
+        var encoder = new StringEncoder();
+
+        var result = encoder.Encode(program);
+
+        Assert.True(result.Ok);
+        Assert.Equal("[INIT][ROTATE_90:ON]", result.Value);
+    }
+
+    [Fact]
+    public void Encode_NinetyDegsOff_ProducesCorrectToken()
+    {
+        var program = new PrintProgramBuilder().NinetyDegsOff().Build();
+        var encoder = new StringEncoder();
+
+        var result = encoder.Encode(program);
+
+        Assert.True(result.Ok);
+        Assert.Equal("[INIT][ROTATE_90:OFF]", result.Value);
+    }
+
+    [Fact]
+    public void Encode_UpsideDownOn_ProducesCorrectToken()
+    {
+        var program = new PrintProgramBuilder().UpsideDownOn().Build();
+        var encoder = new StringEncoder();
+
+        var result = encoder.Encode(program);
+
+        Assert.True(result.Ok);
+        Assert.Equal("[INIT][UPSIDE_DOWN:ON]", result.Value);
+    }
+
+    [Fact]
+    public void Encode_UpsideDownOff_ProducesCorrectToken()
+    {
+        var program = new PrintProgramBuilder().UpsideDownOff().Build();
+        var encoder = new StringEncoder();
+
+        var result = encoder.Encode(program);
+
+        Assert.True(result.Ok);
+        Assert.Equal("[INIT][UPSIDE_DOWN:OFF]", result.Value);
+    }
+
+    [Fact]
+    public void Encode_FontSize_NormalSize_ProducesCorrectToken()
+    {
+        var program = new PrintProgramBuilder().FontSize(0x00).Build();
+        var encoder = new StringEncoder();
+
+        var result = encoder.Encode(program);
+
+        Assert.True(result.Ok);
+        Assert.Equal("[INIT][FONT_SIZE:1x1]", result.Value);
+    }
+
+    [Fact]
+    public void Encode_FontSize_DoubleWidthAndHeight_ProducesCorrectToken()
+    {
+        var program = new PrintProgramBuilder().FontSize(0x11).Build();
+        var encoder = new StringEncoder();
+
+        var result = encoder.Encode(program);
+
+        Assert.True(result.Ok);
+        Assert.Equal("[INIT][FONT_SIZE:2x2]", result.Value);
+    }
 }

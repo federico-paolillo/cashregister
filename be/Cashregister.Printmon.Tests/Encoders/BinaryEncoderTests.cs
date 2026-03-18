@@ -117,4 +117,148 @@ public sealed class BinaryEncoderTests
         Assert.True(result.Ok);
         Assert.Equal([0x1B, 0x40, 0x1B, 0x2D, 0x02], result.Value);
     }
+
+    [Fact]
+    public void Encode_EmphasizeOn_ProducesCorrectBytes()
+    {
+        var program = new PrintProgramBuilder().EmphasizeOn().Build();
+        var encoder = new BinaryEncoder();
+
+        var result = encoder.Encode(program);
+
+        Assert.True(result.Ok);
+        Assert.Equal([0x1B, 0x40, 0x1B, 0x45, 0x01], result.Value);
+    }
+
+    [Fact]
+    public void Encode_EmphasizeOff_ProducesCorrectBytes()
+    {
+        var program = new PrintProgramBuilder().EmphasizeOff().Build();
+        var encoder = new BinaryEncoder();
+
+        var result = encoder.Encode(program);
+
+        Assert.True(result.Ok);
+        Assert.Equal([0x1B, 0x40, 0x1B, 0x45, 0x00], result.Value);
+    }
+
+    [Fact]
+    public void Encode_DoubleStrikeOn_ProducesCorrectBytes()
+    {
+        var program = new PrintProgramBuilder().DoubleStrikeOn().Build();
+        var encoder = new BinaryEncoder();
+
+        var result = encoder.Encode(program);
+
+        Assert.True(result.Ok);
+        Assert.Equal([0x1B, 0x40, 0x1B, 0x47, 0x01], result.Value);
+    }
+
+    [Fact]
+    public void Encode_DoubleStrikeOff_ProducesCorrectBytes()
+    {
+        var program = new PrintProgramBuilder().DoubleStrikeOff().Build();
+        var encoder = new BinaryEncoder();
+
+        var result = encoder.Encode(program);
+
+        Assert.True(result.Ok);
+        Assert.Equal([0x1B, 0x40, 0x1B, 0x47, 0x00], result.Value);
+    }
+
+    [Fact]
+    public void Encode_SelectFontA_ProducesCorrectBytes()
+    {
+        var program = new PrintProgramBuilder().SelectFontA().Build();
+        var encoder = new BinaryEncoder();
+
+        var result = encoder.Encode(program);
+
+        Assert.True(result.Ok);
+        Assert.Equal([0x1B, 0x40, 0x1B, 0x4D, 0x00], result.Value);
+    }
+
+    [Fact]
+    public void Encode_SelectFontB_ProducesCorrectBytes()
+    {
+        var program = new PrintProgramBuilder().SelectFontB().Build();
+        var encoder = new BinaryEncoder();
+
+        var result = encoder.Encode(program);
+
+        Assert.True(result.Ok);
+        Assert.Equal([0x1B, 0x40, 0x1B, 0x4D, 0x01], result.Value);
+    }
+
+    [Fact]
+    public void Encode_NinetyDegsOn_ProducesCorrectBytes()
+    {
+        var program = new PrintProgramBuilder().NinetyDegsOn().Build();
+        var encoder = new BinaryEncoder();
+
+        var result = encoder.Encode(program);
+
+        Assert.True(result.Ok);
+        Assert.Equal([0x1B, 0x40, 0x1B, 0x56, 0x01], result.Value);
+    }
+
+    [Fact]
+    public void Encode_NinetyDegsOff_ProducesCorrectBytes()
+    {
+        var program = new PrintProgramBuilder().NinetyDegsOff().Build();
+        var encoder = new BinaryEncoder();
+
+        var result = encoder.Encode(program);
+
+        Assert.True(result.Ok);
+        Assert.Equal([0x1B, 0x40, 0x1B, 0x56, 0x00], result.Value);
+    }
+
+    [Fact]
+    public void Encode_UpsideDownOn_ProducesCorrectBytes()
+    {
+        var program = new PrintProgramBuilder().UpsideDownOn().Build();
+        var encoder = new BinaryEncoder();
+
+        var result = encoder.Encode(program);
+
+        Assert.True(result.Ok);
+        Assert.Equal([0x1B, 0x40, 0x1B, 0x7B, 0x01], result.Value);
+    }
+
+    [Fact]
+    public void Encode_UpsideDownOff_ProducesCorrectBytes()
+    {
+        var program = new PrintProgramBuilder().UpsideDownOff().Build();
+        var encoder = new BinaryEncoder();
+
+        var result = encoder.Encode(program);
+
+        Assert.True(result.Ok);
+        Assert.Equal([0x1B, 0x40, 0x1B, 0x7B, 0x00], result.Value);
+    }
+
+    [Fact]
+    public void Encode_FontSize_NormalSize_ProducesCorrectBytes()
+    {
+        var program = new PrintProgramBuilder().FontSize(0x00).Build();
+        var encoder = new BinaryEncoder();
+
+        var result = encoder.Encode(program);
+
+        Assert.True(result.Ok);
+        Assert.Equal([0x1B, 0x40, 0x1D, 0x21, 0x00], result.Value);
+    }
+
+    [Fact]
+    public void Encode_FontSize_DoubleWidthAndHeight_ProducesCorrectBytes()
+    {
+        var program = new PrintProgramBuilder().FontSize(0x11).Build();
+        var encoder = new BinaryEncoder();
+
+        var result = encoder.Encode(program);
+
+        Assert.True(result.Ok);
+        Assert.Equal([0x1B, 0x40, 0x1D, 0x21, 0x11], result.Value);
+    }
 }

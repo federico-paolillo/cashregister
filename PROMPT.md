@@ -6,11 +6,12 @@ Take into account also the following files (read them):
 - REVIEW.md
 - AGENTS.md
 
-## Instruction to implement
+## Instructions to implement
 
-NAME: "ESC - n — Turn underline mode on/off"
-CATEGORY FOLDER: Instructions/Formatting/
-BUILDER METHOD SIGNATURE: `.UnderlineOn(Thickness thickness)` and `.UnderlineOff()`
+NAME: There is no name here. We need the actual facility to put characters to print in the print buffer
+CATEGORY FOLDER: Instructions/Core/
+BUILDER METHOD SIGNATURE: `.Text(string text)`
+
 
 ## ESC/POS manual reference
 
@@ -30,5 +31,4 @@ the full boilerplate switch structure per CLAUDE.md, then add the new case.
 
 - Read all existing files before writing. Do not regenerate content that 
   already exists; only add the delta.
-- Validate parameter ranges in the instruction record if the manual specifies them.
-  Use ArgumentOutOfRangeException with a descriptive message.
+- Validate parameter ranges in the instruction record if the manual specifies them. Use ArgumentOutOfRangeException with a descriptive message.

@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text;
 
 using Cashregister.Factories;
@@ -42,6 +43,26 @@ public sealed class StringEncoder : IEncoder<string>
                         sb.Append("[UNDERLINE:OFF]");
                     else
                         sb.Append(underline.Thickness == Thickness.OneDot ? "[UNDERLINE:1DOT]" : "[UNDERLINE:2DOT]");
+                    break;
+                case EmphasizeInstruction emphasize:
+                    sb.Append(emphasize.Enabled ? "[BOLD:ON]" : "[BOLD:OFF]");
+                    break;
+                case DoubleStrikeInstruction doubleStrike:
+                    sb.Append(doubleStrike.Enabled ? "[DOUBLE_STRIKE:ON]" : "[DOUBLE_STRIKE:OFF]");
+                    break;
+                case SelectFontInstruction selectFont:
+                    sb.Append(selectFont.Font == CharacterFont.A ? "[FONT:A]" : "[FONT:B]");
+                    break;
+                case RotationInstruction rotation:
+                    sb.Append(rotation.Enabled ? "[ROTATE_90:ON]" : "[ROTATE_90:OFF]");
+                    break;
+                case UpsideDownInstruction upsideDown:
+                    sb.Append(upsideDown.Enabled ? "[UPSIDE_DOWN:ON]" : "[UPSIDE_DOWN:OFF]");
+                    break;
+                case FontSizeInstruction fontSize:
+                    int w = (fontSize.Size >> 4) + 1;
+                    int h = (fontSize.Size & 0x0F) + 1;
+                    sb.Append(CultureInfo.InvariantCulture, $"[FONT_SIZE:{w}x{h}]");
                     break;
                 default:
                     throw new NotSupportedException(

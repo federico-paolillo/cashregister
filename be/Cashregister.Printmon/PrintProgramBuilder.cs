@@ -51,6 +51,83 @@ public sealed class PrintProgramBuilder
         return this;
     }
 
+    public PrintProgramBuilder EmphasizeOn()
+    {
+        AddInstruction(new EmphasizeInstruction(true));
+
+        return this;
+    }
+
+    public PrintProgramBuilder EmphasizeOff()
+    {
+        AddInstruction(new EmphasizeInstruction(false));
+
+        return this;
+    }
+
+    public PrintProgramBuilder DoubleStrikeOn()
+    {
+        AddInstruction(new DoubleStrikeInstruction(true));
+
+        return this;
+    }
+
+    public PrintProgramBuilder DoubleStrikeOff()
+    {
+        AddInstruction(new DoubleStrikeInstruction(false));
+
+        return this;
+    }
+
+    public PrintProgramBuilder SelectFontA()
+    {
+        AddInstruction(new SelectFontInstruction(CharacterFont.A));
+
+        return this;
+    }
+
+    public PrintProgramBuilder SelectFontB()
+    {
+        AddInstruction(new SelectFontInstruction(CharacterFont.B));
+
+        return this;
+    }
+
+    public PrintProgramBuilder NinetyDegsOn()
+    {
+        AddInstruction(new RotationInstruction(true));
+
+        return this;
+    }
+
+    public PrintProgramBuilder NinetyDegsOff()
+    {
+        AddInstruction(new RotationInstruction(false));
+
+        return this;
+    }
+
+    public PrintProgramBuilder UpsideDownOn()
+    {
+        AddInstruction(new UpsideDownInstruction(true));
+
+        return this;
+    }
+
+    public PrintProgramBuilder UpsideDownOff()
+    {
+        AddInstruction(new UpsideDownInstruction(false));
+
+        return this;
+    }
+
+    public PrintProgramBuilder FontSize(byte size)
+    {
+        AddInstruction(new FontSizeInstruction(size));
+
+        return this;
+    }
+
     private void AddInstruction(Instruction instruction)
     {
         ArgumentNullException.ThrowIfNull(instruction);

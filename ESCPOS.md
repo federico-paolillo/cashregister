@@ -83,6 +83,12 @@ When adding a new instruction, insert the new case before the default arm.
 | ESC @           | `InitializeInstruction`  | `Core/`         | *(auto)*       | `0x1B 0x40`      | `[INIT]`        |
 | ESC ! n         | `SelectPrintModeInstruction` | `Formatting/` | `UseFontA(FormatMode)` / `UseFontB(FormatMode)` | `0x1B 0x21 n` | `[PRINT_MODE:FONT_A,...]` |
 | ESC - n         | `UnderlineInstruction`       | `Formatting/` | `UnderlineOn(Thickness)` / `UnderlineOff()` | `0x1B 0x2D n` | `[UNDERLINE:OFF]` / `[UNDERLINE:1DOT]` / `[UNDERLINE:2DOT]` |
+| ESC E n         | `EmphasizeInstruction`       | `Formatting/` | `EmphasizeOn()` / `EmphasizeOff()` | `0x1B 0x45 n` | `[BOLD:ON]` / `[BOLD:OFF]` |
+| ESC G n         | `DoubleStrikeInstruction`    | `Formatting/` | `DoubleStrikeOn()` / `DoubleStrikeOff()` | `0x1B 0x47 n` | `[DOUBLE_STRIKE:ON]` / `[DOUBLE_STRIKE:OFF]` |
+| ESC M n         | `SelectFontInstruction`      | `Formatting/` | `SelectFontA()` / `SelectFontB()` | `0x1B 0x4D n` | `[FONT:A]` / `[FONT:B]` |
+| ESC V n         | `RotationInstruction`        | `Formatting/` | `NinetyDegsOn()` / `NinetyDegsOff()` | `0x1B 0x56 n` | `[ROTATE_90:ON]` / `[ROTATE_90:OFF]` |
+| ESC { n         | `UpsideDownInstruction`      | `Formatting/` | `UpsideDownOn()` / `UpsideDownOff()` | `0x1B 0x7B n` | `[UPSIDE_DOWN:ON]` / `[UPSIDE_DOWN:OFF]` |
+| GS ! n          | `FontSizeInstruction`        | `Formatting/` | `FontSize(byte size)` | `0x1D 0x21 n` | `[FONT_SIZE:WxH]` |
 
 **Before implementing a new instruction, check this table.** If the command is already listed, the work is done.
 After implementing a new instruction, append a row to this table.
