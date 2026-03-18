@@ -82,6 +82,7 @@ When adding a new instruction, insert the new case before the default arm.
 | *(internal)*    | `NoOpInstruction`        | `Core/`         | `NoOp()`       | *(no bytes)*     | `[NOP]`         |
 | ESC @           | `InitializeInstruction`  | `Core/`         | *(auto)*       | `0x1B 0x40`      | `[INIT]`        |
 | ESC ! n         | `SelectPrintModeInstruction` | `Formatting/` | `UseFontA(FormatMode)` / `UseFontB(FormatMode)` | `0x1B 0x21 n` | `[PRINT_MODE:FONT_A,...]` |
+| ESC - n         | `UnderlineInstruction`       | `Formatting/` | `UnderlineOn(Thickness)` / `UnderlineOff()` | `0x1B 0x2D n` | `[UNDERLINE:OFF]` / `[UNDERLINE:1DOT]` / `[UNDERLINE:2DOT]` |
 
 **Before implementing a new instruction, check this table.** If the command is already listed, the work is done.
 After implementing a new instruction, append a row to this table.
@@ -90,8 +91,8 @@ After implementing a new instruction, append a row to this table.
 
 Each session implements exactly one instruction. Always implement relevant tests focusing on expected behavior rather than edge-cases. After completing, always run:
 
-    dotnet build Cashregister.Printmon/Cashregister.Printmon.csproj
-    dotnet test Cashregister.Tests.Integration/Cashregister.Tests.Integration.csproj
+    dotnet build be/Cashregister.Printmon/Cashregister.Printmon.csproj
+    dotnet test be/Cashregister.Printmon.Tests/Cashregister.Printmon.Tests.csproj
 
 Fix any compiler errors and failing tests before considering the task done. Do not leave 
 warnings unaddressed.

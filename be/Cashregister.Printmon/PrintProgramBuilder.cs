@@ -37,6 +37,20 @@ public sealed class PrintProgramBuilder
         return this;
     }
 
+    public PrintProgramBuilder UnderlineOn(Thickness thickness)
+    {
+        AddInstruction(new UnderlineInstruction(true, thickness));
+
+        return this;
+    }
+
+    public PrintProgramBuilder UnderlineOff()
+    {
+        AddInstruction(new UnderlineInstruction(false, default));
+
+        return this;
+    }
+
     private void AddInstruction(Instruction instruction)
     {
         ArgumentNullException.ThrowIfNull(instruction);

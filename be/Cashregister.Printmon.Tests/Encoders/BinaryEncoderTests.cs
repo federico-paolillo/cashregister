@@ -81,4 +81,40 @@ public sealed class BinaryEncoderTests
         Assert.True(result.Ok);
         Assert.Equal([0x1B, 0x40, 0x1B, 0x21, 0xB9], result.Value);
     }
+
+    [Fact]
+    public void Encode_UnderlineOff_ProducesCorrectBytes()
+    {
+        var program = new PrintProgramBuilder().UnderlineOff().Build();
+        var encoder = new BinaryEncoder();
+
+        var result = encoder.Encode(program);
+
+        Assert.True(result.Ok);
+        Assert.Equal([0x1B, 0x40, 0x1B, 0x2D, 0x00], result.Value);
+    }
+
+    [Fact]
+    public void Encode_UnderlineOnOneDot_ProducesCorrectBytes()
+    {
+        var program = new PrintProgramBuilder().UnderlineOn(Thickness.OneDot).Build();
+        var encoder = new BinaryEncoder();
+
+        var result = encoder.Encode(program);
+
+        Assert.True(result.Ok);
+        Assert.Equal([0x1B, 0x40, 0x1B, 0x2D, 0x01], result.Value);
+    }
+
+    [Fact]
+    public void Encode_UnderlineOnTwoDots_ProducesCorrectBytes()
+    {
+        var program = new PrintProgramBuilder().UnderlineOn(Thickness.TwoDots).Build();
+        var encoder = new BinaryEncoder();
+
+        var result = encoder.Encode(program);
+
+        Assert.True(result.Ok);
+        Assert.Equal([0x1B, 0x40, 0x1B, 0x2D, 0x02], result.Value);
+    }
 }

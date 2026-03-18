@@ -37,6 +37,12 @@ public sealed class StringEncoder : IEncoder<string>
                         sb.Append(",UNDERLINE");
                     sb.Append(']');
                     break;
+                case UnderlineInstruction underline:
+                    if (!underline.Enabled)
+                        sb.Append("[UNDERLINE:OFF]");
+                    else
+                        sb.Append(underline.Thickness == Thickness.OneDot ? "[UNDERLINE:1DOT]" : "[UNDERLINE:2DOT]");
+                    break;
                 default:
                     throw new NotSupportedException(
                         $"Instruction {instruction.GetType().Name} is not supported by this encoder.");

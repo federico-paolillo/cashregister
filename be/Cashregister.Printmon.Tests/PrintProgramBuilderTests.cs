@@ -54,4 +54,36 @@ public sealed class PrintProgramBuilderTests
         Assert.True(instruction.UseFontB);
         Assert.Equal(FormatMode.Emphasized, instruction.Flags);
     }
+
+    [Fact]
+    public void UnderlineOn_AddsUnderlineInstruction_EnabledWithGivenThickness()
+    {
+        var builder = new PrintProgramBuilder();
+
+        var program = builder.UnderlineOn(Thickness.TwoDots).Build();
+
+        Assert.Equal(2, program.Instructions.Length);
+        var instruction = Assert.IsType<UnderlineInstruction>(program.Instructions[1]);
+        Assert.True(instruction.Enabled);
+        Assert.Equal(Thickness.TwoDots, instruction.Thickness);
+    }
+
+    [Fact]
+    public void UnderlineOff_AddsUnderlineInstruction_Disabled()
+    {
+        var builder = new PrintProgramBuilder();
+
+        var program = builder.UnderlineOff().Build();
+
+        Assert.Equal(2, program.Instructions.Length);
+        var instruction = Assert.IsType<UnderlineInstruction>(program.Instructions[1]);
+        Assert.False(instruction.Enabled);
+    }
+
+    [Fact]
+    public void UnderlineOn_InvalidThickness_Throws()
+    {
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            new UnderlineInstruction(true, (Thickness)99));
+    }
 }

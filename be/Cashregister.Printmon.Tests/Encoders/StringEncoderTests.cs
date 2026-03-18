@@ -81,4 +81,40 @@ public sealed class StringEncoderTests
         Assert.True(result.Ok);
         Assert.Equal("[INIT][PRINT_MODE:FONT_B,EMPHASIZED,DOUBLE_HEIGHT,DOUBLE_WIDTH,UNDERLINE]", result.Value);
     }
+
+    [Fact]
+    public void Encode_UnderlineOff_ProducesOffToken()
+    {
+        var program = new PrintProgramBuilder().UnderlineOff().Build();
+        var encoder = new StringEncoder();
+
+        var result = encoder.Encode(program);
+
+        Assert.True(result.Ok);
+        Assert.Equal("[INIT][UNDERLINE:OFF]", result.Value);
+    }
+
+    [Fact]
+    public void Encode_UnderlineOnOneDot_Produces1DotToken()
+    {
+        var program = new PrintProgramBuilder().UnderlineOn(Thickness.OneDot).Build();
+        var encoder = new StringEncoder();
+
+        var result = encoder.Encode(program);
+
+        Assert.True(result.Ok);
+        Assert.Equal("[INIT][UNDERLINE:1DOT]", result.Value);
+    }
+
+    [Fact]
+    public void Encode_UnderlineOnTwoDots_Produces2DotToken()
+    {
+        var program = new PrintProgramBuilder().UnderlineOn(Thickness.TwoDots).Build();
+        var encoder = new StringEncoder();
+
+        var result = encoder.Encode(program);
+
+        Assert.True(result.Ok);
+        Assert.Equal("[INIT][UNDERLINE:2DOT]", result.Value);
+    }
 }

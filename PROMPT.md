@@ -8,9 +8,9 @@ Take into account also the following files (read them):
 
 ## Instruction to implement
 
-NAME: "ESC ! n — Select print mode(s)"
+NAME: "ESC - n — Turn underline mode on/off"
 CATEGORY FOLDER: Instructions/Formatting/
-BUILDER METHOD SIGNATURE: `.UseFontA(FormatFlags formatFlags)` and `.UseFontB(FormatFlags formatFlags)`
+BUILDER METHOD SIGNATURE: `.UnderlineOn(Thickness thickness)` and `.UnderlineOff()`
 
 ## ESC/POS manual reference
 
@@ -18,7 +18,7 @@ Review the file PRINTER.md
 
 ## Files to create or modify
 
-CREATE:  Instructions/[Category]/[Name]Instruction.cs  
+CREATE:  Instructions/[Category]/[Name]Instruction.cs - Keep any enum in the same file as the instruction
 MODIFY:  PrintProgramBuilder.cs  — add one builder method  
 MODIFY:  Encoders/BinaryEncoder.cs  — add one switch arm before the default throw  
 MODIFY:  Encoders/StringEncoder.cs  — add one switch arm before the default throw  
