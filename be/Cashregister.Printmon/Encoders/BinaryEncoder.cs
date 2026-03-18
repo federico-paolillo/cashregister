@@ -1,5 +1,6 @@
 using Cashregister.Factories;
 using Cashregister.Printmon.Instructions.Core;
+using Cashregister.Printmon.Instructions.Formatting;
 
 namespace Cashregister.Printmon.Encoders;
 
@@ -19,6 +20,10 @@ public sealed class BinaryEncoder : IEncoder<byte[]>
                     break;
                 case InitializeInstruction:
                     stream.Write([0x1B, 0x40]); // ESC @
+                    break;
+                case SelectPrintModeInstruction selectPrintMode:
+                    byte n = (byte)((selectPrintMode.UseFontB ? 0x01 : 0x00) | (int)selectPrintMode.Flags);
+                    stream.Write([0x1B, 0x21, n]); // ESC ! n
                     break;
                 default:
                     throw new NotSupportedException(

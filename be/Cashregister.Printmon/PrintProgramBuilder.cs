@@ -2,6 +2,7 @@ using System.Collections.Immutable;
 
 using Cashregister.Printmon.Instructions;
 using Cashregister.Printmon.Instructions.Core;
+using Cashregister.Printmon.Instructions.Formatting;
 
 namespace Cashregister.Printmon;
 
@@ -18,6 +19,20 @@ public sealed class PrintProgramBuilder
     public PrintProgramBuilder NoOp()
     {
         AddInstruction(new NoOpInstruction());
+
+        return this;
+    }
+
+    public PrintProgramBuilder UseFontA(FormatMode formatMode)
+    {
+        AddInstruction(new SelectPrintModeInstruction(false, formatMode));
+
+        return this;
+    }
+
+    public PrintProgramBuilder UseFontB(FormatMode formatMode)
+    {
+        AddInstruction(new SelectPrintModeInstruction(true, formatMode));
 
         return this;
     }

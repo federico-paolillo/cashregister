@@ -8,9 +8,9 @@ Take into account also the following files (read them):
 
 ## Instruction to implement
 
-NAME: "ESC @ — Initialize printer"
-CATEGORY FOLDER: Instructions/Core/
-BUILDER METHOD SIGNATURE: <none>. This command is automatically included when instantiating the builder.
+NAME: "ESC ! n — Select print mode(s)"
+CATEGORY FOLDER: Instructions/Formatting/
+BUILDER METHOD SIGNATURE: `.UseFontA(FormatFlags formatFlags)` and `.UseFontB(FormatFlags formatFlags)`
 
 ## ESC/POS manual reference
 

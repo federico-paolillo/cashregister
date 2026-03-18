@@ -13,6 +13,7 @@ Cashregister.Printmon/
 ├── Instructions/
 │   ├── Instruction.cs         ← abstract record base, do not modify
 │   ├── Core/
+│   ├── Formatting/
 │   ├── Text/
 │   ├── Feed/
 │   ├── Cut/
@@ -80,6 +81,7 @@ When adding a new instruction, insert the new case before the default arm.
 |-----------------|--------------------------|-----------------|----------------|------------------|-----------------|
 | *(internal)*    | `NoOpInstruction`        | `Core/`         | `NoOp()`       | *(no bytes)*     | `[NOP]`         |
 | ESC @           | `InitializeInstruction`  | `Core/`         | *(auto)*       | `0x1B 0x40`      | `[INIT]`        |
+| ESC ! n         | `SelectPrintModeInstruction` | `Formatting/` | `UseFontA(FormatMode)` / `UseFontB(FormatMode)` | `0x1B 0x21 n` | `[PRINT_MODE:FONT_A,...]` |
 
 **Before implementing a new instruction, check this table.** If the command is already listed, the work is done.
 After implementing a new instruction, append a row to this table.
