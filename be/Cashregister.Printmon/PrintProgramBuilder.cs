@@ -128,6 +128,13 @@ public sealed class PrintProgramBuilder
         return this;
     }
 
+    public PrintProgramBuilder Text(string text)
+    {
+        AddInstruction(new TextInstruction(text));
+
+        return this;
+    }
+
     private void AddInstruction(Instruction instruction)
     {
         ArgumentNullException.ThrowIfNull(instruction);

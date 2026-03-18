@@ -239,4 +239,30 @@ public sealed class PrintProgramBuilderTests
         Assert.Throws<ArgumentOutOfRangeException>(() =>
             new FontSizeInstruction(0x08));
     }
+
+    [Fact]
+    public void Text_AddsTextInstruction_WithGivenText()
+    {
+        var builder = new PrintProgramBuilder();
+
+        var program = builder.Text("Hello").Build();
+
+        Assert.Equal(2, program.Instructions.Length);
+        var instruction = Assert.IsType<TextInstruction>(program.Instructions[1]);
+        Assert.Equal("Hello", instruction.Text);
+    }
+
+    [Fact]
+    public void TextInstruction_NullText_Throws()
+    {
+        Assert.Throws<ArgumentNullException>(() =>
+            new TextInstruction(null!));
+    }
+
+    [Fact]
+    public void TextInstruction_EmptyText_Throws()
+    {
+        Assert.Throws<ArgumentException>(() =>
+            new TextInstruction(""));
+    }
 }

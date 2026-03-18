@@ -261,4 +261,16 @@ public sealed class BinaryEncoderTests
         Assert.True(result.Ok);
         Assert.Equal([0x1B, 0x40, 0x1D, 0x21, 0x11], result.Value);
     }
+
+    [Fact]
+    public void Encode_Text_ProducesAsciiBytes()
+    {
+        var program = new PrintProgramBuilder().Text("Hi").Build();
+        var encoder = new BinaryEncoder();
+
+        var result = encoder.Encode(program);
+
+        Assert.True(result.Ok);
+        Assert.Equal([0x1B, 0x40, 0x48, 0x69], result.Value);
+    }
 }

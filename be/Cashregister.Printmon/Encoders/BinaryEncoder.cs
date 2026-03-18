@@ -51,6 +51,9 @@ public sealed class BinaryEncoder : IEncoder<byte[]>
                 case FontSizeInstruction fontSize:
                     stream.Write([0x1D, 0x21, fontSize.Size]); // GS ! n
                     break;
+                case TextInstruction text:
+                    stream.Write(System.Text.Encoding.ASCII.GetBytes(text.Text));
+                    break;
                 default:
                     throw new NotSupportedException(
                         $"Instruction {instruction.GetType().Name} is not supported by this encoder.");

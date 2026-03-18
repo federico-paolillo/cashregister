@@ -261,4 +261,16 @@ public sealed class StringEncoderTests
         Assert.True(result.Ok);
         Assert.Equal("[INIT][FONT_SIZE:2x2]", result.Value);
     }
+
+    [Fact]
+    public void Encode_Text_EmitsTextAsIs()
+    {
+        var program = new PrintProgramBuilder().Text("Hello").Build();
+        var encoder = new StringEncoder();
+
+        var result = encoder.Encode(program);
+
+        Assert.True(result.Ok);
+        Assert.Equal("[INIT]Hello", result.Value);
+    }
 }

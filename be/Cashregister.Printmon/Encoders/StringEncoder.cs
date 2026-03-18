@@ -64,6 +64,9 @@ public sealed class StringEncoder : IEncoder<string>
                     int h = (fontSize.Size & 0x0F) + 1;
                     sb.Append(CultureInfo.InvariantCulture, $"[FONT_SIZE:{w}x{h}]");
                     break;
+                case TextInstruction text:
+                    sb.Append(text.Text);
+                    break;
                 default:
                     throw new NotSupportedException(
                         $"Instruction {instruction.GetType().Name} is not supported by this encoder.");

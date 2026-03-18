@@ -8,10 +8,31 @@ Take into account also the following files (read them):
 
 ## Instructions to implement
 
-NAME: There is no name here. We need the actual facility to put characters to print in the print buffer
-CATEGORY FOLDER: Instructions/Core/
-BUILDER METHOD SIGNATURE: `.Text(string text)`
+NAME: "ESC a n — Select justification"
+CATEGORY FOLDER: Instructions/Layout/
+BUILDER METHOD SIGNATURE: `.Justify(Justification justification)`
 
+---
+
+NAME: "ESC $ nL nH — Set absolute print position"
+CATEGORY FOLDER: Instructions/Layout/
+BUILDER METHOD SIGNATURE: `.SetAbsolutePosition(byte left, byte top)`
+
+--- 
+
+NAME: "ESC \ nL nH — Set relative print position"
+CATEGORY FOLDER: Instructions/Layout/
+BUILDER METHOD SIGNATURE: `.SetRelativePosition(byte left, byte top)`
+
+---
+
+NAME: "GS L nL nH — Set left margin"
+CATEGORY FOLDER: Instructions/Layout/
+BUILDER METHOD SIGNATURE: `.SetLeftMargin(byte amount)`
+
+---
+
+**Note**: Verify signatures are appropriate and suggest, if it exists, a better higher level signature
 
 ## ESC/POS manual reference
 

@@ -89,6 +89,7 @@ When adding a new instruction, insert the new case before the default arm.
 | ESC V n         | `RotationInstruction`        | `Formatting/` | `NinetyDegsOn()` / `NinetyDegsOff()` | `0x1B 0x56 n` | `[ROTATE_90:ON]` / `[ROTATE_90:OFF]` |
 | ESC { n         | `UpsideDownInstruction`      | `Formatting/` | `UpsideDownOn()` / `UpsideDownOff()` | `0x1B 0x7B n` | `[UPSIDE_DOWN:ON]` / `[UPSIDE_DOWN:OFF]` |
 | GS ! n          | `FontSizeInstruction`        | `Formatting/` | `FontSize(byte size)` | `0x1D 0x21 n` | `[FONT_SIZE:WxH]` |
+| *(raw text)*    | `TextInstruction`            | `Core/`       | `Text(string text)` | ASCII bytes    | text as-is         |
 
 **Before implementing a new instruction, check this table.** If the command is already listed, the work is done.
 After implementing a new instruction, append a row to this table.
