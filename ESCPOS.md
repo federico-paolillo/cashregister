@@ -90,6 +90,10 @@ When adding a new instruction, insert the new case before the default arm.
 | ESC { n         | `UpsideDownInstruction`      | `Formatting/` | `UpsideDownOn()` / `UpsideDownOff()` | `0x1B 0x7B n` | `[UPSIDE_DOWN:ON]` / `[UPSIDE_DOWN:OFF]` |
 | GS ! n          | `FontSizeInstruction`        | `Formatting/` | `FontSize(byte size)` | `0x1D 0x21 n` | `[FONT_SIZE:WxH]` |
 | *(raw text)*    | `TextInstruction`            | `Core/`       | `Text(string text)` | ASCII bytes    | text as-is         |
+| ESC a n         | `JustifyInstruction`         | `Layout/`     | `Justify(Justification)` | `0x1B 0x61 n` | `[ALIGN:LEFT]` / `[ALIGN:CENTER]` / `[ALIGN:RIGHT]` |
+| ESC $ nL nH     | `AbsolutePositionInstruction`| `Layout/`     | `SetAbsolutePosition(ushort)` | `0x1B 0x24 nL nH` | `[ABS_POS:value]` |
+| ESC \ nL nH     | `RelativePositionInstruction`| `Layout/`     | `SetRelativePosition(ushort)` | `0x1B 0x5C nL nH` | `[REL_POS:value]` |
+| GS L nL nH      | `LeftMarginInstruction`      | `Layout/`     | `SetLeftMargin(ushort)` | `0x1D 0x4C nL nH` | `[LEFT_MARGIN:value]` |
 
 **Before implementing a new instruction, check this table.** If the command is already listed, the work is done.
 After implementing a new instruction, append a row to this table.

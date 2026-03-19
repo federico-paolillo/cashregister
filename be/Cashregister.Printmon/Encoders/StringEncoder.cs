@@ -4,6 +4,7 @@ using System.Text;
 using Cashregister.Factories;
 using Cashregister.Printmon.Instructions.Core;
 using Cashregister.Printmon.Instructions.Formatting;
+using Cashregister.Printmon.Instructions.Layout;
 
 namespace Cashregister.Printmon.Encoders;
 
@@ -63,6 +64,29 @@ public sealed class StringEncoder : IEncoder<string>
                     int w = (fontSize.Size >> 4) + 1;
                     int h = (fontSize.Size & 0x0F) + 1;
                     sb.Append(CultureInfo.InvariantCulture, $"[FONT_SIZE:{w}x{h}]");
+                    break;
+                case JustifyInstruction justify:
+                    switch (justify.Justification)
+                    {
+                        case Justification.Left:
+                            sb.Append("[ALIGN:LEFT]");
+                            break;
+                        case Justification.Center:
+                            sb.Append("[ALIGN:CENTER]");
+                            break;
+                        case Justification.Right:
+                            sb.Append("[ALIGN:RIGHT]");
+                            break;
+                    }
+                    break;
+                case AbsolutePositionInstruction absPos:
+                    sb.Append(CultureInfo.InvariantCulture, $"[ABS_POS:{absPos.Position}]");
+                    break;
+                case RelativePositionInstruction relPos:
+                    sb.Append(CultureInfo.InvariantCulture, $"[REL_POS:{relPos.Offset}]");
+                    break;
+                case LeftMarginInstruction leftMargin:
+                    sb.Append(CultureInfo.InvariantCulture, $"[LEFT_MARGIN:{leftMargin.Margin}]");
                     break;
                 case TextInstruction text:
                     sb.Append(text.Text);

@@ -1,6 +1,7 @@
 using Cashregister.Printmon;
 using Cashregister.Printmon.Encoders;
 using Cashregister.Printmon.Instructions.Formatting;
+using Cashregister.Printmon.Instructions.Layout;
 
 namespace Cashregister.Printmon.Tests.Encoders;
 
@@ -260,6 +261,90 @@ public sealed class BinaryEncoderTests
 
         Assert.True(result.Ok);
         Assert.Equal([0x1B, 0x40, 0x1D, 0x21, 0x11], result.Value);
+    }
+
+    [Fact]
+    public void Encode_JustifyLeft_ProducesCorrectBytes()
+    {
+        var program = new PrintProgramBuilder().Justify(Justification.Left).Build();
+        var encoder = new BinaryEncoder();
+
+        var result = encoder.Encode(program);
+
+        Assert.True(result.Ok);
+        Assert.Equal([0x1B, 0x40, 0x1B, 0x61, 0x00], result.Value);
+    }
+
+    [Fact]
+    public void Encode_JustifyCenter_ProducesCorrectBytes()
+    {
+        var program = new PrintProgramBuilder().Justify(Justification.Center).Build();
+        var encoder = new BinaryEncoder();
+
+        var result = encoder.Encode(program);
+
+        Assert.True(result.Ok);
+        Assert.Equal([0x1B, 0x40, 0x1B, 0x61, 0x01], result.Value);
+    }
+
+    [Fact]
+    public void Encode_JustifyRight_ProducesCorrectBytes()
+    {
+        var program = new PrintProgramBuilder().Justify(Justification.Right).Build();
+        var encoder = new BinaryEncoder();
+
+        var result = encoder.Encode(program);
+
+        Assert.True(result.Ok);
+        Assert.Equal([0x1B, 0x40, 0x1B, 0x61, 0x02], result.Value);
+    }
+
+    [Fact]
+    public void Encode_AbsolutePosition_ProducesCorrectBytes()
+    {
+        var program = new PrintProgramBuilder().SetAbsolutePosition(0x0104).Build();
+        var encoder = new BinaryEncoder();
+
+        var result = encoder.Encode(program);
+
+        Assert.True(result.Ok);
+        Assert.Equal([0x1B, 0x40, 0x1B, 0x24, 0x04, 0x01], result.Value);
+    }
+
+    [Fact]
+    public void Encode_AbsolutePosition_Zero_ProducesCorrectBytes()
+    {
+        var program = new PrintProgramBuilder().SetAbsolutePosition(0).Build();
+        var encoder = new BinaryEncoder();
+
+        var result = encoder.Encode(program);
+
+        Assert.True(result.Ok);
+        Assert.Equal([0x1B, 0x40, 0x1B, 0x24, 0x00, 0x00], result.Value);
+    }
+
+    [Fact]
+    public void Encode_RelativePosition_ProducesCorrectBytes()
+    {
+        var program = new PrintProgramBuilder().SetRelativePosition(0x0304).Build();
+        var encoder = new BinaryEncoder();
+
+        var result = encoder.Encode(program);
+
+        Assert.True(result.Ok);
+        Assert.Equal([0x1B, 0x40, 0x1B, 0x5C, 0x04, 0x03], result.Value);
+    }
+
+    [Fact]
+    public void Encode_LeftMargin_ProducesCorrectBytes()
+    {
+        var program = new PrintProgramBuilder().SetLeftMargin(0x0200).Build();
+        var encoder = new BinaryEncoder();
+
+        var result = encoder.Encode(program);
+
+        Assert.True(result.Ok);
+        Assert.Equal([0x1B, 0x40, 0x1D, 0x4C, 0x00, 0x02], result.Value);
     }
 
     [Fact]

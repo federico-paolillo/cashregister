@@ -3,6 +3,7 @@ using System.Collections.Immutable;
 using Cashregister.Printmon.Instructions;
 using Cashregister.Printmon.Instructions.Core;
 using Cashregister.Printmon.Instructions.Formatting;
+using Cashregister.Printmon.Instructions.Layout;
 
 namespace Cashregister.Printmon;
 
@@ -124,6 +125,34 @@ public sealed class PrintProgramBuilder
     public PrintProgramBuilder FontSize(byte size)
     {
         AddInstruction(new FontSizeInstruction(size));
+
+        return this;
+    }
+
+    public PrintProgramBuilder Justify(Justification justification)
+    {
+        AddInstruction(new JustifyInstruction(justification));
+
+        return this;
+    }
+
+    public PrintProgramBuilder SetAbsolutePosition(ushort position)
+    {
+        AddInstruction(new AbsolutePositionInstruction(position));
+
+        return this;
+    }
+
+    public PrintProgramBuilder SetRelativePosition(ushort offset)
+    {
+        AddInstruction(new RelativePositionInstruction(offset));
+
+        return this;
+    }
+
+    public PrintProgramBuilder SetLeftMargin(ushort margin)
+    {
+        AddInstruction(new LeftMarginInstruction(margin));
 
         return this;
     }

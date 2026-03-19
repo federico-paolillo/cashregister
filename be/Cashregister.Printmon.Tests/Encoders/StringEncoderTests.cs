@@ -1,6 +1,7 @@
 using Cashregister.Printmon;
 using Cashregister.Printmon.Encoders;
 using Cashregister.Printmon.Instructions.Formatting;
+using Cashregister.Printmon.Instructions.Layout;
 
 namespace Cashregister.Printmon.Tests.Encoders;
 
@@ -260,6 +261,78 @@ public sealed class StringEncoderTests
 
         Assert.True(result.Ok);
         Assert.Equal("[INIT][FONT_SIZE:2x2]", result.Value);
+    }
+
+    [Fact]
+    public void Encode_JustifyLeft_ProducesCorrectToken()
+    {
+        var program = new PrintProgramBuilder().Justify(Justification.Left).Build();
+        var encoder = new StringEncoder();
+
+        var result = encoder.Encode(program);
+
+        Assert.True(result.Ok);
+        Assert.Equal("[INIT][ALIGN:LEFT]", result.Value);
+    }
+
+    [Fact]
+    public void Encode_JustifyCenter_ProducesCorrectToken()
+    {
+        var program = new PrintProgramBuilder().Justify(Justification.Center).Build();
+        var encoder = new StringEncoder();
+
+        var result = encoder.Encode(program);
+
+        Assert.True(result.Ok);
+        Assert.Equal("[INIT][ALIGN:CENTER]", result.Value);
+    }
+
+    [Fact]
+    public void Encode_JustifyRight_ProducesCorrectToken()
+    {
+        var program = new PrintProgramBuilder().Justify(Justification.Right).Build();
+        var encoder = new StringEncoder();
+
+        var result = encoder.Encode(program);
+
+        Assert.True(result.Ok);
+        Assert.Equal("[INIT][ALIGN:RIGHT]", result.Value);
+    }
+
+    [Fact]
+    public void Encode_AbsolutePosition_ProducesCorrectToken()
+    {
+        var program = new PrintProgramBuilder().SetAbsolutePosition(1000).Build();
+        var encoder = new StringEncoder();
+
+        var result = encoder.Encode(program);
+
+        Assert.True(result.Ok);
+        Assert.Equal("[INIT][ABS_POS:1000]", result.Value);
+    }
+
+    [Fact]
+    public void Encode_RelativePosition_ProducesCorrectToken()
+    {
+        var program = new PrintProgramBuilder().SetRelativePosition(500).Build();
+        var encoder = new StringEncoder();
+
+        var result = encoder.Encode(program);
+
+        Assert.True(result.Ok);
+        Assert.Equal("[INIT][REL_POS:500]", result.Value);
+    }
+
+    [Fact]
+    public void Encode_LeftMargin_ProducesCorrectToken()
+    {
+        var program = new PrintProgramBuilder().SetLeftMargin(200).Build();
+        var encoder = new StringEncoder();
+
+        var result = encoder.Encode(program);
+
+        Assert.True(result.Ok);
+        Assert.Equal("[INIT][LEFT_MARGIN:200]", result.Value);
     }
 
     [Fact]

@@ -8,31 +8,27 @@ Take into account also the following files (read them):
 
 ## Instructions to implement
 
-NAME: "ESC a n — Select justification"
-CATEGORY FOLDER: Instructions/Layout/
-BUILDER METHOD SIGNATURE: `.Justify(Justification justification)`
+NAME: "ESC t n — Select character code table"
+CATEGORY FOLDER: Instructions/Core/
+BUILDER METHOD SIGNATURE: None. When ProgramBuilder is initialized it should include this instruction (like initialize) with value 0 (european code page).
 
 ---
 
-NAME: "ESC $ nL nH — Set absolute print position"
-CATEGORY FOLDER: Instructions/Layout/
-BUILDER METHOD SIGNATURE: `.SetAbsolutePosition(byte left, byte top)`
+NAME: "ESC m — Partial cut"
+CATEGORY FOLDER: Instructions/Core/
+BUILDER METHOD SIGNATURE: None. When ProgramBuilder.Build is called, ProgramBuilder will include this instruction before returning the program.
 
 --- 
 
-NAME: "ESC \ nL nH — Set relative print position"
-CATEGORY FOLDER: Instructions/Layout/
-BUILDER METHOD SIGNATURE: `.SetRelativePosition(byte left, byte top)`
+NAME: "LF — Print and line feed"
+CATEGORY FOLDER: Instructions/Core/
+BUILDER METHOD SIGNATURE: `.LineFeed()` AND it is automatically included when ProgramBuilder.Build is called. Before including the PartialCut instruction.
 
 ---
 
-NAME: "GS L nL nH — Set left margin"
-CATEGORY FOLDER: Instructions/Layout/
-BUILDER METHOD SIGNATURE: `.SetLeftMargin(byte amount)`
+**Note**: Verify signatures are appropriate and suggest, if it exists, a better higher level signature.
 
----
-
-**Note**: Verify signatures are appropriate and suggest, if it exists, a better higher level signature
+Review existing tests and update them to account for the new automatically included instructions at init and build time of ProgramBuilder.
 
 ## ESC/POS manual reference
 

@@ -1,6 +1,7 @@
 using Cashregister.Factories;
 using Cashregister.Printmon.Instructions.Core;
 using Cashregister.Printmon.Instructions.Formatting;
+using Cashregister.Printmon.Instructions.Layout;
 
 namespace Cashregister.Printmon.Encoders;
 
@@ -50,6 +51,18 @@ public sealed class BinaryEncoder : IEncoder<byte[]>
                     break;
                 case FontSizeInstruction fontSize:
                     stream.Write([0x1D, 0x21, fontSize.Size]); // GS ! n
+                    break;
+                case JustifyInstruction justify:
+                    stream.Write([0x1B, 0x61, (byte)justify.Justification]); // ESC a n
+                    break;
+                case AbsolutePositionInstruction absPos:
+                    stream.Write([0x1B, 0x24, (byte)(absPos.Position & 0xFF), (byte)(absPos.Position >> 8)]); // ESC $ nL nH
+                    break;
+                case RelativePositionInstruction relPos:
+                    stream.Write([0x1B, 0x5C, (byte)(relPos.Offset & 0xFF), (byte)(relPos.Offset >> 8)]); // ESC \ nL nH
+                    break;
+                case LeftMarginInstruction leftMargin:
+                    stream.Write([0x1D, 0x4C, (byte)(leftMargin.Margin & 0xFF), (byte)(leftMargin.Margin >> 8)]); // GS L nL nH
                     break;
                 case TextInstruction text:
                     stream.Write(System.Text.Encoding.ASCII.GetBytes(text.Text));

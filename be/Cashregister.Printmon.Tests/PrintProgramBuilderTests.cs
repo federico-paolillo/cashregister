@@ -1,6 +1,7 @@
 using Cashregister.Printmon;
 using Cashregister.Printmon.Instructions.Core;
 using Cashregister.Printmon.Instructions.Formatting;
+using Cashregister.Printmon.Instructions.Layout;
 
 namespace Cashregister.Printmon.Tests;
 
@@ -238,6 +239,61 @@ public sealed class PrintProgramBuilderTests
     {
         Assert.Throws<ArgumentOutOfRangeException>(() =>
             new FontSizeInstruction(0x08));
+    }
+
+    [Fact]
+    public void Justify_AddsJustifyInstruction_WithGivenJustification()
+    {
+        var builder = new PrintProgramBuilder();
+
+        var program = builder.Justify(Justification.Center).Build();
+
+        Assert.Equal(2, program.Instructions.Length);
+        var instruction = Assert.IsType<JustifyInstruction>(program.Instructions[1]);
+        Assert.Equal(Justification.Center, instruction.Justification);
+    }
+
+    [Fact]
+    public void JustifyInstruction_InvalidJustification_Throws()
+    {
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            new JustifyInstruction((Justification)99));
+    }
+
+    [Fact]
+    public void SetAbsolutePosition_AddsAbsolutePositionInstruction()
+    {
+        var builder = new PrintProgramBuilder();
+
+        var program = builder.SetAbsolutePosition(1000).Build();
+
+        Assert.Equal(2, program.Instructions.Length);
+        var instruction = Assert.IsType<AbsolutePositionInstruction>(program.Instructions[1]);
+        Assert.Equal(1000, instruction.Position);
+    }
+
+    [Fact]
+    public void SetRelativePosition_AddsRelativePositionInstruction()
+    {
+        var builder = new PrintProgramBuilder();
+
+        var program = builder.SetRelativePosition(500).Build();
+
+        Assert.Equal(2, program.Instructions.Length);
+        var instruction = Assert.IsType<RelativePositionInstruction>(program.Instructions[1]);
+        Assert.Equal(500, instruction.Offset);
+    }
+
+    [Fact]
+    public void SetLeftMargin_AddsLeftMarginInstruction()
+    {
+        var builder = new PrintProgramBuilder();
+
+        var program = builder.SetLeftMargin(200).Build();
+
+        Assert.Equal(2, program.Instructions.Length);
+        var instruction = Assert.IsType<LeftMarginInstruction>(program.Instructions[1]);
+        Assert.Equal(200, instruction.Margin);
     }
 
     [Fact]
