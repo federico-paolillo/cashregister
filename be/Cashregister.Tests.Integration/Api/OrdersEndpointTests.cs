@@ -378,7 +378,7 @@ public sealed class OrdersEndpointTests(
 
         var orderRequest = new OrderRequestDto(
             [new OrderRequestItemDto(articleId.Value, 3u)],
-            TotalOverride: 1000L
+            1000L
         );
 
         var createResponse = await httpClient.PostAsJsonAsync("/orders", orderRequest);

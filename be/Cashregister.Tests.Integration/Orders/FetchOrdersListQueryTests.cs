@@ -244,7 +244,8 @@ public sealed class FetchOrdersListQueryTests(
         Assert.Equal(Cents.From(999L), result[0].Total);
     }
 
-    private async Task<Identifier> CreateOrderWithOverrideAsync(Identifier articleId, uint quantity, Cents totalOverride)
+    private async Task<Identifier> CreateOrderWithOverrideAsync(Identifier articleId, uint quantity,
+        Cents totalOverride)
     {
         var placeOrderResult = await RunScoped<IPlaceOrderTransaction, Result<Identifier>>(tx =>
             tx.ExecuteAsync(new OrderRequest

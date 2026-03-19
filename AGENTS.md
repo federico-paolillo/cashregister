@@ -5,13 +5,14 @@ This document provides development guidelines and project structure information 
 ## Project Structure
 
 ```
-cashregister/
+be/
 ├── Cashregister.Api/           # ASP.NET Core Minimal API
 ├── Cashregister.Application/   # Business logic and transactions
 ├── Cashregister.Commons/       # Cross-cutting infrastructure (Result, Transaction, UoW, Scoped)
 ├── Cashregister.Activities/    # Orchestration layer (pending implementation)
 ├── Cashregister.Database/      # Entity Framework Core persistence
 ├── Cashregister.Domain/        # Domain models and value objects
+├── Cashregister.Printmon.*/    # Printer functionality
 ├── Cashregister.Tests.*/       # Test projects
 └── ui/                         # React frontend
 ```
@@ -291,6 +292,12 @@ dotnet run --project Cashregister.Api
 ```bash
 dotnet test
 ```
+
+### Printer functionality
+
+Refer to:
+- `ESCPOS.md` for details on the architecture
+- `MANUAL.md` for the printer instruction manual
 
 ## Development Workflow
 

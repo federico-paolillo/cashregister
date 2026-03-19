@@ -1,4 +1,3 @@
-using Cashregister.Printmon;
 using Cashregister.Printmon.Encoders;
 using Cashregister.Printmon.Instructions.Formatting;
 using Cashregister.Printmon.Instructions.Layout;
@@ -16,7 +15,7 @@ public sealed class BinaryEncoderTests
         var result = encoder.Encode(program);
 
         Assert.True(result.Ok);
-        Assert.Equal([0x1B, 0x40], result.Value);
+        Assert.Equal([0x1B, 0x40, 0x1B, 0x74, 0x00, 0x0A, 0x1B, 0x6D], result.Value);
     }
 
     [Fact]
@@ -28,7 +27,7 @@ public sealed class BinaryEncoderTests
         var result = encoder.Encode(program);
 
         Assert.True(result.Ok);
-        Assert.Equal([0x1B, 0x40], result.Value);
+        Assert.Equal([0x1B, 0x40, 0x1B, 0x74, 0x00, 0x0A, 0x1B, 0x6D], result.Value);
     }
 
     [Fact]
@@ -40,7 +39,7 @@ public sealed class BinaryEncoderTests
         var result = encoder.Encode(program);
 
         Assert.True(result.Ok);
-        Assert.Equal([0x1B, 0x40, 0x1B, 0x21, 0x00], result.Value);
+        Assert.Equal([0x1B, 0x40, 0x1B, 0x74, 0x00, 0x1B, 0x21, 0x00, 0x0A, 0x1B, 0x6D], result.Value);
     }
 
     [Fact]
@@ -52,7 +51,7 @@ public sealed class BinaryEncoderTests
         var result = encoder.Encode(program);
 
         Assert.True(result.Ok);
-        Assert.Equal([0x1B, 0x40, 0x1B, 0x21, 0x01], result.Value);
+        Assert.Equal([0x1B, 0x40, 0x1B, 0x74, 0x00, 0x1B, 0x21, 0x01, 0x0A, 0x1B, 0x6D], result.Value);
     }
 
     [Fact]
@@ -66,7 +65,7 @@ public sealed class BinaryEncoderTests
         var result = encoder.Encode(program);
 
         Assert.True(result.Ok);
-        Assert.Equal([0x1B, 0x40, 0x1B, 0x21, 0x18], result.Value);
+        Assert.Equal([0x1B, 0x40, 0x1B, 0x74, 0x00, 0x1B, 0x21, 0x18, 0x0A, 0x1B, 0x6D], result.Value);
     }
 
     [Fact]
@@ -80,7 +79,7 @@ public sealed class BinaryEncoderTests
         var result = encoder.Encode(program);
 
         Assert.True(result.Ok);
-        Assert.Equal([0x1B, 0x40, 0x1B, 0x21, 0xB9], result.Value);
+        Assert.Equal([0x1B, 0x40, 0x1B, 0x74, 0x00, 0x1B, 0x21, 0xB9, 0x0A, 0x1B, 0x6D], result.Value);
     }
 
     [Fact]
@@ -92,7 +91,7 @@ public sealed class BinaryEncoderTests
         var result = encoder.Encode(program);
 
         Assert.True(result.Ok);
-        Assert.Equal([0x1B, 0x40, 0x1B, 0x2D, 0x00], result.Value);
+        Assert.Equal([0x1B, 0x40, 0x1B, 0x74, 0x00, 0x1B, 0x2D, 0x00, 0x0A, 0x1B, 0x6D], result.Value);
     }
 
     [Fact]
@@ -104,7 +103,7 @@ public sealed class BinaryEncoderTests
         var result = encoder.Encode(program);
 
         Assert.True(result.Ok);
-        Assert.Equal([0x1B, 0x40, 0x1B, 0x2D, 0x01], result.Value);
+        Assert.Equal([0x1B, 0x40, 0x1B, 0x74, 0x00, 0x1B, 0x2D, 0x01, 0x0A, 0x1B, 0x6D], result.Value);
     }
 
     [Fact]
@@ -116,7 +115,7 @@ public sealed class BinaryEncoderTests
         var result = encoder.Encode(program);
 
         Assert.True(result.Ok);
-        Assert.Equal([0x1B, 0x40, 0x1B, 0x2D, 0x02], result.Value);
+        Assert.Equal([0x1B, 0x40, 0x1B, 0x74, 0x00, 0x1B, 0x2D, 0x02, 0x0A, 0x1B, 0x6D], result.Value);
     }
 
     [Fact]
@@ -128,7 +127,7 @@ public sealed class BinaryEncoderTests
         var result = encoder.Encode(program);
 
         Assert.True(result.Ok);
-        Assert.Equal([0x1B, 0x40, 0x1B, 0x45, 0x01], result.Value);
+        Assert.Equal([0x1B, 0x40, 0x1B, 0x74, 0x00, 0x1B, 0x45, 0x01, 0x0A, 0x1B, 0x6D], result.Value);
     }
 
     [Fact]
@@ -140,7 +139,7 @@ public sealed class BinaryEncoderTests
         var result = encoder.Encode(program);
 
         Assert.True(result.Ok);
-        Assert.Equal([0x1B, 0x40, 0x1B, 0x45, 0x00], result.Value);
+        Assert.Equal([0x1B, 0x40, 0x1B, 0x74, 0x00, 0x1B, 0x45, 0x00, 0x0A, 0x1B, 0x6D], result.Value);
     }
 
     [Fact]
@@ -152,7 +151,7 @@ public sealed class BinaryEncoderTests
         var result = encoder.Encode(program);
 
         Assert.True(result.Ok);
-        Assert.Equal([0x1B, 0x40, 0x1B, 0x47, 0x01], result.Value);
+        Assert.Equal([0x1B, 0x40, 0x1B, 0x74, 0x00, 0x1B, 0x47, 0x01, 0x0A, 0x1B, 0x6D], result.Value);
     }
 
     [Fact]
@@ -164,7 +163,7 @@ public sealed class BinaryEncoderTests
         var result = encoder.Encode(program);
 
         Assert.True(result.Ok);
-        Assert.Equal([0x1B, 0x40, 0x1B, 0x47, 0x00], result.Value);
+        Assert.Equal([0x1B, 0x40, 0x1B, 0x74, 0x00, 0x1B, 0x47, 0x00, 0x0A, 0x1B, 0x6D], result.Value);
     }
 
     [Fact]
@@ -176,7 +175,7 @@ public sealed class BinaryEncoderTests
         var result = encoder.Encode(program);
 
         Assert.True(result.Ok);
-        Assert.Equal([0x1B, 0x40, 0x1B, 0x4D, 0x00], result.Value);
+        Assert.Equal([0x1B, 0x40, 0x1B, 0x74, 0x00, 0x1B, 0x4D, 0x00, 0x0A, 0x1B, 0x6D], result.Value);
     }
 
     [Fact]
@@ -188,7 +187,7 @@ public sealed class BinaryEncoderTests
         var result = encoder.Encode(program);
 
         Assert.True(result.Ok);
-        Assert.Equal([0x1B, 0x40, 0x1B, 0x4D, 0x01], result.Value);
+        Assert.Equal([0x1B, 0x40, 0x1B, 0x74, 0x00, 0x1B, 0x4D, 0x01, 0x0A, 0x1B, 0x6D], result.Value);
     }
 
     [Fact]
@@ -200,7 +199,7 @@ public sealed class BinaryEncoderTests
         var result = encoder.Encode(program);
 
         Assert.True(result.Ok);
-        Assert.Equal([0x1B, 0x40, 0x1B, 0x56, 0x01], result.Value);
+        Assert.Equal([0x1B, 0x40, 0x1B, 0x74, 0x00, 0x1B, 0x56, 0x01, 0x0A, 0x1B, 0x6D], result.Value);
     }
 
     [Fact]
@@ -212,7 +211,7 @@ public sealed class BinaryEncoderTests
         var result = encoder.Encode(program);
 
         Assert.True(result.Ok);
-        Assert.Equal([0x1B, 0x40, 0x1B, 0x56, 0x00], result.Value);
+        Assert.Equal([0x1B, 0x40, 0x1B, 0x74, 0x00, 0x1B, 0x56, 0x00, 0x0A, 0x1B, 0x6D], result.Value);
     }
 
     [Fact]
@@ -224,7 +223,7 @@ public sealed class BinaryEncoderTests
         var result = encoder.Encode(program);
 
         Assert.True(result.Ok);
-        Assert.Equal([0x1B, 0x40, 0x1B, 0x7B, 0x01], result.Value);
+        Assert.Equal([0x1B, 0x40, 0x1B, 0x74, 0x00, 0x1B, 0x7B, 0x01, 0x0A, 0x1B, 0x6D], result.Value);
     }
 
     [Fact]
@@ -236,7 +235,7 @@ public sealed class BinaryEncoderTests
         var result = encoder.Encode(program);
 
         Assert.True(result.Ok);
-        Assert.Equal([0x1B, 0x40, 0x1B, 0x7B, 0x00], result.Value);
+        Assert.Equal([0x1B, 0x40, 0x1B, 0x74, 0x00, 0x1B, 0x7B, 0x00, 0x0A, 0x1B, 0x6D], result.Value);
     }
 
     [Fact]
@@ -248,7 +247,7 @@ public sealed class BinaryEncoderTests
         var result = encoder.Encode(program);
 
         Assert.True(result.Ok);
-        Assert.Equal([0x1B, 0x40, 0x1D, 0x21, 0x00], result.Value);
+        Assert.Equal([0x1B, 0x40, 0x1B, 0x74, 0x00, 0x1D, 0x21, 0x00, 0x0A, 0x1B, 0x6D], result.Value);
     }
 
     [Fact]
@@ -260,7 +259,7 @@ public sealed class BinaryEncoderTests
         var result = encoder.Encode(program);
 
         Assert.True(result.Ok);
-        Assert.Equal([0x1B, 0x40, 0x1D, 0x21, 0x11], result.Value);
+        Assert.Equal([0x1B, 0x40, 0x1B, 0x74, 0x00, 0x1D, 0x21, 0x11, 0x0A, 0x1B, 0x6D], result.Value);
     }
 
     [Fact]
@@ -272,7 +271,7 @@ public sealed class BinaryEncoderTests
         var result = encoder.Encode(program);
 
         Assert.True(result.Ok);
-        Assert.Equal([0x1B, 0x40, 0x1B, 0x61, 0x00], result.Value);
+        Assert.Equal([0x1B, 0x40, 0x1B, 0x74, 0x00, 0x1B, 0x61, 0x00, 0x0A, 0x1B, 0x6D], result.Value);
     }
 
     [Fact]
@@ -284,7 +283,7 @@ public sealed class BinaryEncoderTests
         var result = encoder.Encode(program);
 
         Assert.True(result.Ok);
-        Assert.Equal([0x1B, 0x40, 0x1B, 0x61, 0x01], result.Value);
+        Assert.Equal([0x1B, 0x40, 0x1B, 0x74, 0x00, 0x1B, 0x61, 0x01, 0x0A, 0x1B, 0x6D], result.Value);
     }
 
     [Fact]
@@ -296,7 +295,7 @@ public sealed class BinaryEncoderTests
         var result = encoder.Encode(program);
 
         Assert.True(result.Ok);
-        Assert.Equal([0x1B, 0x40, 0x1B, 0x61, 0x02], result.Value);
+        Assert.Equal([0x1B, 0x40, 0x1B, 0x74, 0x00, 0x1B, 0x61, 0x02, 0x0A, 0x1B, 0x6D], result.Value);
     }
 
     [Fact]
@@ -308,7 +307,7 @@ public sealed class BinaryEncoderTests
         var result = encoder.Encode(program);
 
         Assert.True(result.Ok);
-        Assert.Equal([0x1B, 0x40, 0x1B, 0x24, 0x04, 0x01], result.Value);
+        Assert.Equal([0x1B, 0x40, 0x1B, 0x74, 0x00, 0x1B, 0x24, 0x04, 0x01, 0x0A, 0x1B, 0x6D], result.Value);
     }
 
     [Fact]
@@ -320,7 +319,7 @@ public sealed class BinaryEncoderTests
         var result = encoder.Encode(program);
 
         Assert.True(result.Ok);
-        Assert.Equal([0x1B, 0x40, 0x1B, 0x24, 0x00, 0x00], result.Value);
+        Assert.Equal([0x1B, 0x40, 0x1B, 0x74, 0x00, 0x1B, 0x24, 0x00, 0x00, 0x0A, 0x1B, 0x6D], result.Value);
     }
 
     [Fact]
@@ -332,7 +331,7 @@ public sealed class BinaryEncoderTests
         var result = encoder.Encode(program);
 
         Assert.True(result.Ok);
-        Assert.Equal([0x1B, 0x40, 0x1B, 0x5C, 0x04, 0x03], result.Value);
+        Assert.Equal([0x1B, 0x40, 0x1B, 0x74, 0x00, 0x1B, 0x5C, 0x04, 0x03, 0x0A, 0x1B, 0x6D], result.Value);
     }
 
     [Fact]
@@ -344,7 +343,7 @@ public sealed class BinaryEncoderTests
         var result = encoder.Encode(program);
 
         Assert.True(result.Ok);
-        Assert.Equal([0x1B, 0x40, 0x1D, 0x4C, 0x00, 0x02], result.Value);
+        Assert.Equal([0x1B, 0x40, 0x1B, 0x74, 0x00, 0x1D, 0x4C, 0x00, 0x02, 0x0A, 0x1B, 0x6D], result.Value);
     }
 
     [Fact]
@@ -356,6 +355,42 @@ public sealed class BinaryEncoderTests
         var result = encoder.Encode(program);
 
         Assert.True(result.Ok);
-        Assert.Equal([0x1B, 0x40, 0x48, 0x69], result.Value);
+        Assert.Equal([0x1B, 0x40, 0x1B, 0x74, 0x00, 0x48, 0x69, 0x0A, 0x1B, 0x6D], result.Value);
+    }
+
+    [Fact]
+    public void Encode_HorizontalTab_ProducesCorrectBytes()
+    {
+        var program = new PrintProgramBuilder().HorizontalTab().Build();
+        var encoder = new BinaryEncoder();
+
+        var result = encoder.Encode(program);
+
+        Assert.True(result.Ok);
+        Assert.Equal([0x1B, 0x40, 0x1B, 0x74, 0x00, 0x09, 0x0A, 0x1B, 0x6D], result.Value);
+    }
+
+    [Fact]
+    public void Encode_LineFeed_ProducesCorrectBytes()
+    {
+        var program = new PrintProgramBuilder().LineFeed().Build();
+        var encoder = new BinaryEncoder();
+
+        var result = encoder.Encode(program);
+
+        Assert.True(result.Ok);
+        Assert.Equal([0x1B, 0x40, 0x1B, 0x74, 0x00, 0x0A, 0x0A, 0x1B, 0x6D], result.Value);
+    }
+
+    [Fact]
+    public void Encode_PrintLine_ProducesTextThenLineFeedBytes()
+    {
+        var program = new PrintProgramBuilder().PrintLine("Hi").Build();
+        var encoder = new BinaryEncoder();
+
+        var result = encoder.Encode(program);
+
+        Assert.True(result.Ok);
+        Assert.Equal([0x1B, 0x40, 0x1B, 0x74, 0x00, 0x48, 0x69, 0x0A, 0x0A, 0x1B, 0x6D], result.Value);
     }
 }

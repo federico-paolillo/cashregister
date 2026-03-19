@@ -10,7 +10,7 @@ public sealed class ArticleEntity : IIdentifiableEntity
     public required long Price { get; set; }
 
     public required bool Retired { get; set; }
-    
+
     public required string Id { get; init; }
 
     public sealed class ArticleEntityTypeConfiguration : IEntityTypeConfiguration<ArticleEntity>

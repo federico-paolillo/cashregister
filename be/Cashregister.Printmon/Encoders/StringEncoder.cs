@@ -5,6 +5,7 @@ using Cashregister.Factories;
 using Cashregister.Printmon.Instructions.Core;
 using Cashregister.Printmon.Instructions.Formatting;
 using Cashregister.Printmon.Instructions.Layout;
+using Cashregister.Printmon.Instructions.Motion;
 
 namespace Cashregister.Printmon.Encoders;
 
@@ -30,20 +31,37 @@ public sealed class StringEncoder : IEncoder<string>
                     sb.Append("[PRINT_MODE:");
                     sb.Append(selectPrintMode.UseFontB ? "FONT_B" : "FONT_A");
                     if (selectPrintMode.Flags.HasFlag(FormatMode.Emphasized))
+                    {
                         sb.Append(",EMPHASIZED");
+                    }
+
                     if (selectPrintMode.Flags.HasFlag(FormatMode.DoubleHeight))
+                    {
                         sb.Append(",DOUBLE_HEIGHT");
+                    }
+
                     if (selectPrintMode.Flags.HasFlag(FormatMode.DoubleWidth))
+                    {
                         sb.Append(",DOUBLE_WIDTH");
+                    }
+
                     if (selectPrintMode.Flags.HasFlag(FormatMode.Underline))
+                    {
                         sb.Append(",UNDERLINE");
+                    }
+
                     sb.Append(']');
                     break;
                 case UnderlineInstruction underline:
                     if (!underline.Enabled)
+                    {
                         sb.Append("[UNDERLINE:OFF]");
+                    }
                     else
+                    {
                         sb.Append(underline.Thickness == Thickness.OneDot ? "[UNDERLINE:1DOT]" : "[UNDERLINE:2DOT]");
+                    }
+
                     break;
                 case EmphasizeInstruction emphasize:
                     sb.Append(emphasize.Enabled ? "[BOLD:ON]" : "[BOLD:OFF]");
@@ -61,8 +79,8 @@ public sealed class StringEncoder : IEncoder<string>
                     sb.Append(upsideDown.Enabled ? "[UPSIDE_DOWN:ON]" : "[UPSIDE_DOWN:OFF]");
                     break;
                 case FontSizeInstruction fontSize:
-                    int w = (fontSize.Size >> 4) + 1;
-                    int h = (fontSize.Size & 0x0F) + 1;
+                    var w = (fontSize.Size >> 4) + 1;
+                    var h = (fontSize.Size & 0x0F) + 1;
                     sb.Append(CultureInfo.InvariantCulture, $"[FONT_SIZE:{w}x{h}]");
                     break;
                 case JustifyInstruction justify:
@@ -78,6 +96,7 @@ public sealed class StringEncoder : IEncoder<string>
                             sb.Append("[ALIGN:RIGHT]");
                             break;
                     }
+
                     break;
                 case AbsolutePositionInstruction absPos:
                     sb.Append(CultureInfo.InvariantCulture, $"[ABS_POS:{absPos.Position}]");
@@ -90,6 +109,18 @@ public sealed class StringEncoder : IEncoder<string>
                     break;
                 case TextInstruction text:
                     sb.Append(text.Text);
+                    break;
+                case SelectCodeTableInstruction:
+                    sb.Append("[CODE_TABLE:STD_EUROPE]");
+                    break;
+                case HorizontalTabInstruction:
+                    sb.Append("[HT]");
+                    break;
+                case LineFeedInstruction:
+                    sb.Append("[LF]");
+                    break;
+                case PartialCutInstruction:
+                    sb.Append("[CUT:PARTIAL]");
                     break;
                 default:
                     throw new NotSupportedException(

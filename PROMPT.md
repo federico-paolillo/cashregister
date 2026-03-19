@@ -3,32 +3,22 @@ in ESCPOS.md.
 
 Take into account also the following files (read them):
 
-- REVIEW.md
-- AGENTS.md
+- REVIEW.md for some open points on the architecture of the application
+- AGENTS.md general context and fundamental information
+- MANUAL.md printer manual
+- PRINTER.md printer programmer manual
 
 ## Instructions to implement
 
-NAME: "ESC t n — Select character code table"
+NAME: "GS V m / GS V m n — Select cut mode and cut paper"
 CATEGORY FOLDER: Instructions/Core/
-BUILDER METHOD SIGNATURE: None. When ProgramBuilder is initialized it should include this instruction (like initialize) with value 0 (european code page).
+BUILDER METHOD SIGNATURE: `.CutAfter(byte distance)`. We will only offer partial cut mode 66 with an optional feed distance.
+
+Given that `GS V m n` commands are superior to the `ESC m` counterpart, we should refactor the PrintProgramBuilder to auto-include a `LF` and then a `GS V m n` that feeds 1 lines at the end of each program. We need an LF because `GS V m n` says "This command is effective only when processed at the beginning of a line.".
 
 ---
 
-NAME: "ESC m — Partial cut"
-CATEGORY FOLDER: Instructions/Core/
-BUILDER METHOD SIGNATURE: None. When ProgramBuilder.Build is called, ProgramBuilder will include this instruction before returning the program.
-
---- 
-
-NAME: "LF — Print and line feed"
-CATEGORY FOLDER: Instructions/Core/
-BUILDER METHOD SIGNATURE: `.LineFeed()` AND it is automatically included when ProgramBuilder.Build is called. Before including the PartialCut instruction.
-
----
-
-**Note**: Verify signatures are appropriate and suggest, if it exists, a better higher level signature.
-
-Review existing tests and update them to account for the new automatically included instructions at init and build time of ProgramBuilder.
+Verify signatures are appropriate and suggest, if it exists, a better higher level signature. Ensure implementations do not contradict information reported in the printer manual and printer programmer manual. 
 
 ## ESC/POS manual reference
 

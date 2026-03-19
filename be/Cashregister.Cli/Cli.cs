@@ -19,25 +19,21 @@ public static class Cli
 
     private static Command CreatePrintCommand(IServiceProvider svcProvider)
     {
-        var orderOption = new Option<string>("--order")
-        {
-            Description = "Order identifier",
-            Required = true
-        };
+        var printCommand = new Command("print");
 
-        var command = new Command("print") { orderOption };
+        var testCommand = new Command("test");
 
-        command.SetAction(async (parseResult, cancellationToken) =>
+        testCommand.SetAction(async (_, cancellationToken) =>
         {
             using var scope = svcProvider.CreateScope();
 
-            var tool = scope.ServiceProvider.GetRequiredService<PrintTool>();
+            var tool = scope.ServiceProvider.GetRequiredService<TestTool>();
 
-            var orderId = parseResult.GetRequiredValue(orderOption);
-
-            return await tool.ExecuteAsync(orderId, cancellationToken);
+            return await tool.ExecuteAsync(cancellationToken);
         });
 
-        return command;
+        printCommand.Subcommands.Add(testCommand);
+
+        return printCommand;
     }
 }

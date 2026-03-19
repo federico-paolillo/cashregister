@@ -94,6 +94,10 @@ When adding a new instruction, insert the new case before the default arm.
 | ESC $ nL nH     | `AbsolutePositionInstruction`| `Layout/`     | `SetAbsolutePosition(ushort)` | `0x1B 0x24 nL nH` | `[ABS_POS:value]` |
 | ESC \ nL nH     | `RelativePositionInstruction`| `Layout/`     | `SetRelativePosition(ushort)` | `0x1B 0x5C nL nH` | `[REL_POS:value]` |
 | GS L nL nH      | `LeftMarginInstruction`      | `Layout/`     | `SetLeftMargin(ushort)` | `0x1D 0x4C nL nH` | `[LEFT_MARGIN:value]` |
+| ESC t 0         | `SelectCodeTableInstruction` | `Core/`       | *(auto)*       | `0x1B 0x74 0x00` | `[CODE_TABLE:STD_EUROPE]` |
+| HT              | `HorizontalTabInstruction`   | `Motion/`     | `HorizontalTab()` | `0x09` | `[HT]` |
+| LF              | `LineFeedInstruction`        | `Core/`       | `LineFeed()` / `PrintLine(string)` | `0x0A` | `[LF]` |
+| ESC m           | `PartialCutInstruction`      | `Core/`       | *(auto)*       | `0x1B 0x6D`    | `[CUT:PARTIAL]`   |
 
 **Before implementing a new instruction, check this table.** If the command is already listed, the work is done.
 After implementing a new instruction, append a row to this table.

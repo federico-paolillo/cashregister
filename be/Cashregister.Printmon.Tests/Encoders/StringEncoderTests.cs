@@ -1,4 +1,3 @@
-using Cashregister.Printmon;
 using Cashregister.Printmon.Encoders;
 using Cashregister.Printmon.Instructions.Formatting;
 using Cashregister.Printmon.Instructions.Layout;
@@ -16,7 +15,7 @@ public sealed class StringEncoderTests
         var result = encoder.Encode(program);
 
         Assert.True(result.Ok);
-        Assert.Equal("[INIT]", result.Value);
+        Assert.Equal("[INIT][CODE_TABLE:STD_EUROPE][LF][CUT:PARTIAL]", result.Value);
     }
 
     [Fact]
@@ -28,7 +27,7 @@ public sealed class StringEncoderTests
         var result = encoder.Encode(program);
 
         Assert.True(result.Ok);
-        Assert.Equal("[INIT][NOP]", result.Value);
+        Assert.Equal("[INIT][CODE_TABLE:STD_EUROPE][NOP][LF][CUT:PARTIAL]", result.Value);
     }
 
     [Fact]
@@ -40,7 +39,7 @@ public sealed class StringEncoderTests
         var result = encoder.Encode(program);
 
         Assert.True(result.Ok);
-        Assert.Equal("[INIT][PRINT_MODE:FONT_A]", result.Value);
+        Assert.Equal("[INIT][CODE_TABLE:STD_EUROPE][PRINT_MODE:FONT_A][LF][CUT:PARTIAL]", result.Value);
     }
 
     [Fact]
@@ -52,7 +51,7 @@ public sealed class StringEncoderTests
         var result = encoder.Encode(program);
 
         Assert.True(result.Ok);
-        Assert.Equal("[INIT][PRINT_MODE:FONT_B]", result.Value);
+        Assert.Equal("[INIT][CODE_TABLE:STD_EUROPE][PRINT_MODE:FONT_B][LF][CUT:PARTIAL]", result.Value);
     }
 
     [Fact]
@@ -66,7 +65,8 @@ public sealed class StringEncoderTests
         var result = encoder.Encode(program);
 
         Assert.True(result.Ok);
-        Assert.Equal("[INIT][PRINT_MODE:FONT_A,EMPHASIZED,UNDERLINE]", result.Value);
+        Assert.Equal("[INIT][CODE_TABLE:STD_EUROPE][PRINT_MODE:FONT_A,EMPHASIZED,UNDERLINE][LF][CUT:PARTIAL]",
+            result.Value);
     }
 
     [Fact]
@@ -80,7 +80,9 @@ public sealed class StringEncoderTests
         var result = encoder.Encode(program);
 
         Assert.True(result.Ok);
-        Assert.Equal("[INIT][PRINT_MODE:FONT_B,EMPHASIZED,DOUBLE_HEIGHT,DOUBLE_WIDTH,UNDERLINE]", result.Value);
+        Assert.Equal(
+            "[INIT][CODE_TABLE:STD_EUROPE][PRINT_MODE:FONT_B,EMPHASIZED,DOUBLE_HEIGHT,DOUBLE_WIDTH,UNDERLINE][LF][CUT:PARTIAL]",
+            result.Value);
     }
 
     [Fact]
@@ -92,7 +94,7 @@ public sealed class StringEncoderTests
         var result = encoder.Encode(program);
 
         Assert.True(result.Ok);
-        Assert.Equal("[INIT][UNDERLINE:OFF]", result.Value);
+        Assert.Equal("[INIT][CODE_TABLE:STD_EUROPE][UNDERLINE:OFF][LF][CUT:PARTIAL]", result.Value);
     }
 
     [Fact]
@@ -104,7 +106,7 @@ public sealed class StringEncoderTests
         var result = encoder.Encode(program);
 
         Assert.True(result.Ok);
-        Assert.Equal("[INIT][UNDERLINE:1DOT]", result.Value);
+        Assert.Equal("[INIT][CODE_TABLE:STD_EUROPE][UNDERLINE:1DOT][LF][CUT:PARTIAL]", result.Value);
     }
 
     [Fact]
@@ -116,7 +118,7 @@ public sealed class StringEncoderTests
         var result = encoder.Encode(program);
 
         Assert.True(result.Ok);
-        Assert.Equal("[INIT][UNDERLINE:2DOT]", result.Value);
+        Assert.Equal("[INIT][CODE_TABLE:STD_EUROPE][UNDERLINE:2DOT][LF][CUT:PARTIAL]", result.Value);
     }
 
     [Fact]
@@ -128,7 +130,7 @@ public sealed class StringEncoderTests
         var result = encoder.Encode(program);
 
         Assert.True(result.Ok);
-        Assert.Equal("[INIT][BOLD:ON]", result.Value);
+        Assert.Equal("[INIT][CODE_TABLE:STD_EUROPE][BOLD:ON][LF][CUT:PARTIAL]", result.Value);
     }
 
     [Fact]
@@ -140,7 +142,7 @@ public sealed class StringEncoderTests
         var result = encoder.Encode(program);
 
         Assert.True(result.Ok);
-        Assert.Equal("[INIT][BOLD:OFF]", result.Value);
+        Assert.Equal("[INIT][CODE_TABLE:STD_EUROPE][BOLD:OFF][LF][CUT:PARTIAL]", result.Value);
     }
 
     [Fact]
@@ -152,7 +154,7 @@ public sealed class StringEncoderTests
         var result = encoder.Encode(program);
 
         Assert.True(result.Ok);
-        Assert.Equal("[INIT][DOUBLE_STRIKE:ON]", result.Value);
+        Assert.Equal("[INIT][CODE_TABLE:STD_EUROPE][DOUBLE_STRIKE:ON][LF][CUT:PARTIAL]", result.Value);
     }
 
     [Fact]
@@ -164,7 +166,7 @@ public sealed class StringEncoderTests
         var result = encoder.Encode(program);
 
         Assert.True(result.Ok);
-        Assert.Equal("[INIT][DOUBLE_STRIKE:OFF]", result.Value);
+        Assert.Equal("[INIT][CODE_TABLE:STD_EUROPE][DOUBLE_STRIKE:OFF][LF][CUT:PARTIAL]", result.Value);
     }
 
     [Fact]
@@ -176,7 +178,7 @@ public sealed class StringEncoderTests
         var result = encoder.Encode(program);
 
         Assert.True(result.Ok);
-        Assert.Equal("[INIT][FONT:A]", result.Value);
+        Assert.Equal("[INIT][CODE_TABLE:STD_EUROPE][FONT:A][LF][CUT:PARTIAL]", result.Value);
     }
 
     [Fact]
@@ -188,7 +190,7 @@ public sealed class StringEncoderTests
         var result = encoder.Encode(program);
 
         Assert.True(result.Ok);
-        Assert.Equal("[INIT][FONT:B]", result.Value);
+        Assert.Equal("[INIT][CODE_TABLE:STD_EUROPE][FONT:B][LF][CUT:PARTIAL]", result.Value);
     }
 
     [Fact]
@@ -200,7 +202,7 @@ public sealed class StringEncoderTests
         var result = encoder.Encode(program);
 
         Assert.True(result.Ok);
-        Assert.Equal("[INIT][ROTATE_90:ON]", result.Value);
+        Assert.Equal("[INIT][CODE_TABLE:STD_EUROPE][ROTATE_90:ON][LF][CUT:PARTIAL]", result.Value);
     }
 
     [Fact]
@@ -212,7 +214,7 @@ public sealed class StringEncoderTests
         var result = encoder.Encode(program);
 
         Assert.True(result.Ok);
-        Assert.Equal("[INIT][ROTATE_90:OFF]", result.Value);
+        Assert.Equal("[INIT][CODE_TABLE:STD_EUROPE][ROTATE_90:OFF][LF][CUT:PARTIAL]", result.Value);
     }
 
     [Fact]
@@ -224,7 +226,7 @@ public sealed class StringEncoderTests
         var result = encoder.Encode(program);
 
         Assert.True(result.Ok);
-        Assert.Equal("[INIT][UPSIDE_DOWN:ON]", result.Value);
+        Assert.Equal("[INIT][CODE_TABLE:STD_EUROPE][UPSIDE_DOWN:ON][LF][CUT:PARTIAL]", result.Value);
     }
 
     [Fact]
@@ -236,7 +238,7 @@ public sealed class StringEncoderTests
         var result = encoder.Encode(program);
 
         Assert.True(result.Ok);
-        Assert.Equal("[INIT][UPSIDE_DOWN:OFF]", result.Value);
+        Assert.Equal("[INIT][CODE_TABLE:STD_EUROPE][UPSIDE_DOWN:OFF][LF][CUT:PARTIAL]", result.Value);
     }
 
     [Fact]
@@ -248,7 +250,7 @@ public sealed class StringEncoderTests
         var result = encoder.Encode(program);
 
         Assert.True(result.Ok);
-        Assert.Equal("[INIT][FONT_SIZE:1x1]", result.Value);
+        Assert.Equal("[INIT][CODE_TABLE:STD_EUROPE][FONT_SIZE:1x1][LF][CUT:PARTIAL]", result.Value);
     }
 
     [Fact]
@@ -260,7 +262,7 @@ public sealed class StringEncoderTests
         var result = encoder.Encode(program);
 
         Assert.True(result.Ok);
-        Assert.Equal("[INIT][FONT_SIZE:2x2]", result.Value);
+        Assert.Equal("[INIT][CODE_TABLE:STD_EUROPE][FONT_SIZE:2x2][LF][CUT:PARTIAL]", result.Value);
     }
 
     [Fact]
@@ -272,7 +274,7 @@ public sealed class StringEncoderTests
         var result = encoder.Encode(program);
 
         Assert.True(result.Ok);
-        Assert.Equal("[INIT][ALIGN:LEFT]", result.Value);
+        Assert.Equal("[INIT][CODE_TABLE:STD_EUROPE][ALIGN:LEFT][LF][CUT:PARTIAL]", result.Value);
     }
 
     [Fact]
@@ -284,7 +286,7 @@ public sealed class StringEncoderTests
         var result = encoder.Encode(program);
 
         Assert.True(result.Ok);
-        Assert.Equal("[INIT][ALIGN:CENTER]", result.Value);
+        Assert.Equal("[INIT][CODE_TABLE:STD_EUROPE][ALIGN:CENTER][LF][CUT:PARTIAL]", result.Value);
     }
 
     [Fact]
@@ -296,7 +298,7 @@ public sealed class StringEncoderTests
         var result = encoder.Encode(program);
 
         Assert.True(result.Ok);
-        Assert.Equal("[INIT][ALIGN:RIGHT]", result.Value);
+        Assert.Equal("[INIT][CODE_TABLE:STD_EUROPE][ALIGN:RIGHT][LF][CUT:PARTIAL]", result.Value);
     }
 
     [Fact]
@@ -308,7 +310,7 @@ public sealed class StringEncoderTests
         var result = encoder.Encode(program);
 
         Assert.True(result.Ok);
-        Assert.Equal("[INIT][ABS_POS:1000]", result.Value);
+        Assert.Equal("[INIT][CODE_TABLE:STD_EUROPE][ABS_POS:1000][LF][CUT:PARTIAL]", result.Value);
     }
 
     [Fact]
@@ -320,7 +322,7 @@ public sealed class StringEncoderTests
         var result = encoder.Encode(program);
 
         Assert.True(result.Ok);
-        Assert.Equal("[INIT][REL_POS:500]", result.Value);
+        Assert.Equal("[INIT][CODE_TABLE:STD_EUROPE][REL_POS:500][LF][CUT:PARTIAL]", result.Value);
     }
 
     [Fact]
@@ -332,7 +334,7 @@ public sealed class StringEncoderTests
         var result = encoder.Encode(program);
 
         Assert.True(result.Ok);
-        Assert.Equal("[INIT][LEFT_MARGIN:200]", result.Value);
+        Assert.Equal("[INIT][CODE_TABLE:STD_EUROPE][LEFT_MARGIN:200][LF][CUT:PARTIAL]", result.Value);
     }
 
     [Fact]
@@ -344,6 +346,42 @@ public sealed class StringEncoderTests
         var result = encoder.Encode(program);
 
         Assert.True(result.Ok);
-        Assert.Equal("[INIT]Hello", result.Value);
+        Assert.Equal("[INIT][CODE_TABLE:STD_EUROPE]Hello[LF][CUT:PARTIAL]", result.Value);
+    }
+
+    [Fact]
+    public void Encode_HorizontalTab_ProducesCorrectToken()
+    {
+        var program = new PrintProgramBuilder().HorizontalTab().Build();
+        var encoder = new StringEncoder();
+
+        var result = encoder.Encode(program);
+
+        Assert.True(result.Ok);
+        Assert.Equal("[INIT][CODE_TABLE:STD_EUROPE][HT][LF][CUT:PARTIAL]", result.Value);
+    }
+
+    [Fact]
+    public void Encode_LineFeed_ProducesCorrectToken()
+    {
+        var program = new PrintProgramBuilder().LineFeed().Build();
+        var encoder = new StringEncoder();
+
+        var result = encoder.Encode(program);
+
+        Assert.True(result.Ok);
+        Assert.Equal("[INIT][CODE_TABLE:STD_EUROPE][LF][LF][CUT:PARTIAL]", result.Value);
+    }
+
+    [Fact]
+    public void Encode_PrintLine_ProducesCorrectToken()
+    {
+        var program = new PrintProgramBuilder().PrintLine("Hello").Build();
+        var encoder = new StringEncoder();
+
+        var result = encoder.Encode(program);
+
+        Assert.True(result.Ok);
+        Assert.Equal("[INIT][CODE_TABLE:STD_EUROPE]Hello[LF][LF][CUT:PARTIAL]", result.Value);
     }
 }

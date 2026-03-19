@@ -6,18 +6,6 @@ public abstract record Problem;
 
 public sealed class Result<TValue>
 {
-    public TValue? Value { get; }
-
-    public Problem? Error { get; }
-
-    [MemberNotNullWhen(true, nameof(Value))]
-    [MemberNotNullWhen(false, nameof(Error))]
-    public bool Ok => Error is null;
-
-    [MemberNotNullWhen(true, nameof(Error))]
-    [MemberNotNullWhen(false, nameof(Value))]
-    public bool NotOk => Error is not null;
-    
     internal Result(TValue value)
     {
         Value = value;
@@ -29,6 +17,18 @@ public sealed class Result<TValue>
         Value = default;
         Error = error;
     }
+
+    public TValue? Value { get; }
+
+    public Problem? Error { get; }
+
+    [MemberNotNullWhen(true, nameof(Value))]
+    [MemberNotNullWhen(false, nameof(Error))]
+    public bool Ok => Error is null;
+
+    [MemberNotNullWhen(true, nameof(Error))]
+    [MemberNotNullWhen(false, nameof(Value))]
+    public bool NotOk => Error is not null;
 }
 
 public static class Result

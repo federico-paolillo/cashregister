@@ -3,7 +3,7 @@ namespace Cashregister.Printmon.Instructions.Formatting;
 public enum CharacterFont
 {
     A = 0,
-    B = 1,
+    B = 1
 }
 
 public sealed record SelectFontInstruction(CharacterFont Font) : Instruction

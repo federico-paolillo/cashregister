@@ -1,19 +1,19 @@
 <Solution>
-    <Project Path="Cashregister.Api\Cashregister.Api.csproj" Type="C#" />
-    <Project Path="Cashregister.Database\Cashregister.Database.csproj" Type="C#" />
-    <Project Path="Cashregister.Application\Cashregister.Application.csproj" Type="C#" />
-    <Project Path="Cashregister.Domain\Cashregister.Domain.csproj" Type="C#" />
-    <Project Path="Cashregister.Cli\Cashregister.Cli.csproj" />
-    <Project Path="Cashregister.Commons\Cashregister.Commons.csproj" Type="C#" />
-    <Project Path="Cashregister.Activities\Cashregister.Activities.csproj" Type="C#" />
-    <Project Path="Cashregister.Printmon/Cashregister.Printmon.csproj" />
-    <Project Path="Cashregister.Printmon.Tests\Cashregister.Printmon.Tests.csproj" Type="C#" />
-    <Project Path="Cashregister.Tests.Integration\Cashregister.Tests.Integration.csproj" Type="C#" />
+    <Project Path="Cashregister.Api\Cashregister.Api.csproj" Type="C#"/>
+    <Project Path="Cashregister.Database\Cashregister.Database.csproj" Type="C#"/>
+    <Project Path="Cashregister.Application\Cashregister.Application.csproj" Type="C#"/>
+    <Project Path="Cashregister.Domain\Cashregister.Domain.csproj" Type="C#"/>
+    <Project Path="Cashregister.Cli\Cashregister.Cli.csproj"/>
+    <Project Path="Cashregister.Commons\Cashregister.Commons.csproj" Type="C#"/>
+    <Project Path="Cashregister.Activities\Cashregister.Activities.csproj" Type="C#"/>
+    <Project Path="Cashregister.Printmon/Cashregister.Printmon.csproj"/>
+    <Project Path="Cashregister.Printmon.Tests\Cashregister.Printmon.Tests.csproj" Type="C#"/>
+    <Project Path="Cashregister.Tests.Integration\Cashregister.Tests.Integration.csproj" Type="C#"/>
     <Folder Name="/Miscellaneous/">
-        <File Path="..\.editorconfig" />
-        <File Path="..\.gitignore" />
-        <File Path="Directory.Build.props" />
-        <File Path="global.json" />
-        <File Path=".config\dotnet-tools.json" />
+        <File Path="..\.editorconfig"/>
+        <File Path="..\.gitignore"/>
+        <File Path="Directory.Build.props"/>
+        <File Path="global.json"/>
+        <File Path=".config\dotnet-tools.json"/>
     </Folder>
 </Solution>

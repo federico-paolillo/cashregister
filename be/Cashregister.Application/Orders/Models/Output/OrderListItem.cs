@@ -10,6 +10,6 @@ public sealed class OrderListItem : IPageItem
     public required Cents Total { get; init; }
 
     public required TimeStamp Date { get; init; }
-    
+
     public required Identifier Id { get; init; }
 }

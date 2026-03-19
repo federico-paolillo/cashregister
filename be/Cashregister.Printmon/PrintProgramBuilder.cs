@@ -1,21 +1,19 @@
-using System.Collections.Immutable;
-
 using Cashregister.Printmon.Instructions;
 using Cashregister.Printmon.Instructions.Core;
 using Cashregister.Printmon.Instructions.Formatting;
 using Cashregister.Printmon.Instructions.Layout;
+using Cashregister.Printmon.Instructions.Motion;
 
 namespace Cashregister.Printmon;
 
 /// <summary>
-/// A builder pattern implementation that helps you build valid <see cref="PrintProgram"/><br/>
-/// This class is single-use. Once you build the <see cref="PrintProgram"/> the builder is frozen.
+///     A builder pattern implementation that helps you build valid <see cref="PrintProgram" /><br />
+///     This class is single-use. Once you build the <see cref="PrintProgram" /> the builder is frozen.
 /// </summary>
 public sealed class PrintProgramBuilder
 {
+    private readonly List<Instruction> instructions = [new InitializeInstruction(), new SelectCodeTableInstruction()];
     private bool frozen;
-
-    private readonly List<Instruction> instructions = [new InitializeInstruction()];
 
     public PrintProgramBuilder NoOp()
     {
@@ -164,20 +162,42 @@ public sealed class PrintProgramBuilder
         return this;
     }
 
+    public PrintProgramBuilder HorizontalTab()
+    {
+        AddInstruction(new HorizontalTabInstruction());
+
+        return this;
+    }
+
+    public PrintProgramBuilder LineFeed()
+    {
+        AddInstruction(new LineFeedInstruction());
+
+        return this;
+    }
+
+    public PrintProgramBuilder PrintLine(string text)
+    {
+        return Text(text).LineFeed();
+    }
+
     private void AddInstruction(Instruction instruction)
     {
         ArgumentNullException.ThrowIfNull(instruction);
-        
+
         if (frozen)
         {
             throw new InvalidOperationException("This builder has already emitted its program");
-        } 
-        
+        }
+
         instructions.Add(instruction);
     }
-    
+
     public PrintProgram Build()
     {
+        AddInstruction(new LineFeedInstruction());
+        AddInstruction(new PartialCutInstruction());
+
         frozen = true;
 
         return new PrintProgram([..instructions]);
