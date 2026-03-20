@@ -181,6 +181,13 @@ public sealed class PrintProgramBuilder
         return Text(text).LineFeed();
     }
 
+    public PrintProgramBuilder CutAfter(byte distance)
+    {
+        AddInstruction(new CutAfterInstruction(distance));
+
+        return this;
+    }
+
     private void AddInstruction(Instruction instruction)
     {
         ArgumentNullException.ThrowIfNull(instruction);
@@ -196,7 +203,7 @@ public sealed class PrintProgramBuilder
     public PrintProgram Build()
     {
         AddInstruction(new LineFeedInstruction());
-        AddInstruction(new PartialCutInstruction());
+        AddInstruction(new CutAfterInstruction(1));
 
         frozen = true;
 

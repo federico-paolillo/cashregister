@@ -86,6 +86,9 @@ public sealed class BinaryEncoder : IEncoder<byte[]>
                 case PartialCutInstruction:
                     stream.Write([0x1B, 0x6D]); // ESC m
                     break;
+                case CutAfterInstruction cutAfter:
+                    stream.Write([0x1D, 0x56, 0x42, cutAfter.Distance]); // GS V m n (m=66, partial cut)
+                    break;
                 default:
                     throw new NotSupportedException(
                         $"Instruction {instruction.GetType().Name} is not supported by this encoder.");

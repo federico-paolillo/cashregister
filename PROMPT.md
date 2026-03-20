@@ -16,6 +16,8 @@ BUILDER METHOD SIGNATURE: `.CutAfter(byte distance)`. We will only offer partial
 
 Given that `GS V m n` commands are superior to the `ESC m` counterpart, we should refactor the PrintProgramBuilder to auto-include a `LF` and then a `GS V m n` that feeds 1 lines at the end of each program. We need an LF because `GS V m n` says "This command is effective only when processed at the beginning of a line.".
 
+This change will require verifying and refactoring tests to account for the new "end of program" sequence.
+
 ---
 
 Verify signatures are appropriate and suggest, if it exists, a better higher level signature. Ensure implementations do not contradict information reported in the printer manual and printer programmer manual. 

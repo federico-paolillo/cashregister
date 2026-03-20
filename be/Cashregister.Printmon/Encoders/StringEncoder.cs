@@ -122,6 +122,9 @@ public sealed class StringEncoder : IEncoder<string>
                 case PartialCutInstruction:
                     sb.Append("[CUT:PARTIAL]");
                     break;
+                case CutAfterInstruction cutAfter:
+                    sb.Append(CultureInfo.InvariantCulture, $"[CUT_AFTER:{cutAfter.Distance}]");
+                    break;
                 default:
                     throw new NotSupportedException(
                         $"Instruction {instruction.GetType().Name} is not supported by this encoder.");

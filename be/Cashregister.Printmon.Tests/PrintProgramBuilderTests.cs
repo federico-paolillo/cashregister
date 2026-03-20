@@ -18,7 +18,8 @@ public sealed class PrintProgramBuilderTests
         Assert.IsType<InitializeInstruction>(program.Instructions[0]);
         Assert.IsType<SelectCodeTableInstruction>(program.Instructions[1]);
         Assert.IsType<LineFeedInstruction>(program.Instructions[2]);
-        Assert.IsType<PartialCutInstruction>(program.Instructions[3]);
+        var cutAfter = Assert.IsType<CutAfterInstruction>(program.Instructions[3]);
+        Assert.Equal(1, cutAfter.Distance);
     }
 
     [Fact]
@@ -33,7 +34,8 @@ public sealed class PrintProgramBuilderTests
         Assert.IsType<SelectCodeTableInstruction>(program.Instructions[1]);
         Assert.IsType<NoOpInstruction>(program.Instructions[2]);
         Assert.IsType<LineFeedInstruction>(program.Instructions[3]);
-        Assert.IsType<PartialCutInstruction>(program.Instructions[4]);
+        var cutAfter = Assert.IsType<CutAfterInstruction>(program.Instructions[4]);
+        Assert.Equal(1, cutAfter.Distance);
     }
 
     [Fact]
@@ -361,5 +363,17 @@ public sealed class PrintProgramBuilderTests
         var textInstruction = Assert.IsType<TextInstruction>(program.Instructions[2]);
         Assert.Equal("Hello", textInstruction.Text);
         Assert.IsType<LineFeedInstruction>(program.Instructions[3]);
+    }
+
+    [Fact]
+    public void CutAfter_AddsCutAfterInstruction_WithGivenDistance()
+    {
+        var builder = new PrintProgramBuilder();
+
+        var program = builder.CutAfter(10).Build();
+
+        Assert.Equal(5, program.Instructions.Length);
+        var instruction = Assert.IsType<CutAfterInstruction>(program.Instructions[2]);
+        Assert.Equal(10, instruction.Distance);
     }
 }
