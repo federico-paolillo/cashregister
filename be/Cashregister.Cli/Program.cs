@@ -1,15 +1,18 @@
 using Cashregister.Printmon;
+using Cashregister.Printmon.Devices;
+using Cashregister.Printmon.Encoders;
 using Cashregister.Printmon.Tools;
 
 using Microsoft.Extensions.DependencyInjection;
 
-var serviceCollection = new ServiceCollection();
+var services = new ServiceCollection();
 
-serviceCollection.AddScoped<PrintTool>();
+services.AddScoped<IDevice, FileDevice>();
+services.AddScoped<IEncoder<byte[]>, BinaryEncoder>();
 
-var svcProvider = serviceCollection.BuildServiceProvider();
+services.AddScoped<TestTool>();
 
-var rootCommand = Cli.Create(svcProvider);
+var rootCommand = Cli.Create(services);
 
 var parseResult = rootCommand.Parse(args);
 

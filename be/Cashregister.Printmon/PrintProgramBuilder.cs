@@ -207,6 +207,6 @@ public sealed class PrintProgramBuilder
 
         frozen = true;
 
-        return new PrintProgram([..instructions]);
+        return new PrintProgram([.. instructions]);
     }
 }

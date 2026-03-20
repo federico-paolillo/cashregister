@@ -9,9 +9,24 @@ public sealed class TestTool(
 {
     public async Task<int> ExecuteAsync(CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
         var printProgram = new PrintProgramBuilder()
+            .LineFeed()
+            .Justify(Justification.Left)
+            .FontSize(1)
+            .PrintLine("Hello, world!")
+            .FontSize(2)
             .Justify(Justification.Center)
-            .Text("Hello, world!")
+            .PrintLine("Hello, world!")
+            .Justify(Justification.Right)
+            .FontSize(3)
+            .PrintLine("Hello, world!")
+            .Justify(Justification.Left)
+            .EmphasizeOn()
+            .PrintLine("Emphasis")
+            .EmphasizeOff()
+            .PrintLine("Emphasis")
             .Build();
 
         await Printer.PrintAsync(printProgram);

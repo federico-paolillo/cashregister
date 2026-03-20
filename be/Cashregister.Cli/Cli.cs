@@ -1,5 +1,6 @@
 using System.CommandLine;
 
+using Cashregister.Printmon.Devices;
 using Cashregister.Printmon.Tools;
 
 using Microsoft.Extensions.DependencyInjection;
@@ -8,23 +9,38 @@ namespace Cashregister.Printmon;
 
 public static class Cli
 {
-    public static RootCommand Create(IServiceProvider svcProvider)
+    public static RootCommand Create(IServiceCollection services)
     {
         var rootCommand = new RootCommand();
 
-        rootCommand.Subcommands.Add(CreatePrintCommand(svcProvider));
+        rootCommand.Subcommands.Add(CreatePrintCommand(services));
 
         return rootCommand;
     }
 
-    private static Command CreatePrintCommand(IServiceProvider svcProvider)
+    private static Command CreatePrintCommand(IServiceCollection services)
     {
-        var printCommand = new Command("print");
+        var deviceOption = new Option<string>("--device")
+        {
+            Required = true,
+            DefaultValueFactory = (_) => "/dev/usb/lp0",
+            Recursive = true
+        };
+
+        var printCommand = new Command("print")
+        {
+            deviceOption
+        };
 
         var testCommand = new Command("test");
 
-        testCommand.SetAction(async (_, cancellationToken) =>
+        testCommand.SetAction(async (parseResult, cancellationToken) =>
         {
+            var device = parseResult.GetValue(deviceOption);
+
+            services.Configure<FileDeviceSettings>(s => s.Target = device!);
+
+            using var svcProvider = services.BuildServiceProvider();
             using var scope = svcProvider.CreateScope();
 
             var tool = scope.ServiceProvider.GetRequiredService<TestTool>();
