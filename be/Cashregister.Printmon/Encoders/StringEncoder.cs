@@ -27,6 +27,9 @@ public sealed class StringEncoder : IEncoder<string>
                 case InitializeInstruction:
                     sb.Append("[INIT]");
                     break;
+                case ResetPrintModeInstruction:
+                    sb.Append("[RESET_PRINT_MODE]");
+                    break;
                 case SelectPrintModeInstruction selectPrintMode:
                     sb.Append("[PRINT_MODE:");
                     sb.Append(selectPrintMode.UseFontB ? "FONT_B" : "FONT_A");

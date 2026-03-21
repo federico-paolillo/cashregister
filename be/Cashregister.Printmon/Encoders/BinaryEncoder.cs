@@ -25,6 +25,9 @@ public sealed class BinaryEncoder : IEncoder<byte[]>
                 case InitializeInstruction:
                     stream.Write([0x1B, 0x40]); // ESC @
                     break;
+                case ResetPrintModeInstruction:
+                    stream.Write([0x1B, 0x21, 0x00]); // ESC ! 0
+                    break;
                 case SelectPrintModeInstruction selectPrintMode:
                     var printModeN = (byte)((selectPrintMode.UseFontB ? 0x01 : 0x00) | (int)selectPrintMode.Flags);
                     stream.Write([0x1B, 0x21, printModeN]); // ESC ! n

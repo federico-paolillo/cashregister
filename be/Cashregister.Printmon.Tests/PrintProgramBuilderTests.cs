@@ -3,6 +3,10 @@ using Cashregister.Printmon.Instructions.Formatting;
 using Cashregister.Printmon.Instructions.Layout;
 using Cashregister.Printmon.Instructions.Motion;
 
+// Preamble: [0] InitializeInstruction, [1] SelectCodeTableInstruction, [2] ResetPrintModeInstruction
+// User instructions start at index 3
+// Postamble: LineFeedInstruction, CutAfterInstruction(1)
+
 namespace Cashregister.Printmon.Tests;
 
 public sealed class PrintProgramBuilderTests
@@ -14,11 +18,12 @@ public sealed class PrintProgramBuilderTests
 
         var program = builder.Build();
 
-        Assert.Equal(4, program.Instructions.Length);
+        Assert.Equal(5, program.Instructions.Length);
         Assert.IsType<InitializeInstruction>(program.Instructions[0]);
         Assert.IsType<SelectCodeTableInstruction>(program.Instructions[1]);
-        Assert.IsType<LineFeedInstruction>(program.Instructions[2]);
-        var cutAfter = Assert.IsType<CutAfterInstruction>(program.Instructions[3]);
+        Assert.IsType<ResetPrintModeInstruction>(program.Instructions[2]);
+        Assert.IsType<LineFeedInstruction>(program.Instructions[3]);
+        var cutAfter = Assert.IsType<CutAfterInstruction>(program.Instructions[4]);
         Assert.Equal(1, cutAfter.Distance);
     }
 
@@ -29,12 +34,13 @@ public sealed class PrintProgramBuilderTests
 
         var program = builder.NoOp().Build();
 
-        Assert.Equal(5, program.Instructions.Length);
+        Assert.Equal(6, program.Instructions.Length);
         Assert.IsType<InitializeInstruction>(program.Instructions[0]);
         Assert.IsType<SelectCodeTableInstruction>(program.Instructions[1]);
-        Assert.IsType<NoOpInstruction>(program.Instructions[2]);
-        Assert.IsType<LineFeedInstruction>(program.Instructions[3]);
-        var cutAfter = Assert.IsType<CutAfterInstruction>(program.Instructions[4]);
+        Assert.IsType<ResetPrintModeInstruction>(program.Instructions[2]);
+        Assert.IsType<NoOpInstruction>(program.Instructions[3]);
+        Assert.IsType<LineFeedInstruction>(program.Instructions[4]);
+        var cutAfter = Assert.IsType<CutAfterInstruction>(program.Instructions[5]);
         Assert.Equal(1, cutAfter.Distance);
     }
 
@@ -45,8 +51,8 @@ public sealed class PrintProgramBuilderTests
 
         var program = builder.UseFontA(FormatMode.None).Build();
 
-        Assert.Equal(5, program.Instructions.Length);
-        var instruction = Assert.IsType<SelectPrintModeInstruction>(program.Instructions[2]);
+        Assert.Equal(6, program.Instructions.Length);
+        var instruction = Assert.IsType<SelectPrintModeInstruction>(program.Instructions[3]);
         Assert.False(instruction.UseFontB);
         Assert.Equal(FormatMode.None, instruction.Flags);
     }
@@ -58,8 +64,8 @@ public sealed class PrintProgramBuilderTests
 
         var program = builder.UseFontB(FormatMode.Emphasized).Build();
 
-        Assert.Equal(5, program.Instructions.Length);
-        var instruction = Assert.IsType<SelectPrintModeInstruction>(program.Instructions[2]);
+        Assert.Equal(6, program.Instructions.Length);
+        var instruction = Assert.IsType<SelectPrintModeInstruction>(program.Instructions[3]);
         Assert.True(instruction.UseFontB);
         Assert.Equal(FormatMode.Emphasized, instruction.Flags);
     }
@@ -71,8 +77,8 @@ public sealed class PrintProgramBuilderTests
 
         var program = builder.UnderlineOn(Thickness.TwoDots).Build();
 
-        Assert.Equal(5, program.Instructions.Length);
-        var instruction = Assert.IsType<UnderlineInstruction>(program.Instructions[2]);
+        Assert.Equal(6, program.Instructions.Length);
+        var instruction = Assert.IsType<UnderlineInstruction>(program.Instructions[3]);
         Assert.True(instruction.Enabled);
         Assert.Equal(Thickness.TwoDots, instruction.Thickness);
     }
@@ -84,8 +90,8 @@ public sealed class PrintProgramBuilderTests
 
         var program = builder.UnderlineOff().Build();
 
-        Assert.Equal(5, program.Instructions.Length);
-        var instruction = Assert.IsType<UnderlineInstruction>(program.Instructions[2]);
+        Assert.Equal(6, program.Instructions.Length);
+        var instruction = Assert.IsType<UnderlineInstruction>(program.Instructions[3]);
         Assert.False(instruction.Enabled);
     }
 
@@ -103,8 +109,8 @@ public sealed class PrintProgramBuilderTests
 
         var program = builder.EmphasizeOn().Build();
 
-        Assert.Equal(5, program.Instructions.Length);
-        var instruction = Assert.IsType<EmphasizeInstruction>(program.Instructions[2]);
+        Assert.Equal(6, program.Instructions.Length);
+        var instruction = Assert.IsType<EmphasizeInstruction>(program.Instructions[3]);
         Assert.True(instruction.Enabled);
     }
 
@@ -115,8 +121,8 @@ public sealed class PrintProgramBuilderTests
 
         var program = builder.EmphasizeOff().Build();
 
-        Assert.Equal(5, program.Instructions.Length);
-        var instruction = Assert.IsType<EmphasizeInstruction>(program.Instructions[2]);
+        Assert.Equal(6, program.Instructions.Length);
+        var instruction = Assert.IsType<EmphasizeInstruction>(program.Instructions[3]);
         Assert.False(instruction.Enabled);
     }
 
@@ -127,8 +133,8 @@ public sealed class PrintProgramBuilderTests
 
         var program = builder.DoubleStrikeOn().Build();
 
-        Assert.Equal(5, program.Instructions.Length);
-        var instruction = Assert.IsType<DoubleStrikeInstruction>(program.Instructions[2]);
+        Assert.Equal(6, program.Instructions.Length);
+        var instruction = Assert.IsType<DoubleStrikeInstruction>(program.Instructions[3]);
         Assert.True(instruction.Enabled);
     }
 
@@ -139,8 +145,8 @@ public sealed class PrintProgramBuilderTests
 
         var program = builder.DoubleStrikeOff().Build();
 
-        Assert.Equal(5, program.Instructions.Length);
-        var instruction = Assert.IsType<DoubleStrikeInstruction>(program.Instructions[2]);
+        Assert.Equal(6, program.Instructions.Length);
+        var instruction = Assert.IsType<DoubleStrikeInstruction>(program.Instructions[3]);
         Assert.False(instruction.Enabled);
     }
 
@@ -151,8 +157,8 @@ public sealed class PrintProgramBuilderTests
 
         var program = builder.SelectFontA().Build();
 
-        Assert.Equal(5, program.Instructions.Length);
-        var instruction = Assert.IsType<SelectFontInstruction>(program.Instructions[2]);
+        Assert.Equal(6, program.Instructions.Length);
+        var instruction = Assert.IsType<SelectFontInstruction>(program.Instructions[3]);
         Assert.Equal(CharacterFont.A, instruction.Font);
     }
 
@@ -163,8 +169,8 @@ public sealed class PrintProgramBuilderTests
 
         var program = builder.SelectFontB().Build();
 
-        Assert.Equal(5, program.Instructions.Length);
-        var instruction = Assert.IsType<SelectFontInstruction>(program.Instructions[2]);
+        Assert.Equal(6, program.Instructions.Length);
+        var instruction = Assert.IsType<SelectFontInstruction>(program.Instructions[3]);
         Assert.Equal(CharacterFont.B, instruction.Font);
     }
 
@@ -182,8 +188,8 @@ public sealed class PrintProgramBuilderTests
 
         var program = builder.NinetyDegsOn().Build();
 
-        Assert.Equal(5, program.Instructions.Length);
-        var instruction = Assert.IsType<RotationInstruction>(program.Instructions[2]);
+        Assert.Equal(6, program.Instructions.Length);
+        var instruction = Assert.IsType<RotationInstruction>(program.Instructions[3]);
         Assert.True(instruction.Enabled);
     }
 
@@ -194,8 +200,8 @@ public sealed class PrintProgramBuilderTests
 
         var program = builder.NinetyDegsOff().Build();
 
-        Assert.Equal(5, program.Instructions.Length);
-        var instruction = Assert.IsType<RotationInstruction>(program.Instructions[2]);
+        Assert.Equal(6, program.Instructions.Length);
+        var instruction = Assert.IsType<RotationInstruction>(program.Instructions[3]);
         Assert.False(instruction.Enabled);
     }
 
@@ -206,8 +212,8 @@ public sealed class PrintProgramBuilderTests
 
         var program = builder.UpsideDownOn().Build();
 
-        Assert.Equal(5, program.Instructions.Length);
-        var instruction = Assert.IsType<UpsideDownInstruction>(program.Instructions[2]);
+        Assert.Equal(6, program.Instructions.Length);
+        var instruction = Assert.IsType<UpsideDownInstruction>(program.Instructions[3]);
         Assert.True(instruction.Enabled);
     }
 
@@ -218,8 +224,8 @@ public sealed class PrintProgramBuilderTests
 
         var program = builder.UpsideDownOff().Build();
 
-        Assert.Equal(5, program.Instructions.Length);
-        var instruction = Assert.IsType<UpsideDownInstruction>(program.Instructions[2]);
+        Assert.Equal(6, program.Instructions.Length);
+        var instruction = Assert.IsType<UpsideDownInstruction>(program.Instructions[3]);
         Assert.False(instruction.Enabled);
     }
 
@@ -230,8 +236,8 @@ public sealed class PrintProgramBuilderTests
 
         var program = builder.FontSize(0x11).Build();
 
-        Assert.Equal(5, program.Instructions.Length);
-        var instruction = Assert.IsType<FontSizeInstruction>(program.Instructions[2]);
+        Assert.Equal(6, program.Instructions.Length);
+        var instruction = Assert.IsType<FontSizeInstruction>(program.Instructions[3]);
         Assert.Equal(0x11, instruction.Size);
     }
 
@@ -256,8 +262,8 @@ public sealed class PrintProgramBuilderTests
 
         var program = builder.Justify(Justification.Center).Build();
 
-        Assert.Equal(5, program.Instructions.Length);
-        var instruction = Assert.IsType<JustifyInstruction>(program.Instructions[2]);
+        Assert.Equal(6, program.Instructions.Length);
+        var instruction = Assert.IsType<JustifyInstruction>(program.Instructions[3]);
         Assert.Equal(Justification.Center, instruction.Justification);
     }
 
@@ -275,8 +281,8 @@ public sealed class PrintProgramBuilderTests
 
         var program = builder.SetAbsolutePosition(1000).Build();
 
-        Assert.Equal(5, program.Instructions.Length);
-        var instruction = Assert.IsType<AbsolutePositionInstruction>(program.Instructions[2]);
+        Assert.Equal(6, program.Instructions.Length);
+        var instruction = Assert.IsType<AbsolutePositionInstruction>(program.Instructions[3]);
         Assert.Equal(1000, instruction.Position);
     }
 
@@ -287,8 +293,8 @@ public sealed class PrintProgramBuilderTests
 
         var program = builder.SetRelativePosition(500).Build();
 
-        Assert.Equal(5, program.Instructions.Length);
-        var instruction = Assert.IsType<RelativePositionInstruction>(program.Instructions[2]);
+        Assert.Equal(6, program.Instructions.Length);
+        var instruction = Assert.IsType<RelativePositionInstruction>(program.Instructions[3]);
         Assert.Equal(500, instruction.Offset);
     }
 
@@ -299,8 +305,8 @@ public sealed class PrintProgramBuilderTests
 
         var program = builder.SetLeftMargin(200).Build();
 
-        Assert.Equal(5, program.Instructions.Length);
-        var instruction = Assert.IsType<LeftMarginInstruction>(program.Instructions[2]);
+        Assert.Equal(6, program.Instructions.Length);
+        var instruction = Assert.IsType<LeftMarginInstruction>(program.Instructions[3]);
         Assert.Equal(200, instruction.Margin);
     }
 
@@ -311,8 +317,8 @@ public sealed class PrintProgramBuilderTests
 
         var program = builder.Text("Hello").Build();
 
-        Assert.Equal(5, program.Instructions.Length);
-        var instruction = Assert.IsType<TextInstruction>(program.Instructions[2]);
+        Assert.Equal(6, program.Instructions.Length);
+        var instruction = Assert.IsType<TextInstruction>(program.Instructions[3]);
         Assert.Equal("Hello", instruction.Text);
     }
 
@@ -337,8 +343,8 @@ public sealed class PrintProgramBuilderTests
 
         var program = builder.HorizontalTab().Build();
 
-        Assert.Equal(5, program.Instructions.Length);
-        Assert.IsType<HorizontalTabInstruction>(program.Instructions[2]);
+        Assert.Equal(6, program.Instructions.Length);
+        Assert.IsType<HorizontalTabInstruction>(program.Instructions[3]);
     }
 
     [Fact]
@@ -348,8 +354,8 @@ public sealed class PrintProgramBuilderTests
 
         var program = builder.LineFeed().Build();
 
-        Assert.Equal(5, program.Instructions.Length);
-        Assert.IsType<LineFeedInstruction>(program.Instructions[2]);
+        Assert.Equal(6, program.Instructions.Length);
+        Assert.IsType<LineFeedInstruction>(program.Instructions[3]);
     }
 
     [Fact]
@@ -359,10 +365,10 @@ public sealed class PrintProgramBuilderTests
 
         var program = builder.PrintLine("Hello").Build();
 
-        Assert.Equal(6, program.Instructions.Length);
-        var textInstruction = Assert.IsType<TextInstruction>(program.Instructions[2]);
+        Assert.Equal(7, program.Instructions.Length);
+        var textInstruction = Assert.IsType<TextInstruction>(program.Instructions[3]);
         Assert.Equal("Hello", textInstruction.Text);
-        Assert.IsType<LineFeedInstruction>(program.Instructions[3]);
+        Assert.IsType<LineFeedInstruction>(program.Instructions[4]);
     }
 
     [Fact]
@@ -372,8 +378,8 @@ public sealed class PrintProgramBuilderTests
 
         var program = builder.CutAfter(10).Build();
 
-        Assert.Equal(5, program.Instructions.Length);
-        var instruction = Assert.IsType<CutAfterInstruction>(program.Instructions[2]);
+        Assert.Equal(6, program.Instructions.Length);
+        var instruction = Assert.IsType<CutAfterInstruction>(program.Instructions[3]);
         Assert.Equal(10, instruction.Distance);
     }
 }

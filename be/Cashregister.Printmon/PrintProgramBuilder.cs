@@ -12,7 +12,7 @@ namespace Cashregister.Printmon;
 /// </summary>
 public sealed class PrintProgramBuilder
 {
-    private readonly List<Instruction> instructions = [new InitializeInstruction(), new SelectCodeTableInstruction()];
+    private readonly List<Instruction> instructions = [new InitializeInstruction(), new SelectCodeTableInstruction(), new ResetPrintModeInstruction()];
     private bool frozen;
 
     public PrintProgramBuilder NoOp()
