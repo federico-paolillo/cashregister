@@ -23,10 +23,13 @@ public sealed class TestTool(
             .FontSize(3)
             .PrintLine("Hello, world!")
             .Justify(Justification.Left)
+            .FontSize(0)
             .EmphasizeOn()
             .PrintLine("Emphasis")
             .EmphasizeOff()
+            .DoubleStrikeOn()
             .PrintLine("Emphasis")
+            .DoubleStrikeOff()
             .Build();
 
         await Printer.PrintAsync(printProgram);
