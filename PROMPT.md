@@ -1,5 +1,5 @@
 Implement one ESC/POS instruction in Cashregister.Printmon per the architecture 
-in ESCPOS.md.
+in ESCPOS.md. If there aren't any instructions left quit.
 
 Take into account also the following files (read them):
 
@@ -10,13 +10,9 @@ Take into account also the following files (read them):
 
 ## Instructions to implement
 
-NAME: "GS V m / GS V m n — Select cut mode and cut paper"
-CATEGORY FOLDER: Instructions/Core/
-BUILDER METHOD SIGNATURE: `.CutAfter(byte distance)`. We will only offer partial cut mode 66 with an optional feed distance.
-
-Given that `GS V m n` commands are superior to the `ESC m` counterpart, we should refactor the PrintProgramBuilder to auto-include a `LF` and then a `GS V m n` that feeds 1 lines at the end of each program. We need an LF because `GS V m n` says "This command is effective only when processed at the beginning of a line.".
-
-This change will require verifying and refactoring tests to account for the new "end of program" sequence.
+- Choose an appropriate category folder
+- Choose an appropriate builder signature
+- Offer high level methods and types if possible
 
 ---
 
