@@ -139,6 +139,19 @@ According to the spec, yes — `ESC E` should work independently. But the spec a
 
 Sending `ESC ! 0` explicitly after `ESC @` ensures the master print mode register is in a known software-initialized state, not just a hardware-reset state. This is defensive programming: it costs 3 bytes and eliminates an entire class of firmware-dependent behavior.
 
+### Do I need to send ESC ! every time a mode changes?
+
+No. The `ESC ! 0` in the preamble is a **one-time initialization**. After that, individual commands should work independently — that is their documented purpose:
+
+- `ESC E 1` modifies only the emphasis bit — font, underline, and size are untouched
+- `ESC - 2` modifies only the underline bit — emphasis, font, and size are untouched
+- `GS ! n` modifies only character size — emphasis, underline, and font are untouched
+- `ESC M n` modifies only the font — emphasis, underline, and size are untouched
+
+The dangerous scenario is sending another `ESC !` later in the program (e.g., via `UseFontA(FormatMode.None)`), because `ESC !` is a write-all operation and would zero out every bit you don't explicitly set. As long as the program uses only individual commands after the preamble, the modes should compose without interference.
+
+State tracking in the builder (where `EmphasizeOn()` would emit `ESC !` with the accumulated bitmask instead of `ESC E`) would only become necessary if `ESC E` turns out to be completely broken on this printer firmware (Hypothesis 3 below). That is a last resort — try the preamble fix first.
+
 ## Analysis
 
 ### Hypothesis 1 — LIKELY: Missing `ESC ! n` baseline after initialization
