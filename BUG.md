@@ -34,6 +34,111 @@ The `PrintProgramBuilder` auto-prepends `ESC @` (initialize) and `ESC t 0` (sele
 
 The `ESC E 1` and `ESC E 0` bytes are correct per the ESC/POS specification. The BinaryEncoder implementation matches the manual. Yet the printer produces no visible difference.
 
+## How ESC/POS print modes work
+
+### The printer has internal state registers
+
+An ESC/POS printer is a stateful machine. When it receives text bytes, it renders them according to the **current values** of several internal registers. These registers control things like: which font to use, whether emphasis is on, whether underline is on, character width/height multipliers, justification, and so on.
+
+Commands like `ESC E 1` don't print anything themselves — they modify a register. The text that follows is then rendered according to the updated register state. This is why mode commands must appear **before** the text they should affect.
+
+### ESC @ (Initialize) sets registers to power-on defaults
+
+When the printer processes `ESC @`, it resets all internal registers to the values they had at power-on. Per the manual:
+
+> "Clears the data in the print buffer and resets the printer mode to the mode that was in effect when the power was turned on."
+
+After `ESC @`, the printer is in this default state:
+
+| Register / mode       | Default value | Equivalent command |
+|-----------------------|---------------|-------------------|
+| Font                  | Font A        | `ESC ! 0` bit 0 = 0 |
+| Emphasis              | OFF           | `ESC ! 0` bit 3 = 0, or `ESC E 0` |
+| Double-height         | OFF           | `ESC ! 0` bit 4 = 0 |
+| Double-width          | OFF           | `ESC ! 0` bit 5 = 0 |
+| Underline             | OFF           | `ESC ! 0` bit 7 = 0, or `ESC - 0` |
+| Character size        | 1x width, 1x height | `GS ! 0` |
+| Justification         | Left          | `ESC a 0` |
+| Double-strike         | OFF           | `ESC G 0` |
+| Rotation              | OFF           | `ESC V 0` |
+| Upside-down           | OFF           | `ESC { 0` |
+
+### ESC ! is the master print mode register — it writes ALL mode bits at once
+
+`ESC ! n` is special. It is a **composite command** that controls five aspects of text rendering simultaneously through a single bitmask byte:
+
+```
+Bit 0: Font          (0 = Font A, 1 = Font B)
+Bit 3: Emphasis       (0 = off, 1 = on)
+Bit 4: Double-height  (0 = off, 1 = on)
+Bit 5: Double-width   (0 = off, 1 = on)
+Bit 7: Underline      (0 = off, 1 = on)
+```
+
+When you send `ESC ! n`, **every bit in the register is written**, not just the ones you care about. For example:
+
+- `ESC ! 0x08` sets emphasis ON, but also sets font to A, double-height OFF, double-width OFF, and underline OFF.
+- `ESC ! 0x00` sets **everything** OFF.
+- `ESC ! 0x89` sets emphasis ON + underline ON + Font B, but double-height and double-width OFF.
+
+This means `ESC !` is a "write-all" operation. It doesn't toggle a single bit — it replaces the entire register.
+
+### Individual commands (ESC E, ESC -, etc.) modify specific bits
+
+In contrast to `ESC !`, individual commands are narrow:
+
+- `ESC E n` — modifies **only** the emphasis bit
+- `ESC - n` — modifies **only** the underline bit (and its thickness)
+- `ESC M n` — modifies **only** the font selection
+- `GS ! n` — modifies **only** character width and height
+
+These are intended as convenience commands for toggling one mode without disturbing the others.
+
+### The "last received command is effective" rule
+
+The manual warns for each overlapping pair:
+
+> "ESC E can also turn on or off emphasized mode. However, the setting of the **last received command** is effective."
+
+This means `ESC !` and `ESC E` write to the **same internal emphasis bit**. Whichever command the printer processes last determines the value. Example:
+
+```
+ESC ! 0x08    → emphasis ON  (via master register, also sets font=A, no underline, etc.)
+ESC E 0       → emphasis OFF (individual command overrides the bit)
+"Hello"       → printed WITHOUT emphasis (ESC E was last)
+```
+
+And the reverse:
+
+```
+ESC E 1       → emphasis ON  (individual command)
+ESC ! 0x00    → emphasis OFF (master register sets ALL bits to 0, including emphasis)
+"Hello"       → printed WITHOUT emphasis (ESC ! was last, and it zeroed emphasis)
+```
+
+This is the core danger: **sending `ESC ! n` for any reason (e.g., to change font) will silently reset emphasis unless bit 3 is explicitly set in `n`.** The individual commands and the master register are not independent — they are two interfaces to the same state.
+
+### The same rule applies to GS ! and character size
+
+`ESC !` bits 4 and 5 control double-height and double-width. `GS ! n` also controls character width and height (with finer granularity: 1x-8x instead of just 1x/2x). The manual says:
+
+> "GS ! can also select character size. However, the setting of the last received command is effective."
+
+So `ESC !` and `GS !` share the character-size state. This creates a potential interaction: if the printer firmware implements `GS !` by writing to the same internal register that `ESC !` uses, sending `GS !` might also affect (or be affected by) the emphasis, underline, and font bits that live in that register. The manual doesn't explicitly document whether `GS !` preserves or resets the non-size bits, which is where firmware differences between printer models become relevant.
+
+### What this means for our program
+
+The TestTool program after `ESC @` sends:
+1. `GS ! 1`, then `GS ! 2`, then `GS ! 3` — three character size changes
+2. Then `ESC E 1` — emphasis on
+3. Then text
+
+The question is: **does `ESC E 1` successfully set the emphasis bit after `ESC @` and three `GS !` commands, without `ESC !` ever having been sent?**
+
+According to the spec, yes — `ESC E` should work independently. But the spec also warns to "be careful" about the interaction, and this particular printer is a budget model where the firmware may not implement the individual commands as truly independent register writes.
+
+Sending `ESC ! 0` explicitly after `ESC @` ensures the master print mode register is in a known software-initialized state, not just a hardware-reset state. This is defensive programming: it costs 3 bytes and eliminates an entire class of firmware-dependent behavior.
+
 ## Analysis
 
 ### Hypothesis 1 — LIKELY: Missing `ESC ! n` baseline after initialization
