@@ -1,3 +1,5 @@
+using System.Collections.Immutable;
+
 using Cashregister.Printmon.Instructions;
 using Cashregister.Printmon.Instructions.Core;
 using Cashregister.Printmon.Instructions.Formatting;
@@ -120,6 +122,20 @@ public sealed class PrintProgramBuilder
         return this;
     }
 
+    public PrintProgramBuilder ReverseOn()
+    {
+        AddInstruction(new ReverseInstruction(true));
+
+        return this;
+    }
+
+    public PrintProgramBuilder ReverseOff()
+    {
+        AddInstruction(new ReverseInstruction(false));
+
+        return this;
+    }
+
     public PrintProgramBuilder FontSize(byte size)
     {
         AddInstruction(new FontSizeInstruction(size));
@@ -155,6 +171,13 @@ public sealed class PrintProgramBuilder
         return this;
     }
 
+    public PrintProgramBuilder SetRightSpacing(byte spacing)
+    {
+        AddInstruction(new RightSpacingInstruction(spacing));
+
+        return this;
+    }
+
     public PrintProgramBuilder Text(string text)
     {
         AddInstruction(new TextInstruction(text));
@@ -169,9 +192,30 @@ public sealed class PrintProgramBuilder
         return this;
     }
 
+    public PrintProgramBuilder SetHorizontalTabs(params byte[] positions)
+    {
+        AddInstruction(new SetHorizontalTabsInstruction([.. positions]));
+
+        return this;
+    }
+
+    public PrintProgramBuilder ClearHorizontalTabs()
+    {
+        AddInstruction(new SetHorizontalTabsInstruction([]));
+
+        return this;
+    }
+
     public PrintProgramBuilder LineFeed()
     {
         AddInstruction(new LineFeedInstruction());
+
+        return this;
+    }
+
+    public PrintProgramBuilder ResetLineSpacing()
+    {
+        AddInstruction(new ResetLineSpacingInstruction());
 
         return this;
     }

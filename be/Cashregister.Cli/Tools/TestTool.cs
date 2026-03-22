@@ -27,8 +27,9 @@ public sealed class TestTool(
             .EmphasizeOn()
             .PrintLine("Emphasis")
             .EmphasizeOff()
-            .DoubleStrikeOn()
             .PrintLine("Emphasis")
+            .DoubleStrikeOn()
+            .PrintLine("Dstrike")
             .DoubleStrikeOff()
             .Build();
 

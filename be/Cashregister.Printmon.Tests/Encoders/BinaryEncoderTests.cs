@@ -405,4 +405,76 @@ public sealed class BinaryEncoderTests
         Assert.True(result.Ok);
         Assert.Equal([0x1B, 0x40, 0x1B, 0x74, 0x00, 0x1B, 0x21, 0x00, 0x1D, 0x56, 0x42, 0x32, 0x0A, 0x1D, 0x56, 0x42, 0x01], result.Value);
     }
+
+    [Fact]
+    public void Encode_ResetLineSpacing_ProducesCorrectBytes()
+    {
+        var program = new PrintProgramBuilder().ResetLineSpacing().Build();
+        var encoder = new BinaryEncoder();
+
+        var result = encoder.Encode(program);
+
+        Assert.True(result.Ok);
+        Assert.Equal([0x1B, 0x40, 0x1B, 0x74, 0x00, 0x1B, 0x21, 0x00, 0x1B, 0x32, 0x0A, 0x1D, 0x56, 0x42, 0x01], result.Value);
+    }
+
+    [Fact]
+    public void Encode_ReverseOn_ProducesCorrectBytes()
+    {
+        var program = new PrintProgramBuilder().ReverseOn().Build();
+        var encoder = new BinaryEncoder();
+
+        var result = encoder.Encode(program);
+
+        Assert.True(result.Ok);
+        Assert.Equal([0x1B, 0x40, 0x1B, 0x74, 0x00, 0x1B, 0x21, 0x00, 0x1D, 0x42, 0x01, 0x0A, 0x1D, 0x56, 0x42, 0x01], result.Value);
+    }
+
+    [Fact]
+    public void Encode_ReverseOff_ProducesCorrectBytes()
+    {
+        var program = new PrintProgramBuilder().ReverseOff().Build();
+        var encoder = new BinaryEncoder();
+
+        var result = encoder.Encode(program);
+
+        Assert.True(result.Ok);
+        Assert.Equal([0x1B, 0x40, 0x1B, 0x74, 0x00, 0x1B, 0x21, 0x00, 0x1D, 0x42, 0x00, 0x0A, 0x1D, 0x56, 0x42, 0x01], result.Value);
+    }
+
+    [Fact]
+    public void Encode_RightSpacing_ProducesCorrectBytes()
+    {
+        var program = new PrintProgramBuilder().SetRightSpacing(20).Build();
+        var encoder = new BinaryEncoder();
+
+        var result = encoder.Encode(program);
+
+        Assert.True(result.Ok);
+        Assert.Equal([0x1B, 0x40, 0x1B, 0x74, 0x00, 0x1B, 0x21, 0x00, 0x1B, 0x20, 0x14, 0x0A, 0x1D, 0x56, 0x42, 0x01], result.Value);
+    }
+
+    [Fact]
+    public void Encode_SetHorizontalTabs_ProducesCorrectBytes()
+    {
+        var program = new PrintProgramBuilder().SetHorizontalTabs(8, 16, 24).Build();
+        var encoder = new BinaryEncoder();
+
+        var result = encoder.Encode(program);
+
+        Assert.True(result.Ok);
+        Assert.Equal([0x1B, 0x40, 0x1B, 0x74, 0x00, 0x1B, 0x21, 0x00, 0x1B, 0x44, 0x08, 0x10, 0x18, 0x00, 0x0A, 0x1D, 0x56, 0x42, 0x01], result.Value);
+    }
+
+    [Fact]
+    public void Encode_ClearHorizontalTabs_ProducesCorrectBytes()
+    {
+        var program = new PrintProgramBuilder().ClearHorizontalTabs().Build();
+        var encoder = new BinaryEncoder();
+
+        var result = encoder.Encode(program);
+
+        Assert.True(result.Ok);
+        Assert.Equal([0x1B, 0x40, 0x1B, 0x74, 0x00, 0x1B, 0x21, 0x00, 0x1B, 0x44, 0x00, 0x0A, 0x1D, 0x56, 0x42, 0x01], result.Value);
+    }
 }

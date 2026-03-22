@@ -1,7 +1,7 @@
 Implement one ESC/POS instruction in Cashregister.Printmon per the architecture 
 in ESCPOS.md.
 
-Take into account also the following files (read them):
+Take into account also the following files in the project root (read them):
 
 - REVIEW.md for some open points on the architecture of the application
 - AGENTS.md general context and fundamental information
@@ -10,17 +10,37 @@ Take into account also the following files (read them):
 
 ## Instructions to implement
 
-NAME: "GS V m / GS V m n — Select cut mode and cut paper"
-CATEGORY FOLDER: Instructions/Core/
-BUILDER METHOD SIGNATURE: `.CutAfter(byte distance)`. We will only offer partial cut mode 66 with an optional feed distance.
-
-Given that `GS V m n` commands are superior to the `ESC m` counterpart, we should refactor the PrintProgramBuilder to auto-include a `LF` and then a `GS V m n` that feeds 1 lines at the end of each program. We need an LF because `GS V m n` says "This command is effective only when processed at the beginning of a line.".
-
-This change will require verifying and refactoring tests to account for the new "end of program" sequence.
+NAME: "ESC - n — Turn underline mode on/off"
+CATEGORY FOLDER: Instructions/Formatting
+BUILDER METHOD SIGNATURE: `.UnderlineOn()` and `.UnderlineOff()`. 
 
 ---
 
-Verify signatures are appropriate and suggest, if it exists, a better higher level signature. Ensure implementations do not contradict information reported in the printer manual and printer programmer manual. 
+NAME: "GS B n — Turn white/black reverse printing mode"
+CATEGORY FOLDER: Instructions/Formatting
+BUILDER METHOD SIGNATURE: `.ReverseOn()` and `ReverseOff()`
+
+---
+
+NAME: "ESC SP n — Set right-side character spacing"
+CATEGORY FOLDER: Instructions/Layout
+BUILDER METHOD SIGNATURE: `SetRightSpacing(byte spacing)`
+
+---
+
+NAME: "ESC D n1...nk NUL — Set horizontal tab positions"
+CATEGORY FOLDER: Instructions/Motion
+BUILDER METHOD SIGNATURE: `.SetHorizontalTabs(<propose parameters>)`
+
+---
+
+NAME: "ESC 2 — Select default line spacing"
+CATEGORY FOLDER: Instructions/Core
+BUILDER METHOD SIGNATURE: `.ResetLineSpacing()`
+
+---
+
+Verify signatures and category folders are appropriate and suggest, if it exists, a better alternative. Ensure implementations do not contradict information reported in the printer manual and printer programmer manual. 
 
 ## ESC/POS manual reference
 

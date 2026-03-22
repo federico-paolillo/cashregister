@@ -55,6 +55,10 @@ public sealed class BinaryEncoder : IEncoder<byte[]>
                     var upsideDownN = upsideDown.Enabled ? (byte)0x01 : (byte)0x00;
                     stream.Write([0x1B, 0x7B, upsideDownN]); // ESC { n
                     break;
+                case ReverseInstruction reverse:
+                    var reverseN = reverse.Enabled ? (byte)0x01 : (byte)0x00;
+                    stream.Write([0x1D, 0x42, reverseN]); // GS B n
+                    break;
                 case FontSizeInstruction fontSize:
                     stream.Write([0x1D, 0x21, fontSize.Size]); // GS ! n
                     break;
@@ -74,14 +78,29 @@ public sealed class BinaryEncoder : IEncoder<byte[]>
                         0x1D, 0x4C, (byte)(leftMargin.Margin & 0xFF), (byte)(leftMargin.Margin >> 8)
                     ]); // GS L nL nH
                     break;
+                case RightSpacingInstruction rightSpacing:
+                    stream.Write([0x1B, 0x20, rightSpacing.Spacing]); // ESC SP n
+                    break;
                 case TextInstruction text:
                     stream.Write(Encoding.ASCII.GetBytes(text.Text));
                     break;
                 case SelectCodeTableInstruction:
                     stream.Write([0x1B, 0x74, 0x00]); // ESC t 0 (Std. Europe)
                     break;
+                case SetHorizontalTabsInstruction setTabs:
+                    stream.Write([0x1B, 0x44]); // ESC D
+                    foreach (var pos in setTabs.Positions)
+                    {
+                        stream.WriteByte(pos);
+                    }
+
+                    stream.WriteByte(0x00); // NUL terminator
+                    break;
                 case HorizontalTabInstruction:
                     stream.Write([0x09]); // HT
+                    break;
+                case ResetLineSpacingInstruction:
+                    stream.Write([0x1B, 0x32]); // ESC 2
                     break;
                 case LineFeedInstruction:
                     stream.Write([0x0A]); // LF

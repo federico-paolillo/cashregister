@@ -396,4 +396,110 @@ public sealed class StringEncoderTests
         Assert.True(result.Ok);
         Assert.Equal("[INIT][CODE_TABLE:STD_EUROPE][RESET_PRINT_MODE][CUT_AFTER:50][LF][CUT_AFTER:1]", result.Value);
     }
+
+    [Fact]
+    public void Encode_ResetLineSpacing_ProducesCorrectToken()
+    {
+        var program = new PrintProgramBuilder().ResetLineSpacing().Build();
+        var encoder = new StringEncoder();
+
+        var result = encoder.Encode(program);
+
+        Assert.True(result.Ok);
+        Assert.Equal("[INIT][CODE_TABLE:STD_EUROPE][RESET_PRINT_MODE][LINE_SPACING:DEFAULT][LF][CUT_AFTER:1]", result.Value);
+    }
+
+    [Fact]
+    public void Encode_ReverseOn_ProducesCorrectToken()
+    {
+        var program = new PrintProgramBuilder().ReverseOn().Build();
+        var encoder = new StringEncoder();
+
+        var result = encoder.Encode(program);
+
+        Assert.True(result.Ok);
+        Assert.Equal("[INIT][CODE_TABLE:STD_EUROPE][RESET_PRINT_MODE][REVERSE:ON][LF][CUT_AFTER:1]", result.Value);
+    }
+
+    [Fact]
+    public void Encode_ReverseOff_ProducesCorrectToken()
+    {
+        var program = new PrintProgramBuilder().ReverseOff().Build();
+        var encoder = new StringEncoder();
+
+        var result = encoder.Encode(program);
+
+        Assert.True(result.Ok);
+        Assert.Equal("[INIT][CODE_TABLE:STD_EUROPE][RESET_PRINT_MODE][REVERSE:OFF][LF][CUT_AFTER:1]", result.Value);
+    }
+
+    [Fact]
+    public void Encode_RightSpacing_ProducesCorrectToken()
+    {
+        var program = new PrintProgramBuilder().SetRightSpacing(20).Build();
+        var encoder = new StringEncoder();
+
+        var result = encoder.Encode(program);
+
+        Assert.True(result.Ok);
+        Assert.Equal("[INIT][CODE_TABLE:STD_EUROPE][RESET_PRINT_MODE][RIGHT_SPACING:20][LF][CUT_AFTER:1]", result.Value);
+    }
+
+    [Fact]
+    public void Encode_SetHorizontalTabs_ProducesCorrectToken()
+    {
+        var program = new PrintProgramBuilder().SetHorizontalTabs(8, 16, 24).Build();
+        var encoder = new StringEncoder();
+
+        var result = encoder.Encode(program);
+
+        Assert.True(result.Ok);
+        Assert.Equal("[INIT][CODE_TABLE:STD_EUROPE][RESET_PRINT_MODE][SET_TABS:8,16,24][LF][CUT_AFTER:1]", result.Value);
+    }
+
+    [Fact]
+    public void Encode_ClearHorizontalTabs_ProducesCorrectToken()
+    {
+        var program = new PrintProgramBuilder().ClearHorizontalTabs().Build();
+        var encoder = new StringEncoder();
+
+        var result = encoder.Encode(program);
+
+        Assert.True(result.Ok);
+        Assert.Equal("[INIT][CODE_TABLE:STD_EUROPE][RESET_PRINT_MODE][SET_TABS:CLEAR][LF][CUT_AFTER:1]", result.Value);
+    }
+
+    /// <summary>
+    ///     Tab positions are absolute columns. Each HT advances to the next stop
+    ///     to the right of the current position. After a line feed the position
+    ///     resets to column 0, so the stops cycle again on the next line.
+    /// </summary>
+    [Fact]
+    public void Encode_SetHorizontalTabs_ThenTextWithTabs_ProducesCorrectSequence()
+    {
+        // col 0   → "A" → HT jumps to col 4
+        // col 4   → "B" → HT jumps to col 8
+        // col 8   → "C" → HT jumps to col 16
+        // col 16  → "D" → LF resets to col 0
+        var program = new PrintProgramBuilder()
+            .SetHorizontalTabs(4, 8, 16)
+            .Text("A").HorizontalTab()
+            .Text("B").HorizontalTab()
+            .Text("C").HorizontalTab()
+            .PrintLine("D")
+            .ClearHorizontalTabs()
+            .Build();
+        var encoder = new StringEncoder();
+
+        var result = encoder.Encode(program);
+
+        Assert.True(result.Ok);
+        Assert.Equal(
+            "[INIT][CODE_TABLE:STD_EUROPE][RESET_PRINT_MODE]" +
+            "[SET_TABS:4,8,16]" +
+            "A[HT]B[HT]C[HT]D[LF]" +
+            "[SET_TABS:CLEAR]" +
+            "[LF][CUT_AFTER:1]",
+            result.Value);
+    }
 }

@@ -99,6 +99,10 @@ When adding a new instruction, insert the new case before the default arm.
 | LF              | `LineFeedInstruction`        | `Core/`       | `LineFeed()` / `PrintLine(string)` | `0x0A` | `[LF]` |
 | ESC m           | `PartialCutInstruction`      | `Core/`       | *(none — legacy)* | `0x1B 0x6D`    | `[CUT:PARTIAL]`   |
 | GS V m n        | `CutAfterInstruction`        | `Core/`       | `CutAfter(byte)` | `0x1D 0x56 0x42 n` | `[CUT_AFTER:n]` |
+| ESC 2            | `ResetLineSpacingInstruction`| `Core/`       | `ResetLineSpacing()` | `0x1B 0x32` | `[LINE_SPACING:DEFAULT]` |
+| GS B n           | `ReverseInstruction`         | `Formatting/` | `ReverseOn()` / `ReverseOff()` | `0x1D 0x42 n` | `[REVERSE:ON]` / `[REVERSE:OFF]` |
+| ESC SP n         | `RightSpacingInstruction`    | `Layout/`     | `SetRightSpacing(byte)` | `0x1B 0x20 n` | `[RIGHT_SPACING:n]` |
+| ESC D n1..nk NUL | `SetHorizontalTabsInstruction` | `Motion/`   | `SetHorizontalTabs(params byte[])` / `ClearHorizontalTabs()` | `0x1B 0x44 ...positions 0x00` | `[SET_TABS:8,16,24]` / `[SET_TABS:CLEAR]` |
 
 **Before implementing a new instruction, check this table.** If the command is already listed, the work is done.
 After implementing a new instruction, append a row to this table.

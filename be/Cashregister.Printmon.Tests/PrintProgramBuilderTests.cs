@@ -1,3 +1,5 @@
+using System.Collections.Immutable;
+
 using Cashregister.Printmon.Instructions.Core;
 using Cashregister.Printmon.Instructions.Formatting;
 using Cashregister.Printmon.Instructions.Layout;
@@ -381,5 +383,106 @@ public sealed class PrintProgramBuilderTests
         Assert.Equal(6, program.Instructions.Length);
         var instruction = Assert.IsType<CutAfterInstruction>(program.Instructions[3]);
         Assert.Equal(10, instruction.Distance);
+    }
+
+    [Fact]
+    public void ResetLineSpacing_AddsResetLineSpacingInstruction()
+    {
+        var builder = new PrintProgramBuilder();
+
+        var program = builder.ResetLineSpacing().Build();
+
+        Assert.Equal(6, program.Instructions.Length);
+        Assert.IsType<ResetLineSpacingInstruction>(program.Instructions[3]);
+    }
+
+    [Fact]
+    public void ReverseOn_AddsReverseInstruction_Enabled()
+    {
+        var builder = new PrintProgramBuilder();
+
+        var program = builder.ReverseOn().Build();
+
+        Assert.Equal(6, program.Instructions.Length);
+        var instruction = Assert.IsType<ReverseInstruction>(program.Instructions[3]);
+        Assert.True(instruction.Enabled);
+    }
+
+    [Fact]
+    public void ReverseOff_AddsReverseInstruction_Disabled()
+    {
+        var builder = new PrintProgramBuilder();
+
+        var program = builder.ReverseOff().Build();
+
+        Assert.Equal(6, program.Instructions.Length);
+        var instruction = Assert.IsType<ReverseInstruction>(program.Instructions[3]);
+        Assert.False(instruction.Enabled);
+    }
+
+    [Fact]
+    public void SetRightSpacing_AddsRightSpacingInstruction()
+    {
+        var builder = new PrintProgramBuilder();
+
+        var program = builder.SetRightSpacing(10).Build();
+
+        Assert.Equal(6, program.Instructions.Length);
+        var instruction = Assert.IsType<RightSpacingInstruction>(program.Instructions[3]);
+        Assert.Equal(10, instruction.Spacing);
+    }
+
+    [Fact]
+    public void SetHorizontalTabs_AddsSetHorizontalTabsInstruction()
+    {
+        var builder = new PrintProgramBuilder();
+
+        var program = builder.SetHorizontalTabs(8, 16, 24).Build();
+
+        Assert.Equal(6, program.Instructions.Length);
+        var instruction = Assert.IsType<SetHorizontalTabsInstruction>(program.Instructions[3]);
+        Assert.Equal<byte>([8, 16, 24], instruction.Positions);
+    }
+
+    [Fact]
+    public void ClearHorizontalTabs_AddsSetHorizontalTabsInstruction_Empty()
+    {
+        var builder = new PrintProgramBuilder();
+
+        var program = builder.ClearHorizontalTabs().Build();
+
+        Assert.Equal(6, program.Instructions.Length);
+        var instruction = Assert.IsType<SetHorizontalTabsInstruction>(program.Instructions[3]);
+        Assert.True(instruction.Positions.IsEmpty);
+    }
+
+    [Fact]
+    public void SetHorizontalTabsInstruction_TooManyPositions_Throws()
+    {
+        var positions = ImmutableArray.CreateRange(Enumerable.Range(1, 33).Select(i => (byte)i));
+
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            new SetHorizontalTabsInstruction(positions));
+    }
+
+    [Fact]
+    public void SetHorizontalTabsInstruction_ZeroValue_Throws()
+    {
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            new SetHorizontalTabsInstruction([0]));
+    }
+
+    [Fact]
+    public void SetHorizontalTabsInstruction_NotAscending_Throws()
+    {
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            new SetHorizontalTabsInstruction([10, 5]));
+    }
+
+    [Fact]
+    public void SetHorizontalTabsInstruction_DuplicateValues_Throws()
+    {
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            new SetHorizontalTabsInstruction([10, 10]));
     }
 }

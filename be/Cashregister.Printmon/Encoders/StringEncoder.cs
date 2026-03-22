@@ -81,6 +81,9 @@ public sealed class StringEncoder : IEncoder<string>
                 case UpsideDownInstruction upsideDown:
                     sb.Append(upsideDown.Enabled ? "[UPSIDE_DOWN:ON]" : "[UPSIDE_DOWN:OFF]");
                     break;
+                case ReverseInstruction reverse:
+                    sb.Append(reverse.Enabled ? "[REVERSE:ON]" : "[REVERSE:OFF]");
+                    break;
                 case FontSizeInstruction fontSize:
                     var w = (fontSize.Size >> 4) + 1;
                     var h = (fontSize.Size & 0x0F) + 1;
@@ -110,14 +113,42 @@ public sealed class StringEncoder : IEncoder<string>
                 case LeftMarginInstruction leftMargin:
                     sb.Append(CultureInfo.InvariantCulture, $"[LEFT_MARGIN:{leftMargin.Margin}]");
                     break;
+                case RightSpacingInstruction rightSpacing:
+                    sb.Append(CultureInfo.InvariantCulture, $"[RIGHT_SPACING:{rightSpacing.Spacing}]");
+                    break;
                 case TextInstruction text:
                     sb.Append(text.Text);
                     break;
                 case SelectCodeTableInstruction:
                     sb.Append("[CODE_TABLE:STD_EUROPE]");
                     break;
+                case SetHorizontalTabsInstruction setTabs:
+                    if (setTabs.Positions.IsEmpty)
+                    {
+                        sb.Append("[SET_TABS:CLEAR]");
+                    }
+                    else
+                    {
+                        sb.Append("[SET_TABS:");
+                        for (var i = 0; i < setTabs.Positions.Length; i++)
+                        {
+                            if (i > 0)
+                            {
+                                sb.Append(',');
+                            }
+
+                            sb.Append(CultureInfo.InvariantCulture, $"{setTabs.Positions[i]}");
+                        }
+
+                        sb.Append(']');
+                    }
+
+                    break;
                 case HorizontalTabInstruction:
                     sb.Append("[HT]");
+                    break;
+                case ResetLineSpacingInstruction:
+                    sb.Append("[LINE_SPACING:DEFAULT]");
                     break;
                 case LineFeedInstruction:
                     sb.Append("[LF]");
