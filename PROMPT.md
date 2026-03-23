@@ -1,5 +1,5 @@
 Implement one ESC/POS instruction in Cashregister.Printmon per the architecture 
-in ESCPOS.md.
+in ESCPOS.md. If there aren't any instructions left quit.
 
 Take into account also the following files in the project root (read them):
 
@@ -10,33 +10,9 @@ Take into account also the following files in the project root (read them):
 
 ## Instructions to implement
 
-NAME: "ESC - n — Turn underline mode on/off"
-CATEGORY FOLDER: Instructions/Formatting
-BUILDER METHOD SIGNATURE: `.UnderlineOn()` and `.UnderlineOff()`. 
-
----
-
-NAME: "GS B n — Turn white/black reverse printing mode"
-CATEGORY FOLDER: Instructions/Formatting
-BUILDER METHOD SIGNATURE: `.ReverseOn()` and `ReverseOff()`
-
----
-
-NAME: "ESC SP n — Set right-side character spacing"
-CATEGORY FOLDER: Instructions/Layout
-BUILDER METHOD SIGNATURE: `SetRightSpacing(byte spacing)`
-
----
-
-NAME: "ESC D n1...nk NUL — Set horizontal tab positions"
-CATEGORY FOLDER: Instructions/Motion
-BUILDER METHOD SIGNATURE: `.SetHorizontalTabs(<propose parameters>)`
-
----
-
-NAME: "ESC 2 — Select default line spacing"
-CATEGORY FOLDER: Instructions/Core
-BUILDER METHOD SIGNATURE: `.ResetLineSpacing()`
+- Choose an appropriate category folder
+- Choose an appropriate builder signature
+- Offer high level methods and types if possible
 
 ---
 
