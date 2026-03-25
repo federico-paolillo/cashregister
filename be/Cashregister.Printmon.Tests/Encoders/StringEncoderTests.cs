@@ -1,6 +1,7 @@
 using Cashregister.Printmon.Encoders;
 using Cashregister.Printmon.Instructions.Formatting;
 using Cashregister.Printmon.Instructions.Layout;
+using Cashregister.Printmon.Instructions.Peripheral;
 
 namespace Cashregister.Printmon.Tests.Encoders;
 
@@ -410,6 +411,18 @@ public sealed class StringEncoderTests
     }
 
     [Fact]
+    public void Encode_SetLineSpacing_ProducesCorrectToken()
+    {
+        var program = new PrintProgramBuilder().SetLineSpacing(30).Build();
+        var encoder = new StringEncoder();
+
+        var result = encoder.Encode(program);
+
+        Assert.True(result.Ok);
+        Assert.Equal("[INIT][CODE_TABLE:STD_EUROPE][RESET_PRINT_MODE][LINE_SPACING:30][LF][CUT_AFTER:1]", result.Value);
+    }
+
+    [Fact]
     public void Encode_ReverseOn_ProducesCorrectToken()
     {
         var program = new PrintProgramBuilder().ReverseOn().Build();
@@ -467,6 +480,59 @@ public sealed class StringEncoderTests
 
         Assert.True(result.Ok);
         Assert.Equal("[INIT][CODE_TABLE:STD_EUROPE][RESET_PRINT_MODE][SET_TABS:CLEAR][LF][CUT_AFTER:1]", result.Value);
+    }
+
+    [Fact]
+    public void Encode_FeedLines_ProducesCorrectToken()
+    {
+        var program = new PrintProgramBuilder().FeedLines(5).Build();
+        var encoder = new StringEncoder();
+
+        var result = encoder.Encode(program);
+
+        Assert.True(result.Ok);
+        Assert.Equal("[INIT][CODE_TABLE:STD_EUROPE][RESET_PRINT_MODE][FEED_LINES:5][LF][CUT_AFTER:1]", result.Value);
+    }
+
+    [Fact]
+    public void Encode_FeedPaper_ProducesCorrectToken()
+    {
+        var program = new PrintProgramBuilder().FeedPaper(100).Build();
+        var encoder = new StringEncoder();
+
+        var result = encoder.Encode(program);
+
+        Assert.True(result.Ok);
+        Assert.Equal("[INIT][CODE_TABLE:STD_EUROPE][RESET_PRINT_MODE][FEED_PAPER:100][LF][CUT_AFTER:1]", result.Value);
+    }
+
+    /// <summary>
+    ///     Tab positions are absolute columns. Each HT advances to the next stop
+    ///     to the right of the current position. After a line feed the position
+    ///     resets to column 0, so the stops cycle again on the next line.
+    /// </summary>
+    [Fact]
+    public void Encode_KickDrawer_Pin2_ProducesCorrectToken()
+    {
+        var program = new PrintProgramBuilder().KickDrawer(ConnectorPin.Pin2, 25, 250).Build();
+        var encoder = new StringEncoder();
+
+        var result = encoder.Encode(program);
+
+        Assert.True(result.Ok);
+        Assert.Equal("[INIT][CODE_TABLE:STD_EUROPE][RESET_PRINT_MODE][PULSE:PIN2,ON=25,OFF=250][LF][CUT_AFTER:1]", result.Value);
+    }
+
+    [Fact]
+    public void Encode_KickDrawer_Pin5_ProducesCorrectToken()
+    {
+        var program = new PrintProgramBuilder().KickDrawer(ConnectorPin.Pin5, 10, 20).Build();
+        var encoder = new StringEncoder();
+
+        var result = encoder.Encode(program);
+
+        Assert.True(result.Ok);
+        Assert.Equal("[INIT][CODE_TABLE:STD_EUROPE][RESET_PRINT_MODE][PULSE:PIN5,ON=10,OFF=20][LF][CUT_AFTER:1]", result.Value);
     }
 
     /// <summary>

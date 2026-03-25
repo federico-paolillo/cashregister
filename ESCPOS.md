@@ -103,6 +103,8 @@ When adding a new instruction, insert the new case before the default arm.
 | GS B n           | `ReverseInstruction`         | `Formatting/` | `ReverseOn()` / `ReverseOff()` | `0x1D 0x42 n` | `[REVERSE:ON]` / `[REVERSE:OFF]` |
 | ESC SP n         | `RightSpacingInstruction`    | `Layout/`     | `SetRightSpacing(byte)` | `0x1B 0x20 n` | `[RIGHT_SPACING:n]` |
 | ESC D n1..nk NUL | `SetHorizontalTabsInstruction` | `Motion/`   | `SetHorizontalTabs(params byte[])` / `ClearHorizontalTabs()` | `0x1B 0x44 ...positions 0x00` | `[SET_TABS:8,16,24]` / `[SET_TABS:CLEAR]` |
+| ESC J n           | `FeedPaperInstruction`       | `Feed/`       | `FeedPaper(byte)` | `0x1B 0x4A n` | `[FEED_PAPER:n]` |
+| ESC p m t1 t2     | `GeneratePulseInstruction`   | `Peripheral/` | `KickDrawer(ConnectorPin, byte, byte)` / `OpenCashDrawer()` | `0x1B 0x70 m t1 t2` | `[PULSE:PINx,ON=t1,OFF=t2]` |
 
 **Before implementing a new instruction, check this table.** If the command is already listed, the work is done.
 After implementing a new instruction, append a row to this table.

@@ -5,7 +5,9 @@ using Cashregister.Factories;
 using Cashregister.Printmon.Instructions.Core;
 using Cashregister.Printmon.Instructions.Formatting;
 using Cashregister.Printmon.Instructions.Layout;
+using Cashregister.Printmon.Instructions.Feed;
 using Cashregister.Printmon.Instructions.Motion;
+using Cashregister.Printmon.Instructions.Peripheral;
 
 namespace Cashregister.Printmon.Encoders;
 
@@ -150,6 +152,15 @@ public sealed class StringEncoder : IEncoder<string>
                 case ResetLineSpacingInstruction:
                     sb.Append("[LINE_SPACING:DEFAULT]");
                     break;
+                case SetLineSpacingInstruction setLineSpacing:
+                    sb.Append(CultureInfo.InvariantCulture, $"[LINE_SPACING:{setLineSpacing.Spacing}]");
+                    break;
+                case FeedLinesInstruction feedLines:
+                    sb.Append(CultureInfo.InvariantCulture, $"[FEED_LINES:{feedLines.Lines}]");
+                    break;
+                case FeedPaperInstruction feedPaper:
+                    sb.Append(CultureInfo.InvariantCulture, $"[FEED_PAPER:{feedPaper.Amount}]");
+                    break;
                 case LineFeedInstruction:
                     sb.Append("[LF]");
                     break;
@@ -158,6 +169,9 @@ public sealed class StringEncoder : IEncoder<string>
                     break;
                 case CutAfterInstruction cutAfter:
                     sb.Append(CultureInfo.InvariantCulture, $"[CUT_AFTER:{cutAfter.Distance}]");
+                    break;
+                case GeneratePulseInstruction pulse:
+                    sb.Append(CultureInfo.InvariantCulture, $"[PULSE:PIN{(pulse.Pin == ConnectorPin.Pin2 ? 2 : 5)},ON={pulse.OnTime},OFF={pulse.OffTime}]");
                     break;
                 default:
                     throw new NotSupportedException(

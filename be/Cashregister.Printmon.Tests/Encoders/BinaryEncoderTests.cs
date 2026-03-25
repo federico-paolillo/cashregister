@@ -1,6 +1,7 @@
 using Cashregister.Printmon.Encoders;
 using Cashregister.Printmon.Instructions.Formatting;
 using Cashregister.Printmon.Instructions.Layout;
+using Cashregister.Printmon.Instructions.Peripheral;
 
 namespace Cashregister.Printmon.Tests.Encoders;
 
@@ -419,6 +420,18 @@ public sealed class BinaryEncoderTests
     }
 
     [Fact]
+    public void Encode_SetLineSpacing_ProducesCorrectBytes()
+    {
+        var program = new PrintProgramBuilder().SetLineSpacing(30).Build();
+        var encoder = new BinaryEncoder();
+
+        var result = encoder.Encode(program);
+
+        Assert.True(result.Ok);
+        Assert.Equal([0x1B, 0x40, 0x1B, 0x74, 0x00, 0x1B, 0x21, 0x00, 0x1B, 0x33, 0x1E, 0x0A, 0x1D, 0x56, 0x42, 0x01], result.Value);
+    }
+
+    [Fact]
     public void Encode_ReverseOn_ProducesCorrectBytes()
     {
         var program = new PrintProgramBuilder().ReverseOn().Build();
@@ -476,5 +489,53 @@ public sealed class BinaryEncoderTests
 
         Assert.True(result.Ok);
         Assert.Equal([0x1B, 0x40, 0x1B, 0x74, 0x00, 0x1B, 0x21, 0x00, 0x1B, 0x44, 0x00, 0x0A, 0x1D, 0x56, 0x42, 0x01], result.Value);
+    }
+
+    [Fact]
+    public void Encode_FeedLines_ProducesCorrectBytes()
+    {
+        var program = new PrintProgramBuilder().FeedLines(5).Build();
+        var encoder = new BinaryEncoder();
+
+        var result = encoder.Encode(program);
+
+        Assert.True(result.Ok);
+        Assert.Equal([0x1B, 0x40, 0x1B, 0x74, 0x00, 0x1B, 0x21, 0x00, 0x1B, 0x64, 0x05, 0x0A, 0x1D, 0x56, 0x42, 0x01], result.Value);
+    }
+
+    [Fact]
+    public void Encode_FeedPaper_ProducesCorrectBytes()
+    {
+        var program = new PrintProgramBuilder().FeedPaper(100).Build();
+        var encoder = new BinaryEncoder();
+
+        var result = encoder.Encode(program);
+
+        Assert.True(result.Ok);
+        Assert.Equal([0x1B, 0x40, 0x1B, 0x74, 0x00, 0x1B, 0x21, 0x00, 0x1B, 0x4A, 0x64, 0x0A, 0x1D, 0x56, 0x42, 0x01], result.Value);
+    }
+
+    [Fact]
+    public void Encode_KickDrawer_Pin2_ProducesCorrectBytes()
+    {
+        var program = new PrintProgramBuilder().KickDrawer(ConnectorPin.Pin2, 25, 250).Build();
+        var encoder = new BinaryEncoder();
+
+        var result = encoder.Encode(program);
+
+        Assert.True(result.Ok);
+        Assert.Equal([0x1B, 0x40, 0x1B, 0x74, 0x00, 0x1B, 0x21, 0x00, 0x1B, 0x70, 0x00, 0x19, 0xFA, 0x0A, 0x1D, 0x56, 0x42, 0x01], result.Value);
+    }
+
+    [Fact]
+    public void Encode_KickDrawer_Pin5_ProducesCorrectBytes()
+    {
+        var program = new PrintProgramBuilder().KickDrawer(ConnectorPin.Pin5, 10, 20).Build();
+        var encoder = new BinaryEncoder();
+
+        var result = encoder.Encode(program);
+
+        Assert.True(result.Ok);
+        Assert.Equal([0x1B, 0x40, 0x1B, 0x74, 0x00, 0x1B, 0x21, 0x00, 0x1B, 0x70, 0x01, 0x0A, 0x14, 0x0A, 0x1D, 0x56, 0x42, 0x01], result.Value);
     }
 }

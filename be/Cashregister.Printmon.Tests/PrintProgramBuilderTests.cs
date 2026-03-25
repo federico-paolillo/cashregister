@@ -1,9 +1,11 @@
 using System.Collections.Immutable;
 
 using Cashregister.Printmon.Instructions.Core;
+using Cashregister.Printmon.Instructions.Feed;
 using Cashregister.Printmon.Instructions.Formatting;
 using Cashregister.Printmon.Instructions.Layout;
 using Cashregister.Printmon.Instructions.Motion;
+using Cashregister.Printmon.Instructions.Peripheral;
 
 // Preamble: [0] InitializeInstruction, [1] SelectCodeTableInstruction, [2] ResetPrintModeInstruction
 // User instructions start at index 3
@@ -397,6 +399,18 @@ public sealed class PrintProgramBuilderTests
     }
 
     [Fact]
+    public void SetLineSpacing_AddsSetLineSpacingInstruction_WithGivenSpacing()
+    {
+        var builder = new PrintProgramBuilder();
+
+        var program = builder.SetLineSpacing(30).Build();
+
+        Assert.Equal(6, program.Instructions.Length);
+        var instruction = Assert.IsType<SetLineSpacingInstruction>(program.Instructions[3]);
+        Assert.Equal(30, instruction.Spacing);
+    }
+
+    [Fact]
     public void ReverseOn_AddsReverseInstruction_Enabled()
     {
         var builder = new PrintProgramBuilder();
@@ -484,5 +498,56 @@ public sealed class PrintProgramBuilderTests
     {
         Assert.Throws<ArgumentOutOfRangeException>(() =>
             new SetHorizontalTabsInstruction([10, 10]));
+    }
+
+    [Fact]
+    public void FeedLines_AddsFeedLinesInstruction_WithGivenLines()
+    {
+        var builder = new PrintProgramBuilder();
+        var program = builder.FeedLines(5).Build();
+        Assert.Equal(6, program.Instructions.Length);
+        var instruction = Assert.IsType<FeedLinesInstruction>(program.Instructions[3]);
+        Assert.Equal(5, instruction.Lines);
+    }
+
+    [Fact]
+    public void FeedPaper_AddsFeedPaperInstruction_WithGivenAmount()
+    {
+        var builder = new PrintProgramBuilder();
+        var program = builder.FeedPaper(100).Build();
+        Assert.Equal(6, program.Instructions.Length);
+        var instruction = Assert.IsType<FeedPaperInstruction>(program.Instructions[3]);
+        Assert.Equal(100, instruction.Amount);
+    }
+
+    [Fact]
+    public void KickDrawer_AddsGeneratePulseInstruction_WithCorrectParams()
+    {
+        var builder = new PrintProgramBuilder();
+        var program = builder.KickDrawer(ConnectorPin.Pin5, 10, 20).Build();
+        Assert.Equal(6, program.Instructions.Length);
+        var instruction = Assert.IsType<GeneratePulseInstruction>(program.Instructions[3]);
+        Assert.Equal(ConnectorPin.Pin5, instruction.Pin);
+        Assert.Equal(10, instruction.OnTime);
+        Assert.Equal(20, instruction.OffTime);
+    }
+
+    [Fact]
+    public void OpenCashDrawer_AddsGeneratePulseInstruction_WithDefaults()
+    {
+        var builder = new PrintProgramBuilder();
+        var program = builder.OpenCashDrawer().Build();
+        Assert.Equal(6, program.Instructions.Length);
+        var instruction = Assert.IsType<GeneratePulseInstruction>(program.Instructions[3]);
+        Assert.Equal(ConnectorPin.Pin2, instruction.Pin);
+        Assert.Equal(25, instruction.OnTime);
+        Assert.Equal(250, instruction.OffTime);
+    }
+
+    [Fact]
+    public void GeneratePulseInstruction_InvalidPin_Throws()
+    {
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            new GeneratePulseInstruction((ConnectorPin)99, 25, 250));
     }
 }

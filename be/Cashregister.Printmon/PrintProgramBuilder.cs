@@ -4,7 +4,9 @@ using Cashregister.Printmon.Instructions;
 using Cashregister.Printmon.Instructions.Core;
 using Cashregister.Printmon.Instructions.Formatting;
 using Cashregister.Printmon.Instructions.Layout;
+using Cashregister.Printmon.Instructions.Feed;
 using Cashregister.Printmon.Instructions.Motion;
+using Cashregister.Printmon.Instructions.Peripheral;
 
 namespace Cashregister.Printmon;
 
@@ -220,6 +222,27 @@ public sealed class PrintProgramBuilder
         return this;
     }
 
+    public PrintProgramBuilder SetLineSpacing(byte spacing)
+    {
+        AddInstruction(new SetLineSpacingInstruction(spacing));
+
+        return this;
+    }
+
+    public PrintProgramBuilder FeedLines(byte lines)
+    {
+        AddInstruction(new FeedLinesInstruction(lines));
+
+        return this;
+    }
+
+    public PrintProgramBuilder FeedPaper(byte amount)
+    {
+        AddInstruction(new FeedPaperInstruction(amount));
+
+        return this;
+    }
+
     public PrintProgramBuilder PrintLine(string text)
     {
         return Text(text).LineFeed();
@@ -228,6 +251,20 @@ public sealed class PrintProgramBuilder
     public PrintProgramBuilder CutAfter(byte distance)
     {
         AddInstruction(new CutAfterInstruction(distance));
+
+        return this;
+    }
+
+    public PrintProgramBuilder KickDrawer(ConnectorPin pin, byte onTime, byte offTime)
+    {
+        AddInstruction(new GeneratePulseInstruction(pin, onTime, offTime));
+
+        return this;
+    }
+
+    public PrintProgramBuilder OpenCashDrawer()
+    {
+        AddInstruction(new GeneratePulseInstruction(ConnectorPin.Pin2, 25, 250));
 
         return this;
     }

@@ -12,7 +12,7 @@ Take into account also the following files in the project root (read them):
 
 - Choose an appropriate category folder
 - Choose an appropriate builder signature
-- Offer high level methods and types if possible
+- Offer high level methods and types, if possible
 
 ---
 

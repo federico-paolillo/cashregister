@@ -4,7 +4,9 @@ using Cashregister.Factories;
 using Cashregister.Printmon.Instructions.Core;
 using Cashregister.Printmon.Instructions.Formatting;
 using Cashregister.Printmon.Instructions.Layout;
+using Cashregister.Printmon.Instructions.Feed;
 using Cashregister.Printmon.Instructions.Motion;
+using Cashregister.Printmon.Instructions.Peripheral;
 
 namespace Cashregister.Printmon.Encoders;
 
@@ -102,6 +104,15 @@ public sealed class BinaryEncoder : IEncoder<byte[]>
                 case ResetLineSpacingInstruction:
                     stream.Write([0x1B, 0x32]); // ESC 2
                     break;
+                case SetLineSpacingInstruction setLineSpacing:
+                    stream.Write([0x1B, 0x33, setLineSpacing.Spacing]); // ESC 3 n
+                    break;
+                case FeedLinesInstruction feedLines:
+                    stream.Write([0x1B, 0x64, feedLines.Lines]); // ESC d n
+                    break;
+                case FeedPaperInstruction feedPaper:
+                    stream.Write([0x1B, 0x4A, feedPaper.Amount]); // ESC J n
+                    break;
                 case LineFeedInstruction:
                     stream.Write([0x0A]); // LF
                     break;
@@ -110,6 +121,9 @@ public sealed class BinaryEncoder : IEncoder<byte[]>
                     break;
                 case CutAfterInstruction cutAfter:
                     stream.Write([0x1D, 0x56, 0x42, cutAfter.Distance]); // GS V m n (m=66, partial cut)
+                    break;
+                case GeneratePulseInstruction pulse:
+                    stream.Write([0x1B, 0x70, (byte)pulse.Pin, pulse.OnTime, pulse.OffTime]); // ESC p m t1 t2
                     break;
                 default:
                     throw new NotSupportedException(
