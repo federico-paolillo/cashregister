@@ -76,7 +76,7 @@ public sealed class BinaryEncoder : IEncoder<byte[]>
                     break;
                 // Layout
                 case JustifyInstruction justify:
-                    stream.Write([0x1B, 0x61, (byte)justify.Justification]); // ESC a n
+                    stream.Write([0x1B, 0x61, (byte)justify.Alignment]); // ESC a n
                     break;
                 case AbsolutePositionInstruction absPos:
                     stream.Write([

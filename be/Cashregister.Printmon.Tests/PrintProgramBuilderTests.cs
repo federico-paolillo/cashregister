@@ -51,11 +51,11 @@ public sealed class PrintProgramBuilderTests
     }
 
     [Fact]
-    public void UseFontA_AddsSelectPrintModeInstruction_WithFontAAndGivenFlags()
+    public void PrintMode_FontA_AddsSelectPrintModeInstruction_WithFontAAndGivenFlags()
     {
         var builder = new PrintProgramBuilder();
 
-        var program = builder.UseFontA(FormatMode.None).Build();
+        var program = builder.PrintMode(CharacterFont.A, FormatMode.None).Build();
 
         Assert.Equal(6, program.Instructions.Length);
         var instruction = Assert.IsType<SelectPrintModeInstruction>(program.Instructions[3]);
@@ -64,11 +64,11 @@ public sealed class PrintProgramBuilderTests
     }
 
     [Fact]
-    public void UseFontB_AddsSelectPrintModeInstruction_WithFontBAndGivenFlags()
+    public void PrintMode_FontB_AddsSelectPrintModeInstruction_WithFontBAndGivenFlags()
     {
         var builder = new PrintProgramBuilder();
 
-        var program = builder.UseFontB(FormatMode.Emphasized).Build();
+        var program = builder.PrintMode(CharacterFont.B, FormatMode.Emphasized).Build();
 
         Assert.Equal(6, program.Instructions.Length);
         var instruction = Assert.IsType<SelectPrintModeInstruction>(program.Instructions[3]);
@@ -81,12 +81,12 @@ public sealed class PrintProgramBuilderTests
     {
         var builder = new PrintProgramBuilder();
 
-        var program = builder.UnderlineOn(Thickness.TwoDots).Build();
+        var program = builder.UnderlineOn(Thickness.Thick).Build();
 
         Assert.Equal(6, program.Instructions.Length);
         var instruction = Assert.IsType<UnderlineInstruction>(program.Instructions[3]);
         Assert.True(instruction.Enabled);
-        Assert.Equal(Thickness.TwoDots, instruction.Thickness);
+        Assert.Equal(Thickness.Thick, instruction.Thickness);
     }
 
     [Fact]
@@ -109,11 +109,11 @@ public sealed class PrintProgramBuilderTests
     }
 
     [Fact]
-    public void EmphasizeOn_AddsEmphasizeInstruction_Enabled()
+    public void BoldOn_AddsEmphasizeInstruction_Enabled()
     {
         var builder = new PrintProgramBuilder();
 
-        var program = builder.EmphasizeOn().Build();
+        var program = builder.BoldOn().Build();
 
         Assert.Equal(6, program.Instructions.Length);
         var instruction = Assert.IsType<EmphasizeInstruction>(program.Instructions[3]);
@@ -121,11 +121,11 @@ public sealed class PrintProgramBuilderTests
     }
 
     [Fact]
-    public void EmphasizeOff_AddsEmphasizeInstruction_Disabled()
+    public void BoldOff_AddsEmphasizeInstruction_Disabled()
     {
         var builder = new PrintProgramBuilder();
 
-        var program = builder.EmphasizeOff().Build();
+        var program = builder.BoldOff().Build();
 
         Assert.Equal(6, program.Instructions.Length);
         var instruction = Assert.IsType<EmphasizeInstruction>(program.Instructions[3]);
@@ -157,11 +157,11 @@ public sealed class PrintProgramBuilderTests
     }
 
     [Fact]
-    public void SelectFontA_AddsSelectFontInstruction_WithFontA()
+    public void Font_AddsSelectFontInstruction_WithFontA()
     {
         var builder = new PrintProgramBuilder();
 
-        var program = builder.SelectFontA().Build();
+        var program = builder.Font(CharacterFont.A).Build();
 
         Assert.Equal(6, program.Instructions.Length);
         var instruction = Assert.IsType<SelectFontInstruction>(program.Instructions[3]);
@@ -169,11 +169,11 @@ public sealed class PrintProgramBuilderTests
     }
 
     [Fact]
-    public void SelectFontB_AddsSelectFontInstruction_WithFontB()
+    public void Font_AddsSelectFontInstruction_WithFontB()
     {
         var builder = new PrintProgramBuilder();
 
-        var program = builder.SelectFontB().Build();
+        var program = builder.Font(CharacterFont.B).Build();
 
         Assert.Equal(6, program.Instructions.Length);
         var instruction = Assert.IsType<SelectFontInstruction>(program.Instructions[3]);
@@ -188,11 +188,11 @@ public sealed class PrintProgramBuilderTests
     }
 
     [Fact]
-    public void NinetyDegsOn_AddsRotationInstruction_Enabled()
+    public void RotateOn_AddsRotationInstruction_Enabled()
     {
         var builder = new PrintProgramBuilder();
 
-        var program = builder.NinetyDegsOn().Build();
+        var program = builder.RotateOn().Build();
 
         Assert.Equal(6, program.Instructions.Length);
         var instruction = Assert.IsType<RotationInstruction>(program.Instructions[3]);
@@ -200,11 +200,11 @@ public sealed class PrintProgramBuilderTests
     }
 
     [Fact]
-    public void NinetyDegsOff_AddsRotationInstruction_Disabled()
+    public void RotateOff_AddsRotationInstruction_Disabled()
     {
         var builder = new PrintProgramBuilder();
 
-        var program = builder.NinetyDegsOff().Build();
+        var program = builder.RotateOff().Build();
 
         Assert.Equal(6, program.Instructions.Length);
         var instruction = Assert.IsType<RotationInstruction>(program.Instructions[3]);
@@ -236,15 +236,77 @@ public sealed class PrintProgramBuilderTests
     }
 
     [Fact]
-    public void FontSize_AddsFontSizeInstruction_WithGivenSize()
+    public void FontSize_WidthAndHeight_AddsFontSizeInstruction_WithPackedByte()
     {
         var builder = new PrintProgramBuilder();
 
-        var program = builder.FontSize(0x11).Build();
+        var program = builder.FontSize(2, 2).Build();
 
         Assert.Equal(6, program.Instructions.Length);
         var instruction = Assert.IsType<FontSizeInstruction>(program.Instructions[3]);
         Assert.Equal(0x11, instruction.Size);
+    }
+
+    [Fact]
+    public void FontSize_UniformMultiplier_AddsFontSizeInstruction_WithPackedByte()
+    {
+        var builder = new PrintProgramBuilder();
+
+        var program = builder.FontSize(3).Build();
+
+        Assert.Equal(6, program.Instructions.Length);
+        var instruction = Assert.IsType<FontSizeInstruction>(program.Instructions[3]);
+        Assert.Equal(0x22, instruction.Size);
+    }
+
+    [Fact]
+    public void FontSize_OneByOne_ProducesZeroByte()
+    {
+        var builder = new PrintProgramBuilder();
+
+        var program = builder.FontSize(1, 1).Build();
+
+        var instruction = Assert.IsType<FontSizeInstruction>(program.Instructions[3]);
+        Assert.Equal(0x00, instruction.Size);
+    }
+
+    [Fact]
+    public void FontSize_MaxWidthAndHeight_ProducesCorrectByte()
+    {
+        var builder = new PrintProgramBuilder();
+
+        var program = builder.FontSize(8, 8).Build();
+
+        var instruction = Assert.IsType<FontSizeInstruction>(program.Instructions[3]);
+        Assert.Equal(0x77, instruction.Size);
+    }
+
+    [Fact]
+    public void FontSize_WidthTooSmall_Throws()
+    {
+        var builder = new PrintProgramBuilder();
+        Assert.Throws<ArgumentOutOfRangeException>(() => builder.FontSize(0, 1));
+    }
+
+    [Fact]
+    public void FontSize_WidthTooLarge_Throws()
+    {
+        var builder = new PrintProgramBuilder();
+        Assert.Throws<ArgumentOutOfRangeException>(() => builder.FontSize(9, 1));
+    }
+
+    [Fact]
+    public void FontSize_HeightTooSmall_Throws()
+    {
+        var builder = new PrintProgramBuilder();
+        Assert.Throws<ArgumentOutOfRangeException>(() => builder.FontSize(1, 0));
+    }
+
+    [Fact]
+    public void FontSize_HeightTooLarge_Throws()
+    {
+        var builder = new PrintProgramBuilder();
+        Assert.Throws<ArgumentOutOfRangeException>(() => builder.FontSize(1, 9));
     }
 
     [Fact]
@@ -262,30 +324,30 @@ public sealed class PrintProgramBuilderTests
     }
 
     [Fact]
-    public void Justify_AddsJustifyInstruction_WithGivenJustification()
+    public void Align_AddsJustifyInstruction_WithGivenAlignment()
     {
         var builder = new PrintProgramBuilder();
 
-        var program = builder.Justify(Justification.Center).Build();
+        var program = builder.Align(Alignment.Center).Build();
 
         Assert.Equal(6, program.Instructions.Length);
         var instruction = Assert.IsType<JustifyInstruction>(program.Instructions[3]);
-        Assert.Equal(Justification.Center, instruction.Justification);
+        Assert.Equal(Alignment.Center, instruction.Alignment);
     }
 
     [Fact]
-    public void JustifyInstruction_InvalidJustification_Throws()
+    public void JustifyInstruction_InvalidAlignment_Throws()
     {
         Assert.Throws<ArgumentOutOfRangeException>(() =>
-            new JustifyInstruction((Justification)99));
+            new JustifyInstruction((Alignment)99));
     }
 
     [Fact]
-    public void SetAbsolutePosition_AddsAbsolutePositionInstruction()
+    public void MoveToColumn_AddsAbsolutePositionInstruction()
     {
         var builder = new PrintProgramBuilder();
 
-        var program = builder.SetAbsolutePosition(1000).Build();
+        var program = builder.MoveToColumn(1000).Build();
 
         Assert.Equal(6, program.Instructions.Length);
         var instruction = Assert.IsType<AbsolutePositionInstruction>(program.Instructions[3]);
@@ -293,11 +355,11 @@ public sealed class PrintProgramBuilderTests
     }
 
     [Fact]
-    public void SetRelativePosition_AddsRelativePositionInstruction()
+    public void MoveBy_AddsRelativePositionInstruction()
     {
         var builder = new PrintProgramBuilder();
 
-        var program = builder.SetRelativePosition(500).Build();
+        var program = builder.MoveBy(500).Build();
 
         Assert.Equal(6, program.Instructions.Length);
         var instruction = Assert.IsType<RelativePositionInstruction>(program.Instructions[3]);
@@ -305,11 +367,11 @@ public sealed class PrintProgramBuilderTests
     }
 
     [Fact]
-    public void SetLeftMargin_AddsLeftMarginInstruction()
+    public void LeftMargin_AddsLeftMarginInstruction()
     {
         var builder = new PrintProgramBuilder();
 
-        var program = builder.SetLeftMargin(200).Build();
+        var program = builder.LeftMargin(200).Build();
 
         Assert.Equal(6, program.Instructions.Length);
         var instruction = Assert.IsType<LeftMarginInstruction>(program.Instructions[3]);
@@ -378,11 +440,11 @@ public sealed class PrintProgramBuilderTests
     }
 
     [Fact]
-    public void CutAfter_AddsCutAfterInstruction_WithGivenDistance()
+    public void FeedAndCut_AddsCutAfterInstruction_WithGivenLines()
     {
         var builder = new PrintProgramBuilder();
 
-        var program = builder.CutAfter(10).Build();
+        var program = builder.FeedAndCut(10).Build();
 
         Assert.Equal(6, program.Instructions.Length);
         var instruction = Assert.IsType<CutAfterInstruction>(program.Instructions[3]);
@@ -401,11 +463,12 @@ public sealed class PrintProgramBuilderTests
     }
 
     [Fact]
-    public void SetLineSpacing_AddsSetLineSpacingInstruction_WithGivenSpacing()
+    public void SetLineSpacing_InMillimeters_AddsSetLineSpacingInstruction()
     {
         var builder = new PrintProgramBuilder();
 
-        var program = builder.SetLineSpacing(30).Build();
+        // 3.75mm = 30 units (3.75 / 0.125 = 30)
+        var program = builder.SetLineSpacing(3.75).Build();
 
         Assert.Equal(6, program.Instructions.Length);
         var instruction = Assert.IsType<SetLineSpacingInstruction>(program.Instructions[3]);
@@ -413,11 +476,11 @@ public sealed class PrintProgramBuilderTests
     }
 
     [Fact]
-    public void ReverseOn_AddsReverseInstruction_Enabled()
+    public void InvertOn_AddsReverseInstruction_Enabled()
     {
         var builder = new PrintProgramBuilder();
 
-        var program = builder.ReverseOn().Build();
+        var program = builder.InvertOn().Build();
 
         Assert.Equal(6, program.Instructions.Length);
         var instruction = Assert.IsType<ReverseInstruction>(program.Instructions[3]);
@@ -425,11 +488,11 @@ public sealed class PrintProgramBuilderTests
     }
 
     [Fact]
-    public void ReverseOff_AddsReverseInstruction_Disabled()
+    public void InvertOff_AddsReverseInstruction_Disabled()
     {
         var builder = new PrintProgramBuilder();
 
-        var program = builder.ReverseOff().Build();
+        var program = builder.InvertOff().Build();
 
         Assert.Equal(6, program.Instructions.Length);
         var instruction = Assert.IsType<ReverseInstruction>(program.Instructions[3]);
@@ -437,11 +500,12 @@ public sealed class PrintProgramBuilderTests
     }
 
     [Fact]
-    public void SetRightSpacing_AddsRightSpacingInstruction()
+    public void SetCharacterSpacing_InMillimeters_AddsRightSpacingInstruction()
     {
         var builder = new PrintProgramBuilder();
 
-        var program = builder.SetRightSpacing(10).Build();
+        // 1.25mm = 10 units (1.25 / 0.125 = 10)
+        var program = builder.SetCharacterSpacing(1.25).Build();
 
         Assert.Equal(6, program.Instructions.Length);
         var instruction = Assert.IsType<RightSpacingInstruction>(program.Instructions[3]);
@@ -513,20 +577,21 @@ public sealed class PrintProgramBuilderTests
     }
 
     [Fact]
-    public void FeedPaper_AddsFeedPaperInstruction_WithGivenAmount()
+    public void FeedPaper_InMillimeters_AddsFeedPaperInstruction()
     {
         var builder = new PrintProgramBuilder();
-        var program = builder.FeedPaper(100).Build();
+        // 12.5mm = 100 units (12.5 / 0.125 = 100)
+        var program = builder.FeedPaper(12.5).Build();
         Assert.Equal(6, program.Instructions.Length);
         var instruction = Assert.IsType<FeedPaperInstruction>(program.Instructions[3]);
         Assert.Equal(100, instruction.Amount);
     }
 
     [Fact]
-    public void KickDrawer_AddsGeneratePulseInstruction_WithCorrectParams()
+    public void KickDrawer_WithTimeSpan_AddsGeneratePulseInstruction()
     {
         var builder = new PrintProgramBuilder();
-        var program = builder.KickDrawer(ConnectorPin.Pin5, 10, 20).Build();
+        var program = builder.KickDrawer(ConnectorPin.Pin5, TimeSpan.FromMilliseconds(20), TimeSpan.FromMilliseconds(40)).Build();
         Assert.Equal(6, program.Instructions.Length);
         var instruction = Assert.IsType<GeneratePulseInstruction>(program.Instructions[3]);
         Assert.Equal(ConnectorPin.Pin5, instruction.Pin);
@@ -551,5 +616,56 @@ public sealed class PrintProgramBuilderTests
     {
         Assert.Throws<ArgumentOutOfRangeException>(() =>
             new GeneratePulseInstruction((ConnectorPin)99, 25, 250));
+    }
+
+    [Fact]
+    public void RealTimePulse_WithTimeSpan_AddsRealTimePulseInstruction()
+    {
+        var builder = new PrintProgramBuilder();
+        var program = builder.RealTimePulse(ConnectorPin.Pin2, TimeSpan.FromMilliseconds(300)).Build();
+        Assert.Equal(6, program.Instructions.Length);
+        var instruction = Assert.IsType<RealTimePulseInstruction>(program.Instructions[3]);
+        Assert.Equal(ConnectorPin.Pin2, instruction.Pin);
+        Assert.Equal(3, instruction.Duration);
+    }
+
+    [Fact]
+    public void RealTimePulse_DurationTooShort_Throws()
+    {
+        var builder = new PrintProgramBuilder();
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            builder.RealTimePulse(ConnectorPin.Pin2, TimeSpan.FromMilliseconds(50)));
+    }
+
+    [Fact]
+    public void RealTimePulse_DurationTooLong_Throws()
+    {
+        var builder = new PrintProgramBuilder();
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            builder.RealTimePulse(ConnectorPin.Pin2, TimeSpan.FromMilliseconds(900)));
+    }
+
+    [Fact]
+    public void FeedPaper_NegativeMillimeters_Throws()
+    {
+        var builder = new PrintProgramBuilder();
+        Assert.Throws<ArgumentOutOfRangeException>(() => builder.FeedPaper(-1.0));
+    }
+
+    [Fact]
+    public void FeedPaper_TooLargeMillimeters_Throws()
+    {
+        var builder = new PrintProgramBuilder();
+        Assert.Throws<ArgumentOutOfRangeException>(() => builder.FeedPaper(32.0));
+    }
+
+    [Fact]
+    public void PrintWidth_AddsPrintAreaWidthInstruction()
+    {
+        var builder = new PrintProgramBuilder();
+        var program = builder.PrintWidth(512).Build();
+        Assert.Equal(6, program.Instructions.Length);
+        var instruction = Assert.IsType<PrintAreaWidthInstruction>(program.Instructions[3]);
+        Assert.Equal(512, instruction.Width);
     }
 }

@@ -51,16 +51,9 @@ public sealed class PrintProgramBuilder
 
     // Formatting
 
-    public PrintProgramBuilder UseFontA(FormatMode formatMode)
+    public PrintProgramBuilder PrintMode(CharacterFont font, FormatMode formatMode)
     {
-        AddInstruction(new SelectPrintModeInstruction(false, formatMode));
-
-        return this;
-    }
-
-    public PrintProgramBuilder UseFontB(FormatMode formatMode)
-    {
-        AddInstruction(new SelectPrintModeInstruction(true, formatMode));
+        AddInstruction(new SelectPrintModeInstruction(font == CharacterFont.B, formatMode));
 
         return this;
     }
@@ -79,14 +72,14 @@ public sealed class PrintProgramBuilder
         return this;
     }
 
-    public PrintProgramBuilder EmphasizeOn()
+    public PrintProgramBuilder BoldOn()
     {
         AddInstruction(new EmphasizeInstruction(true));
 
         return this;
     }
 
-    public PrintProgramBuilder EmphasizeOff()
+    public PrintProgramBuilder BoldOff()
     {
         AddInstruction(new EmphasizeInstruction(false));
 
@@ -107,28 +100,21 @@ public sealed class PrintProgramBuilder
         return this;
     }
 
-    public PrintProgramBuilder SelectFontA()
+    public PrintProgramBuilder Font(CharacterFont font)
     {
-        AddInstruction(new SelectFontInstruction(CharacterFont.A));
+        AddInstruction(new SelectFontInstruction(font));
 
         return this;
     }
 
-    public PrintProgramBuilder SelectFontB()
-    {
-        AddInstruction(new SelectFontInstruction(CharacterFont.B));
-
-        return this;
-    }
-
-    public PrintProgramBuilder NinetyDegsOn()
+    public PrintProgramBuilder RotateOn()
     {
         AddInstruction(new RotationInstruction(true));
 
         return this;
     }
 
-    public PrintProgramBuilder NinetyDegsOff()
+    public PrintProgramBuilder RotateOff()
     {
         AddInstruction(new RotationInstruction(false));
 
@@ -149,67 +135,81 @@ public sealed class PrintProgramBuilder
         return this;
     }
 
-    public PrintProgramBuilder ReverseOn()
+    public PrintProgramBuilder InvertOn()
     {
         AddInstruction(new ReverseInstruction(true));
 
         return this;
     }
 
-    public PrintProgramBuilder ReverseOff()
+    public PrintProgramBuilder InvertOff()
     {
         AddInstruction(new ReverseInstruction(false));
 
         return this;
     }
 
-    public PrintProgramBuilder FontSize(byte size)
+    public PrintProgramBuilder FontSize(int widthMultiplier, int heightMultiplier)
     {
+        ArgumentOutOfRangeException.ThrowIfLessThan(widthMultiplier, 1, nameof(widthMultiplier));
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(widthMultiplier, 8, nameof(widthMultiplier));
+        ArgumentOutOfRangeException.ThrowIfLessThan(heightMultiplier, 1, nameof(heightMultiplier));
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(heightMultiplier, 8, nameof(heightMultiplier));
+
+        var size = (byte)(((widthMultiplier - 1) << 4) | (heightMultiplier - 1));
+
         AddInstruction(new FontSizeInstruction(size));
 
         return this;
     }
 
+    public PrintProgramBuilder FontSize(int multiplier)
+    {
+        return FontSize(multiplier, multiplier);
+    }
+
     // Layout
 
-    public PrintProgramBuilder Justify(Justification justification)
+    public PrintProgramBuilder Align(Alignment alignment)
     {
-        AddInstruction(new JustifyInstruction(justification));
+        AddInstruction(new JustifyInstruction(alignment));
 
         return this;
     }
 
-    public PrintProgramBuilder SetAbsolutePosition(ushort position)
+    public PrintProgramBuilder MoveToColumn(ushort dots)
     {
-        AddInstruction(new AbsolutePositionInstruction(position));
+        AddInstruction(new AbsolutePositionInstruction(dots));
 
         return this;
     }
 
-    public PrintProgramBuilder SetRelativePosition(ushort offset)
+    public PrintProgramBuilder MoveBy(ushort dots)
     {
-        AddInstruction(new RelativePositionInstruction(offset));
+        AddInstruction(new RelativePositionInstruction(dots));
 
         return this;
     }
 
-    public PrintProgramBuilder SetLeftMargin(ushort margin)
+    public PrintProgramBuilder LeftMargin(ushort dots)
     {
-        AddInstruction(new LeftMarginInstruction(margin));
+        AddInstruction(new LeftMarginInstruction(dots));
 
         return this;
     }
 
-    public PrintProgramBuilder SetRightSpacing(byte spacing)
+    public PrintProgramBuilder SetCharacterSpacing(double millimeters)
     {
-        AddInstruction(new RightSpacingInstruction(spacing));
+        var units = ConvertMillimetersToUnits(millimeters);
+
+        AddInstruction(new RightSpacingInstruction(units));
 
         return this;
     }
 
-    public PrintProgramBuilder SetPrintAreaWidth(ushort width)
+    public PrintProgramBuilder PrintWidth(ushort dots)
     {
-        AddInstruction(new PrintAreaWidthInstruction(width));
+        AddInstruction(new PrintAreaWidthInstruction(dots));
 
         return this;
     }
@@ -223,9 +223,11 @@ public sealed class PrintProgramBuilder
         return this;
     }
 
-    public PrintProgramBuilder SetLineSpacing(byte spacing)
+    public PrintProgramBuilder SetLineSpacing(double millimeters)
     {
-        AddInstruction(new SetLineSpacingInstruction(spacing));
+        var units = ConvertMillimetersToUnits(millimeters);
+
+        AddInstruction(new SetLineSpacingInstruction(units));
 
         return this;
     }
@@ -237,9 +239,11 @@ public sealed class PrintProgramBuilder
         return this;
     }
 
-    public PrintProgramBuilder FeedPaper(byte amount)
+    public PrintProgramBuilder FeedPaper(double millimeters)
     {
-        AddInstruction(new FeedPaperInstruction(amount));
+        var units = ConvertMillimetersToUnits(millimeters);
+
+        AddInstruction(new FeedPaperInstruction(units));
 
         return this;
     }
@@ -269,9 +273,9 @@ public sealed class PrintProgramBuilder
 
     // Cut
 
-    public PrintProgramBuilder CutAfter(byte distance)
+    public PrintProgramBuilder FeedAndCut(byte lines)
     {
-        AddInstruction(new CutAfterInstruction(distance));
+        AddInstruction(new CutAfterInstruction(lines));
 
         return this;
     }
@@ -283,7 +287,7 @@ public sealed class PrintProgramBuilder
         return this;
     }
 
-    public PrintProgramBuilder Cut()
+    public PrintProgramBuilder PartialCut()
     {
         AddInstruction(new CutInstruction());
 
@@ -301,8 +305,11 @@ public sealed class PrintProgramBuilder
 
     // Peripheral
 
-    public PrintProgramBuilder KickDrawer(ConnectorPin pin, byte onTime, byte offTime)
+    public PrintProgramBuilder KickDrawer(ConnectorPin pin, TimeSpan onDuration, TimeSpan offDuration)
     {
+        var onTime = ConvertToKickDrawerUnit(onDuration, nameof(onDuration));
+        var offTime = ConvertToKickDrawerUnit(offDuration, nameof(offDuration));
+
         AddInstruction(new GeneratePulseInstruction(pin, onTime, offTime));
 
         return this;
@@ -315,9 +322,16 @@ public sealed class PrintProgramBuilder
         return this;
     }
 
-    public PrintProgramBuilder RealTimePulse(ConnectorPin pin, byte duration)
+    public PrintProgramBuilder RealTimePulse(ConnectorPin pin, TimeSpan duration)
     {
-        AddInstruction(new RealTimePulseInstruction(pin, duration));
+        var units = (byte)(duration.TotalMilliseconds / 100);
+
+        if (units is < 1 or > 8)
+        {
+            throw new ArgumentOutOfRangeException(nameof(duration), duration, "Duration must be between 100ms and 800ms.");
+        }
+
+        AddInstruction(new RealTimePulseInstruction(pin, units));
 
         return this;
     }
@@ -342,5 +356,25 @@ public sealed class PrintProgramBuilder
         frozen = true;
 
         return new PrintProgram([.. instructions]);
+    }
+
+    private static byte ConvertMillimetersToUnits(double millimeters)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(millimeters, nameof(millimeters));
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(millimeters, 31.875, nameof(millimeters));
+
+        return (byte)(millimeters / 0.125);
+    }
+
+    private static byte ConvertToKickDrawerUnit(TimeSpan duration, string paramName)
+    {
+        var units = (byte)(duration.TotalMilliseconds / 2);
+
+        if (units < 1)
+        {
+            throw new ArgumentOutOfRangeException(paramName, duration, "Duration must be at least 2ms.");
+        }
+
+        return units;
     }
 }

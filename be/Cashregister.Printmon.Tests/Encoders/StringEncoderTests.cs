@@ -32,9 +32,9 @@ public sealed class StringEncoderTests
     }
 
     [Fact]
-    public void Encode_UseFontA_NoFlags_ProducesFontAToken()
+    public void Encode_PrintMode_FontA_NoFlags_ProducesFontAToken()
     {
-        var program = new PrintProgramBuilder().UseFontA(FormatMode.None).Build();
+        var program = new PrintProgramBuilder().PrintMode(CharacterFont.A, FormatMode.None).Build();
         var encoder = new StringEncoder();
 
         var result = encoder.Encode(program);
@@ -44,9 +44,9 @@ public sealed class StringEncoderTests
     }
 
     [Fact]
-    public void Encode_UseFontB_NoFlags_ProducesFontBToken()
+    public void Encode_PrintMode_FontB_NoFlags_ProducesFontBToken()
     {
-        var program = new PrintProgramBuilder().UseFontB(FormatMode.None).Build();
+        var program = new PrintProgramBuilder().PrintMode(CharacterFont.B, FormatMode.None).Build();
         var encoder = new StringEncoder();
 
         var result = encoder.Encode(program);
@@ -56,10 +56,10 @@ public sealed class StringEncoderTests
     }
 
     [Fact]
-    public void Encode_UseFontA_WithEmphasizedAndUnderline_ProducesCorrectToken()
+    public void Encode_PrintMode_FontA_WithEmphasizedAndUnderline_ProducesCorrectToken()
     {
         var program = new PrintProgramBuilder()
-            .UseFontA(FormatMode.Emphasized | FormatMode.Underline)
+            .PrintMode(CharacterFont.A, FormatMode.Emphasized | FormatMode.Underline)
             .Build();
         var encoder = new StringEncoder();
 
@@ -71,10 +71,10 @@ public sealed class StringEncoderTests
     }
 
     [Fact]
-    public void Encode_UseFontB_WithAllFlags_ProducesCorrectToken()
+    public void Encode_PrintMode_FontB_WithAllFlags_ProducesCorrectToken()
     {
         var program = new PrintProgramBuilder()
-            .UseFontB(FormatMode.Emphasized | FormatMode.DoubleHeight | FormatMode.DoubleWidth | FormatMode.Underline)
+            .PrintMode(CharacterFont.B, FormatMode.Emphasized | FormatMode.DoubleHeight | FormatMode.DoubleWidth | FormatMode.Underline)
             .Build();
         var encoder = new StringEncoder();
 
@@ -99,33 +99,33 @@ public sealed class StringEncoderTests
     }
 
     [Fact]
-    public void Encode_UnderlineOnOneDot_Produces1DotToken()
+    public void Encode_UnderlineOnThin_ProducesThinToken()
     {
-        var program = new PrintProgramBuilder().UnderlineOn(Thickness.OneDot).Build();
+        var program = new PrintProgramBuilder().UnderlineOn(Thickness.Thin).Build();
         var encoder = new StringEncoder();
 
         var result = encoder.Encode(program);
 
         Assert.True(result.Ok);
-        Assert.Equal("[INIT][CODE_PAGE:OEM437][RESET_PRINT_MODE][UNDERLINE:1DOT][LF][CUT_AFTER:1]", result.Value);
+        Assert.Equal("[INIT][CODE_PAGE:OEM437][RESET_PRINT_MODE][UNDERLINE:THIN][LF][CUT_AFTER:1]", result.Value);
     }
 
     [Fact]
-    public void Encode_UnderlineOnTwoDots_Produces2DotToken()
+    public void Encode_UnderlineOnThick_ProducesThickToken()
     {
-        var program = new PrintProgramBuilder().UnderlineOn(Thickness.TwoDots).Build();
+        var program = new PrintProgramBuilder().UnderlineOn(Thickness.Thick).Build();
         var encoder = new StringEncoder();
 
         var result = encoder.Encode(program);
 
         Assert.True(result.Ok);
-        Assert.Equal("[INIT][CODE_PAGE:OEM437][RESET_PRINT_MODE][UNDERLINE:2DOT][LF][CUT_AFTER:1]", result.Value);
+        Assert.Equal("[INIT][CODE_PAGE:OEM437][RESET_PRINT_MODE][UNDERLINE:THICK][LF][CUT_AFTER:1]", result.Value);
     }
 
     [Fact]
-    public void Encode_EmphasizeOn_ProducesBoldOnToken()
+    public void Encode_BoldOn_ProducesBoldOnToken()
     {
-        var program = new PrintProgramBuilder().EmphasizeOn().Build();
+        var program = new PrintProgramBuilder().BoldOn().Build();
         var encoder = new StringEncoder();
 
         var result = encoder.Encode(program);
@@ -135,9 +135,9 @@ public sealed class StringEncoderTests
     }
 
     [Fact]
-    public void Encode_EmphasizeOff_ProducesBoldOffToken()
+    public void Encode_BoldOff_ProducesBoldOffToken()
     {
-        var program = new PrintProgramBuilder().EmphasizeOff().Build();
+        var program = new PrintProgramBuilder().BoldOff().Build();
         var encoder = new StringEncoder();
 
         var result = encoder.Encode(program);
@@ -171,9 +171,9 @@ public sealed class StringEncoderTests
     }
 
     [Fact]
-    public void Encode_SelectFontA_ProducesCorrectToken()
+    public void Encode_FontA_ProducesCorrectToken()
     {
-        var program = new PrintProgramBuilder().SelectFontA().Build();
+        var program = new PrintProgramBuilder().Font(CharacterFont.A).Build();
         var encoder = new StringEncoder();
 
         var result = encoder.Encode(program);
@@ -183,9 +183,9 @@ public sealed class StringEncoderTests
     }
 
     [Fact]
-    public void Encode_SelectFontB_ProducesCorrectToken()
+    public void Encode_FontB_ProducesCorrectToken()
     {
-        var program = new PrintProgramBuilder().SelectFontB().Build();
+        var program = new PrintProgramBuilder().Font(CharacterFont.B).Build();
         var encoder = new StringEncoder();
 
         var result = encoder.Encode(program);
@@ -195,9 +195,9 @@ public sealed class StringEncoderTests
     }
 
     [Fact]
-    public void Encode_NinetyDegsOn_ProducesCorrectToken()
+    public void Encode_RotateOn_ProducesCorrectToken()
     {
-        var program = new PrintProgramBuilder().NinetyDegsOn().Build();
+        var program = new PrintProgramBuilder().RotateOn().Build();
         var encoder = new StringEncoder();
 
         var result = encoder.Encode(program);
@@ -207,9 +207,9 @@ public sealed class StringEncoderTests
     }
 
     [Fact]
-    public void Encode_NinetyDegsOff_ProducesCorrectToken()
+    public void Encode_RotateOff_ProducesCorrectToken()
     {
-        var program = new PrintProgramBuilder().NinetyDegsOff().Build();
+        var program = new PrintProgramBuilder().RotateOff().Build();
         var encoder = new StringEncoder();
 
         var result = encoder.Encode(program);
@@ -245,7 +245,7 @@ public sealed class StringEncoderTests
     [Fact]
     public void Encode_FontSize_NormalSize_ProducesCorrectToken()
     {
-        var program = new PrintProgramBuilder().FontSize(0x00).Build();
+        var program = new PrintProgramBuilder().FontSize(1, 1).Build();
         var encoder = new StringEncoder();
 
         var result = encoder.Encode(program);
@@ -257,7 +257,7 @@ public sealed class StringEncoderTests
     [Fact]
     public void Encode_FontSize_DoubleWidthAndHeight_ProducesCorrectToken()
     {
-        var program = new PrintProgramBuilder().FontSize(0x11).Build();
+        var program = new PrintProgramBuilder().FontSize(2, 2).Build();
         var encoder = new StringEncoder();
 
         var result = encoder.Encode(program);
@@ -267,9 +267,9 @@ public sealed class StringEncoderTests
     }
 
     [Fact]
-    public void Encode_JustifyLeft_ProducesCorrectToken()
+    public void Encode_AlignLeft_ProducesCorrectToken()
     {
-        var program = new PrintProgramBuilder().Justify(Justification.Left).Build();
+        var program = new PrintProgramBuilder().Align(Alignment.Left).Build();
         var encoder = new StringEncoder();
 
         var result = encoder.Encode(program);
@@ -279,9 +279,9 @@ public sealed class StringEncoderTests
     }
 
     [Fact]
-    public void Encode_JustifyCenter_ProducesCorrectToken()
+    public void Encode_AlignCenter_ProducesCorrectToken()
     {
-        var program = new PrintProgramBuilder().Justify(Justification.Center).Build();
+        var program = new PrintProgramBuilder().Align(Alignment.Center).Build();
         var encoder = new StringEncoder();
 
         var result = encoder.Encode(program);
@@ -291,9 +291,9 @@ public sealed class StringEncoderTests
     }
 
     [Fact]
-    public void Encode_JustifyRight_ProducesCorrectToken()
+    public void Encode_AlignRight_ProducesCorrectToken()
     {
-        var program = new PrintProgramBuilder().Justify(Justification.Right).Build();
+        var program = new PrintProgramBuilder().Align(Alignment.Right).Build();
         var encoder = new StringEncoder();
 
         var result = encoder.Encode(program);
@@ -303,9 +303,9 @@ public sealed class StringEncoderTests
     }
 
     [Fact]
-    public void Encode_AbsolutePosition_ProducesCorrectToken()
+    public void Encode_MoveToColumn_ProducesCorrectToken()
     {
-        var program = new PrintProgramBuilder().SetAbsolutePosition(1000).Build();
+        var program = new PrintProgramBuilder().MoveToColumn(1000).Build();
         var encoder = new StringEncoder();
 
         var result = encoder.Encode(program);
@@ -315,9 +315,9 @@ public sealed class StringEncoderTests
     }
 
     [Fact]
-    public void Encode_RelativePosition_ProducesCorrectToken()
+    public void Encode_MoveBy_ProducesCorrectToken()
     {
-        var program = new PrintProgramBuilder().SetRelativePosition(500).Build();
+        var program = new PrintProgramBuilder().MoveBy(500).Build();
         var encoder = new StringEncoder();
 
         var result = encoder.Encode(program);
@@ -329,7 +329,7 @@ public sealed class StringEncoderTests
     [Fact]
     public void Encode_LeftMargin_ProducesCorrectToken()
     {
-        var program = new PrintProgramBuilder().SetLeftMargin(200).Build();
+        var program = new PrintProgramBuilder().LeftMargin(200).Build();
         var encoder = new StringEncoder();
 
         var result = encoder.Encode(program);
@@ -387,9 +387,9 @@ public sealed class StringEncoderTests
     }
 
     [Fact]
-    public void Encode_CutAfter_WithCustomDistance_ProducesCorrectToken()
+    public void Encode_FeedAndCut_WithCustomLines_ProducesCorrectToken()
     {
-        var program = new PrintProgramBuilder().CutAfter(50).Build();
+        var program = new PrintProgramBuilder().FeedAndCut(50).Build();
         var encoder = new StringEncoder();
 
         var result = encoder.Encode(program);
@@ -413,7 +413,8 @@ public sealed class StringEncoderTests
     [Fact]
     public void Encode_SetLineSpacing_ProducesCorrectToken()
     {
-        var program = new PrintProgramBuilder().SetLineSpacing(30).Build();
+        // 3.75mm = 30 units
+        var program = new PrintProgramBuilder().SetLineSpacing(3.75).Build();
         var encoder = new StringEncoder();
 
         var result = encoder.Encode(program);
@@ -423,9 +424,9 @@ public sealed class StringEncoderTests
     }
 
     [Fact]
-    public void Encode_ReverseOn_ProducesCorrectToken()
+    public void Encode_InvertOn_ProducesCorrectToken()
     {
-        var program = new PrintProgramBuilder().ReverseOn().Build();
+        var program = new PrintProgramBuilder().InvertOn().Build();
         var encoder = new StringEncoder();
 
         var result = encoder.Encode(program);
@@ -435,9 +436,9 @@ public sealed class StringEncoderTests
     }
 
     [Fact]
-    public void Encode_ReverseOff_ProducesCorrectToken()
+    public void Encode_InvertOff_ProducesCorrectToken()
     {
-        var program = new PrintProgramBuilder().ReverseOff().Build();
+        var program = new PrintProgramBuilder().InvertOff().Build();
         var encoder = new StringEncoder();
 
         var result = encoder.Encode(program);
@@ -447,9 +448,10 @@ public sealed class StringEncoderTests
     }
 
     [Fact]
-    public void Encode_RightSpacing_ProducesCorrectToken()
+    public void Encode_SetCharacterSpacing_ProducesCorrectToken()
     {
-        var program = new PrintProgramBuilder().SetRightSpacing(20).Build();
+        // 2.5mm = 20 units
+        var program = new PrintProgramBuilder().SetCharacterSpacing(2.5).Build();
         var encoder = new StringEncoder();
 
         var result = encoder.Encode(program);
@@ -497,7 +499,8 @@ public sealed class StringEncoderTests
     [Fact]
     public void Encode_FeedPaper_ProducesCorrectToken()
     {
-        var program = new PrintProgramBuilder().FeedPaper(100).Build();
+        // 12.5mm = 100 units
+        var program = new PrintProgramBuilder().FeedPaper(12.5).Build();
         var encoder = new StringEncoder();
 
         var result = encoder.Encode(program);
@@ -514,7 +517,7 @@ public sealed class StringEncoderTests
     [Fact]
     public void Encode_KickDrawer_Pin2_ProducesCorrectToken()
     {
-        var program = new PrintProgramBuilder().KickDrawer(ConnectorPin.Pin2, 25, 250).Build();
+        var program = new PrintProgramBuilder().KickDrawer(ConnectorPin.Pin2, TimeSpan.FromMilliseconds(50), TimeSpan.FromMilliseconds(500)).Build();
         var encoder = new StringEncoder();
 
         var result = encoder.Encode(program);
@@ -526,7 +529,7 @@ public sealed class StringEncoderTests
     [Fact]
     public void Encode_KickDrawer_Pin5_ProducesCorrectToken()
     {
-        var program = new PrintProgramBuilder().KickDrawer(ConnectorPin.Pin5, 10, 20).Build();
+        var program = new PrintProgramBuilder().KickDrawer(ConnectorPin.Pin5, TimeSpan.FromMilliseconds(20), TimeSpan.FromMilliseconds(40)).Build();
         var encoder = new StringEncoder();
 
         var result = encoder.Encode(program);

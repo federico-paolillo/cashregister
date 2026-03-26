@@ -1,16 +1,16 @@
 namespace Cashregister.Printmon.Instructions.Layout;
 
-public enum Justification
+public enum Alignment
 {
     Left = 0,
     Center = 1,
     Right = 2
 }
 
-public sealed record JustifyInstruction(Justification Justification) : Instruction
+public sealed record JustifyInstruction(Alignment Alignment) : Instruction
 {
-    public Justification Justification { get; } = !Enum.IsDefined(Justification)
-        ? throw new ArgumentOutOfRangeException(nameof(Justification), Justification,
-            "Justification must be Left (0), Center (1), or Right (2).")
-        : Justification;
+    public Alignment Alignment { get; } = !Enum.IsDefined(Alignment)
+        ? throw new ArgumentOutOfRangeException(nameof(Alignment), Alignment,
+            "Alignment must be Left (0), Center (1), or Right (2).")
+        : Alignment;
 }

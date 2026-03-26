@@ -32,9 +32,9 @@ public sealed class BinaryEncoderTests
     }
 
     [Fact]
-    public void Encode_UseFontA_NoFlags_ProducesCorrectBytes()
+    public void Encode_PrintMode_FontA_NoFlags_ProducesCorrectBytes()
     {
-        var program = new PrintProgramBuilder().UseFontA(FormatMode.None).Build();
+        var program = new PrintProgramBuilder().PrintMode(CharacterFont.A, FormatMode.None).Build();
         var encoder = new BinaryEncoder();
 
         var result = encoder.Encode(program);
@@ -44,9 +44,9 @@ public sealed class BinaryEncoderTests
     }
 
     [Fact]
-    public void Encode_UseFontB_NoFlags_ProducesCorrectBytes()
+    public void Encode_PrintMode_FontB_NoFlags_ProducesCorrectBytes()
     {
-        var program = new PrintProgramBuilder().UseFontB(FormatMode.None).Build();
+        var program = new PrintProgramBuilder().PrintMode(CharacterFont.B, FormatMode.None).Build();
         var encoder = new BinaryEncoder();
 
         var result = encoder.Encode(program);
@@ -56,10 +56,10 @@ public sealed class BinaryEncoderTests
     }
 
     [Fact]
-    public void Encode_UseFontA_WithEmphasizedAndDoubleHeight_ProducesCorrectBitmask()
+    public void Encode_PrintMode_FontA_WithEmphasizedAndDoubleHeight_ProducesCorrectBitmask()
     {
         var program = new PrintProgramBuilder()
-            .UseFontA(FormatMode.Emphasized | FormatMode.DoubleHeight)
+            .PrintMode(CharacterFont.A, FormatMode.Emphasized | FormatMode.DoubleHeight)
             .Build();
         var encoder = new BinaryEncoder();
 
@@ -70,10 +70,10 @@ public sealed class BinaryEncoderTests
     }
 
     [Fact]
-    public void Encode_UseFontB_WithAllFlags_ProducesCorrectBitmask()
+    public void Encode_PrintMode_FontB_WithAllFlags_ProducesCorrectBitmask()
     {
         var program = new PrintProgramBuilder()
-            .UseFontB(FormatMode.Emphasized | FormatMode.DoubleHeight | FormatMode.DoubleWidth | FormatMode.Underline)
+            .PrintMode(CharacterFont.B, FormatMode.Emphasized | FormatMode.DoubleHeight | FormatMode.DoubleWidth | FormatMode.Underline)
             .Build();
         var encoder = new BinaryEncoder();
 
@@ -96,9 +96,9 @@ public sealed class BinaryEncoderTests
     }
 
     [Fact]
-    public void Encode_UnderlineOnOneDot_ProducesCorrectBytes()
+    public void Encode_UnderlineOnThin_ProducesCorrectBytes()
     {
-        var program = new PrintProgramBuilder().UnderlineOn(Thickness.OneDot).Build();
+        var program = new PrintProgramBuilder().UnderlineOn(Thickness.Thin).Build();
         var encoder = new BinaryEncoder();
 
         var result = encoder.Encode(program);
@@ -108,9 +108,9 @@ public sealed class BinaryEncoderTests
     }
 
     [Fact]
-    public void Encode_UnderlineOnTwoDots_ProducesCorrectBytes()
+    public void Encode_UnderlineOnThick_ProducesCorrectBytes()
     {
-        var program = new PrintProgramBuilder().UnderlineOn(Thickness.TwoDots).Build();
+        var program = new PrintProgramBuilder().UnderlineOn(Thickness.Thick).Build();
         var encoder = new BinaryEncoder();
 
         var result = encoder.Encode(program);
@@ -120,9 +120,9 @@ public sealed class BinaryEncoderTests
     }
 
     [Fact]
-    public void Encode_EmphasizeOn_ProducesCorrectBytes()
+    public void Encode_BoldOn_ProducesCorrectBytes()
     {
-        var program = new PrintProgramBuilder().EmphasizeOn().Build();
+        var program = new PrintProgramBuilder().BoldOn().Build();
         var encoder = new BinaryEncoder();
 
         var result = encoder.Encode(program);
@@ -132,9 +132,9 @@ public sealed class BinaryEncoderTests
     }
 
     [Fact]
-    public void Encode_EmphasizeOff_ProducesCorrectBytes()
+    public void Encode_BoldOff_ProducesCorrectBytes()
     {
-        var program = new PrintProgramBuilder().EmphasizeOff().Build();
+        var program = new PrintProgramBuilder().BoldOff().Build();
         var encoder = new BinaryEncoder();
 
         var result = encoder.Encode(program);
@@ -168,9 +168,9 @@ public sealed class BinaryEncoderTests
     }
 
     [Fact]
-    public void Encode_SelectFontA_ProducesCorrectBytes()
+    public void Encode_FontA_ProducesCorrectBytes()
     {
-        var program = new PrintProgramBuilder().SelectFontA().Build();
+        var program = new PrintProgramBuilder().Font(CharacterFont.A).Build();
         var encoder = new BinaryEncoder();
 
         var result = encoder.Encode(program);
@@ -180,9 +180,9 @@ public sealed class BinaryEncoderTests
     }
 
     [Fact]
-    public void Encode_SelectFontB_ProducesCorrectBytes()
+    public void Encode_FontB_ProducesCorrectBytes()
     {
-        var program = new PrintProgramBuilder().SelectFontB().Build();
+        var program = new PrintProgramBuilder().Font(CharacterFont.B).Build();
         var encoder = new BinaryEncoder();
 
         var result = encoder.Encode(program);
@@ -192,9 +192,9 @@ public sealed class BinaryEncoderTests
     }
 
     [Fact]
-    public void Encode_NinetyDegsOn_ProducesCorrectBytes()
+    public void Encode_RotateOn_ProducesCorrectBytes()
     {
-        var program = new PrintProgramBuilder().NinetyDegsOn().Build();
+        var program = new PrintProgramBuilder().RotateOn().Build();
         var encoder = new BinaryEncoder();
 
         var result = encoder.Encode(program);
@@ -204,9 +204,9 @@ public sealed class BinaryEncoderTests
     }
 
     [Fact]
-    public void Encode_NinetyDegsOff_ProducesCorrectBytes()
+    public void Encode_RotateOff_ProducesCorrectBytes()
     {
-        var program = new PrintProgramBuilder().NinetyDegsOff().Build();
+        var program = new PrintProgramBuilder().RotateOff().Build();
         var encoder = new BinaryEncoder();
 
         var result = encoder.Encode(program);
@@ -242,7 +242,7 @@ public sealed class BinaryEncoderTests
     [Fact]
     public void Encode_FontSize_NormalSize_ProducesCorrectBytes()
     {
-        var program = new PrintProgramBuilder().FontSize(0x00).Build();
+        var program = new PrintProgramBuilder().FontSize(1, 1).Build();
         var encoder = new BinaryEncoder();
 
         var result = encoder.Encode(program);
@@ -254,7 +254,7 @@ public sealed class BinaryEncoderTests
     [Fact]
     public void Encode_FontSize_DoubleWidthAndHeight_ProducesCorrectBytes()
     {
-        var program = new PrintProgramBuilder().FontSize(0x11).Build();
+        var program = new PrintProgramBuilder().FontSize(2, 2).Build();
         var encoder = new BinaryEncoder();
 
         var result = encoder.Encode(program);
@@ -264,9 +264,9 @@ public sealed class BinaryEncoderTests
     }
 
     [Fact]
-    public void Encode_JustifyLeft_ProducesCorrectBytes()
+    public void Encode_AlignLeft_ProducesCorrectBytes()
     {
-        var program = new PrintProgramBuilder().Justify(Justification.Left).Build();
+        var program = new PrintProgramBuilder().Align(Alignment.Left).Build();
         var encoder = new BinaryEncoder();
 
         var result = encoder.Encode(program);
@@ -276,9 +276,9 @@ public sealed class BinaryEncoderTests
     }
 
     [Fact]
-    public void Encode_JustifyCenter_ProducesCorrectBytes()
+    public void Encode_AlignCenter_ProducesCorrectBytes()
     {
-        var program = new PrintProgramBuilder().Justify(Justification.Center).Build();
+        var program = new PrintProgramBuilder().Align(Alignment.Center).Build();
         var encoder = new BinaryEncoder();
 
         var result = encoder.Encode(program);
@@ -288,9 +288,9 @@ public sealed class BinaryEncoderTests
     }
 
     [Fact]
-    public void Encode_JustifyRight_ProducesCorrectBytes()
+    public void Encode_AlignRight_ProducesCorrectBytes()
     {
-        var program = new PrintProgramBuilder().Justify(Justification.Right).Build();
+        var program = new PrintProgramBuilder().Align(Alignment.Right).Build();
         var encoder = new BinaryEncoder();
 
         var result = encoder.Encode(program);
@@ -300,9 +300,9 @@ public sealed class BinaryEncoderTests
     }
 
     [Fact]
-    public void Encode_AbsolutePosition_ProducesCorrectBytes()
+    public void Encode_MoveToColumn_ProducesCorrectBytes()
     {
-        var program = new PrintProgramBuilder().SetAbsolutePosition(0x0104).Build();
+        var program = new PrintProgramBuilder().MoveToColumn(0x0104).Build();
         var encoder = new BinaryEncoder();
 
         var result = encoder.Encode(program);
@@ -312,9 +312,9 @@ public sealed class BinaryEncoderTests
     }
 
     [Fact]
-    public void Encode_AbsolutePosition_Zero_ProducesCorrectBytes()
+    public void Encode_MoveToColumn_Zero_ProducesCorrectBytes()
     {
-        var program = new PrintProgramBuilder().SetAbsolutePosition(0).Build();
+        var program = new PrintProgramBuilder().MoveToColumn(0).Build();
         var encoder = new BinaryEncoder();
 
         var result = encoder.Encode(program);
@@ -324,9 +324,9 @@ public sealed class BinaryEncoderTests
     }
 
     [Fact]
-    public void Encode_RelativePosition_ProducesCorrectBytes()
+    public void Encode_MoveBy_ProducesCorrectBytes()
     {
-        var program = new PrintProgramBuilder().SetRelativePosition(0x0304).Build();
+        var program = new PrintProgramBuilder().MoveBy(0x0304).Build();
         var encoder = new BinaryEncoder();
 
         var result = encoder.Encode(program);
@@ -338,7 +338,7 @@ public sealed class BinaryEncoderTests
     [Fact]
     public void Encode_LeftMargin_ProducesCorrectBytes()
     {
-        var program = new PrintProgramBuilder().SetLeftMargin(0x0200).Build();
+        var program = new PrintProgramBuilder().LeftMargin(0x0200).Build();
         var encoder = new BinaryEncoder();
 
         var result = encoder.Encode(program);
@@ -396,9 +396,9 @@ public sealed class BinaryEncoderTests
     }
 
     [Fact]
-    public void Encode_CutAfter_WithCustomDistance_ProducesCorrectBytes()
+    public void Encode_FeedAndCut_WithCustomLines_ProducesCorrectBytes()
     {
-        var program = new PrintProgramBuilder().CutAfter(50).Build();
+        var program = new PrintProgramBuilder().FeedAndCut(50).Build();
         var encoder = new BinaryEncoder();
 
         var result = encoder.Encode(program);
@@ -422,7 +422,8 @@ public sealed class BinaryEncoderTests
     [Fact]
     public void Encode_SetLineSpacing_ProducesCorrectBytes()
     {
-        var program = new PrintProgramBuilder().SetLineSpacing(30).Build();
+        // 3.75mm = 30 units
+        var program = new PrintProgramBuilder().SetLineSpacing(3.75).Build();
         var encoder = new BinaryEncoder();
 
         var result = encoder.Encode(program);
@@ -432,9 +433,9 @@ public sealed class BinaryEncoderTests
     }
 
     [Fact]
-    public void Encode_ReverseOn_ProducesCorrectBytes()
+    public void Encode_InvertOn_ProducesCorrectBytes()
     {
-        var program = new PrintProgramBuilder().ReverseOn().Build();
+        var program = new PrintProgramBuilder().InvertOn().Build();
         var encoder = new BinaryEncoder();
 
         var result = encoder.Encode(program);
@@ -444,9 +445,9 @@ public sealed class BinaryEncoderTests
     }
 
     [Fact]
-    public void Encode_ReverseOff_ProducesCorrectBytes()
+    public void Encode_InvertOff_ProducesCorrectBytes()
     {
-        var program = new PrintProgramBuilder().ReverseOff().Build();
+        var program = new PrintProgramBuilder().InvertOff().Build();
         var encoder = new BinaryEncoder();
 
         var result = encoder.Encode(program);
@@ -456,9 +457,10 @@ public sealed class BinaryEncoderTests
     }
 
     [Fact]
-    public void Encode_RightSpacing_ProducesCorrectBytes()
+    public void Encode_SetCharacterSpacing_ProducesCorrectBytes()
     {
-        var program = new PrintProgramBuilder().SetRightSpacing(20).Build();
+        // 2.5mm = 20 units
+        var program = new PrintProgramBuilder().SetCharacterSpacing(2.5).Build();
         var encoder = new BinaryEncoder();
 
         var result = encoder.Encode(program);
@@ -506,7 +508,8 @@ public sealed class BinaryEncoderTests
     [Fact]
     public void Encode_FeedPaper_ProducesCorrectBytes()
     {
-        var program = new PrintProgramBuilder().FeedPaper(100).Build();
+        // 12.5mm = 100 units
+        var program = new PrintProgramBuilder().FeedPaper(12.5).Build();
         var encoder = new BinaryEncoder();
 
         var result = encoder.Encode(program);
@@ -518,7 +521,7 @@ public sealed class BinaryEncoderTests
     [Fact]
     public void Encode_KickDrawer_Pin2_ProducesCorrectBytes()
     {
-        var program = new PrintProgramBuilder().KickDrawer(ConnectorPin.Pin2, 25, 250).Build();
+        var program = new PrintProgramBuilder().KickDrawer(ConnectorPin.Pin2, TimeSpan.FromMilliseconds(50), TimeSpan.FromMilliseconds(500)).Build();
         var encoder = new BinaryEncoder();
 
         var result = encoder.Encode(program);
@@ -530,7 +533,7 @@ public sealed class BinaryEncoderTests
     [Fact]
     public void Encode_KickDrawer_Pin5_ProducesCorrectBytes()
     {
-        var program = new PrintProgramBuilder().KickDrawer(ConnectorPin.Pin5, 10, 20).Build();
+        var program = new PrintProgramBuilder().KickDrawer(ConnectorPin.Pin5, TimeSpan.FromMilliseconds(20), TimeSpan.FromMilliseconds(40)).Build();
         var encoder = new BinaryEncoder();
 
         var result = encoder.Encode(program);

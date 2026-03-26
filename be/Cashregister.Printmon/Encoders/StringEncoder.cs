@@ -74,7 +74,7 @@ public sealed class StringEncoder : IEncoder<string>
                     }
                     else
                     {
-                        sb.Append(underline.Thickness == Thickness.OneDot ? "[UNDERLINE:1DOT]" : "[UNDERLINE:2DOT]");
+                        sb.Append(underline.Thickness == Thickness.Thin ? "[UNDERLINE:THIN]" : "[UNDERLINE:THICK]");
                     }
 
                     break;
@@ -103,15 +103,15 @@ public sealed class StringEncoder : IEncoder<string>
                     break;
                 // Layout
                 case JustifyInstruction justify:
-                    switch (justify.Justification)
+                    switch (justify.Alignment)
                     {
-                        case Justification.Left:
+                        case Alignment.Left:
                             sb.Append("[ALIGN:LEFT]");
                             break;
-                        case Justification.Center:
+                        case Alignment.Center:
                             sb.Append("[ALIGN:CENTER]");
                             break;
-                        case Justification.Right:
+                        case Alignment.Right:
                             sb.Append("[ALIGN:RIGHT]");
                             break;
                     }
