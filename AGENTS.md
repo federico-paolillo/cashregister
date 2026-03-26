@@ -64,11 +64,16 @@ ui/
 │       │   ├── articles-bulk.tsx   # Bulk article creation (/articles/bulk)
 │       │   └── components/
 │       │       └── bulk-row.tsx
-│       └── order/
-│           ├── order.tsx      # Order creation (/order)
+│       ├── order/
+│       │   ├── order.tsx      # Order creation (/order)
+│       │   └── components/
+│       │       ├── article-selector.tsx  # Article selection for orders
+│       │       └── order-summary.tsx     # Order summary display
+│       └── order-overview/
+│           ├── order-overview.tsx  # Order overview (/order-overview)
 │           └── components/
-│               ├── article-selector.tsx  # Article selection for orders
-│               └── order-summary.tsx     # Order summary display
+│               ├── order-row.tsx
+│               └── orders-table.tsx
 ├── react-router.config.ts     # React Router configuration
 ├── vite.config.ts             # Vite configuration
 ├── tsconfig.json              # TypeScript configuration (defines @cashregister/* paths)

@@ -20,6 +20,19 @@ export interface ChangeArticleRequestDto {
   priceInCents: number;
 }
 
+export interface OrdersPageDto {
+  next: string | null;
+  hasNext: boolean;
+  items: OrderListItemDto[];
+}
+
+export interface OrderListItemDto {
+  id: string;
+  number: string;
+  total: number;
+  date: number;
+}
+
 export interface PlaceOrderRequestDto {
   items: PlaceOrderItemDto[];
   totalOverride?: number;
