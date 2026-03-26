@@ -2,7 +2,9 @@ using System.Globalization;
 using System.Text;
 
 using Cashregister.Factories;
+using Cashregister.Printmon.Instructions.CodePage;
 using Cashregister.Printmon.Instructions.Core;
+using Cashregister.Printmon.Instructions.Cut;
 using Cashregister.Printmon.Instructions.Formatting;
 using Cashregister.Printmon.Instructions.Layout;
 using Cashregister.Printmon.Instructions.Feed;
@@ -23,12 +25,20 @@ public sealed class StringEncoder : IEncoder<string>
         {
             switch (instruction)
             {
+                // Core
                 case NoOpInstruction:
                     sb.Append("[NOP]");
                     break;
                 case InitializeInstruction:
                     sb.Append("[INIT]");
                     break;
+                case TextInstruction text:
+                    sb.Append(text.Text);
+                    break;
+                case LineFeedInstruction:
+                    sb.Append("[LF]");
+                    break;
+                // Formatting
                 case ResetPrintModeInstruction:
                     sb.Append("[RESET_PRINT_MODE]");
                     break;
@@ -91,6 +101,7 @@ public sealed class StringEncoder : IEncoder<string>
                     var h = (fontSize.Size & 0x0F) + 1;
                     sb.Append(CultureInfo.InvariantCulture, $"[FONT_SIZE:{w}x{h}]");
                     break;
+                // Layout
                 case JustifyInstruction justify:
                     switch (justify.Justification)
                     {
@@ -118,11 +129,25 @@ public sealed class StringEncoder : IEncoder<string>
                 case RightSpacingInstruction rightSpacing:
                     sb.Append(CultureInfo.InvariantCulture, $"[RIGHT_SPACING:{rightSpacing.Spacing}]");
                     break;
-                case TextInstruction text:
-                    sb.Append(text.Text);
+                case PrintAreaWidthInstruction printWidth:
+                    sb.Append(CultureInfo.InvariantCulture, $"[PRINT_WIDTH:{printWidth.Width}]");
                     break;
-                case SelectCodeTableInstruction:
-                    sb.Append("[CODE_TABLE:STD_EUROPE]");
+                // Feed
+                case ResetLineSpacingInstruction:
+                    sb.Append("[LINE_SPACING:DEFAULT]");
+                    break;
+                case SetLineSpacingInstruction setLineSpacing:
+                    sb.Append(CultureInfo.InvariantCulture, $"[LINE_SPACING:{setLineSpacing.Spacing}]");
+                    break;
+                case FeedLinesInstruction feedLines:
+                    sb.Append(CultureInfo.InvariantCulture, $"[FEED_LINES:{feedLines.Lines}]");
+                    break;
+                case FeedPaperInstruction feedPaper:
+                    sb.Append(CultureInfo.InvariantCulture, $"[FEED_PAPER:{feedPaper.Amount}]");
+                    break;
+                // Motion
+                case HorizontalTabInstruction:
+                    sb.Append("[HT]");
                     break;
                 case SetHorizontalTabsInstruction setTabs:
                     if (setTabs.Positions.IsEmpty)
@@ -146,32 +171,29 @@ public sealed class StringEncoder : IEncoder<string>
                     }
 
                     break;
-                case HorizontalTabInstruction:
-                    sb.Append("[HT]");
-                    break;
-                case ResetLineSpacingInstruction:
-                    sb.Append("[LINE_SPACING:DEFAULT]");
-                    break;
-                case SetLineSpacingInstruction setLineSpacing:
-                    sb.Append(CultureInfo.InvariantCulture, $"[LINE_SPACING:{setLineSpacing.Spacing}]");
-                    break;
-                case FeedLinesInstruction feedLines:
-                    sb.Append(CultureInfo.InvariantCulture, $"[FEED_LINES:{feedLines.Lines}]");
-                    break;
-                case FeedPaperInstruction feedPaper:
-                    sb.Append(CultureInfo.InvariantCulture, $"[FEED_PAPER:{feedPaper.Amount}]");
-                    break;
-                case LineFeedInstruction:
-                    sb.Append("[LF]");
-                    break;
+                // Cut
                 case PartialCutInstruction:
                     sb.Append("[CUT:PARTIAL]");
                     break;
                 case CutAfterInstruction cutAfter:
                     sb.Append(CultureInfo.InvariantCulture, $"[CUT_AFTER:{cutAfter.Distance}]");
                     break;
+                case HalfCutInstruction:
+                    sb.Append("[CUT:HALF]");
+                    break;
+                case CutInstruction:
+                    sb.Append("[CUT:PARTIAL_GS]");
+                    break;
+                // CodePage
+                case SelectCodePageInstruction codePage:
+                    sb.Append(CultureInfo.InvariantCulture, $"[CODE_PAGE:{codePage.Page}]");
+                    break;
+                // Peripheral
                 case GeneratePulseInstruction pulse:
                     sb.Append(CultureInfo.InvariantCulture, $"[PULSE:PIN{(pulse.Pin == ConnectorPin.Pin2 ? 2 : 5)},ON={pulse.OnTime},OFF={pulse.OffTime}]");
+                    break;
+                case RealTimePulseInstruction rtPulse:
+                    sb.Append(CultureInfo.InvariantCulture, $"[RT_PULSE:PIN{(rtPulse.Pin == ConnectorPin.Pin2 ? 2 : 5)},t={rtPulse.Duration}]");
                     break;
                 default:
                     throw new NotSupportedException(

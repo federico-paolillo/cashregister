@@ -1,7 +1,9 @@
 using System.Text;
 
 using Cashregister.Factories;
+using Cashregister.Printmon.Instructions.CodePage;
 using Cashregister.Printmon.Instructions.Core;
+using Cashregister.Printmon.Instructions.Cut;
 using Cashregister.Printmon.Instructions.Formatting;
 using Cashregister.Printmon.Instructions.Layout;
 using Cashregister.Printmon.Instructions.Feed;
@@ -22,11 +24,19 @@ public sealed class BinaryEncoder : IEncoder<byte[]>
         {
             switch (instruction)
             {
+                // Core
                 case NoOpInstruction:
                     break;
                 case InitializeInstruction:
                     stream.Write([0x1B, 0x40]); // ESC @
                     break;
+                case TextInstruction text:
+                    stream.Write(Encoding.ASCII.GetBytes(text.Text));
+                    break;
+                case LineFeedInstruction:
+                    stream.Write([0x0A]); // LF
+                    break;
+                // Formatting
                 case ResetPrintModeInstruction:
                     stream.Write([0x1B, 0x21, 0x00]); // ESC ! 0
                     break;
@@ -64,6 +74,7 @@ public sealed class BinaryEncoder : IEncoder<byte[]>
                 case FontSizeInstruction fontSize:
                     stream.Write([0x1D, 0x21, fontSize.Size]); // GS ! n
                     break;
+                // Layout
                 case JustifyInstruction justify:
                     stream.Write([0x1B, 0x61, (byte)justify.Justification]); // ESC a n
                     break;
@@ -83,24 +94,10 @@ public sealed class BinaryEncoder : IEncoder<byte[]>
                 case RightSpacingInstruction rightSpacing:
                     stream.Write([0x1B, 0x20, rightSpacing.Spacing]); // ESC SP n
                     break;
-                case TextInstruction text:
-                    stream.Write(Encoding.ASCII.GetBytes(text.Text));
+                case PrintAreaWidthInstruction printWidth:
+                    stream.Write([0x1D, 0x57, (byte)(printWidth.Width & 0xFF), (byte)(printWidth.Width >> 8)]); // GS W nL nH
                     break;
-                case SelectCodeTableInstruction:
-                    stream.Write([0x1B, 0x74, 0x00]); // ESC t 0 (Std. Europe)
-                    break;
-                case SetHorizontalTabsInstruction setTabs:
-                    stream.Write([0x1B, 0x44]); // ESC D
-                    foreach (var pos in setTabs.Positions)
-                    {
-                        stream.WriteByte(pos);
-                    }
-
-                    stream.WriteByte(0x00); // NUL terminator
-                    break;
-                case HorizontalTabInstruction:
-                    stream.Write([0x09]); // HT
-                    break;
+                // Feed
                 case ResetLineSpacingInstruction:
                     stream.Write([0x1B, 0x32]); // ESC 2
                     break;
@@ -113,17 +110,42 @@ public sealed class BinaryEncoder : IEncoder<byte[]>
                 case FeedPaperInstruction feedPaper:
                     stream.Write([0x1B, 0x4A, feedPaper.Amount]); // ESC J n
                     break;
-                case LineFeedInstruction:
-                    stream.Write([0x0A]); // LF
+                // Motion
+                case HorizontalTabInstruction:
+                    stream.Write([0x09]); // HT
                     break;
+                case SetHorizontalTabsInstruction setTabs:
+                    stream.Write([0x1B, 0x44]); // ESC D
+                    foreach (var pos in setTabs.Positions)
+                    {
+                        stream.WriteByte(pos);
+                    }
+
+                    stream.WriteByte(0x00); // NUL terminator
+                    break;
+                // Cut
                 case PartialCutInstruction:
                     stream.Write([0x1B, 0x6D]); // ESC m
                     break;
                 case CutAfterInstruction cutAfter:
                     stream.Write([0x1D, 0x56, 0x42, cutAfter.Distance]); // GS V m n (m=66, partial cut)
                     break;
+                case HalfCutInstruction:
+                    stream.Write([0x1B, 0x69]); // ESC i
+                    break;
+                case CutInstruction:
+                    stream.Write([0x1D, 0x56, 0x01]); // GS V 1
+                    break;
+                // CodePage
+                case SelectCodePageInstruction codePage:
+                    stream.Write([0x1B, 0x74, (byte)codePage.Page]); // ESC t n
+                    break;
+                // Peripheral
                 case GeneratePulseInstruction pulse:
                     stream.Write([0x1B, 0x70, (byte)pulse.Pin, pulse.OnTime, pulse.OffTime]); // ESC p m t1 t2
+                    break;
+                case RealTimePulseInstruction rtPulse:
+                    stream.Write([0x10, 0x14, 0x01, (byte)rtPulse.Pin, rtPulse.Duration]); // DLE DC4 1 m t
                     break;
                 default:
                     throw new NotSupportedException(

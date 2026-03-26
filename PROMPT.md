@@ -8,15 +8,17 @@ Take into account also the following files in the project root (read them):
 - MANUAL.md printer manual
 - PRINTER.md printer programmer manual
 
-## Instructions to implement
+## Instruction sets to implement
 
-- Choose an appropriate category folder
-- Choose an appropriate builder signature
-- Offer high level methods and types, if possible
+> A "set" is one of the H2 in PRINTER.md 
 
----
-
-Verify signatures and category folders are appropriate and suggest, if it exists, a better alternative. Ensure implementations do not contradict information reported in the printer manual and printer programmer manual. 
+- Text Formatting
+- Text Alignment and Layout
+- Feed and Motion
+- Cut
+- Drawer Kick
+- Code Pages
+- Miscellaneous (ignore "Print NV bit image")
 
 ## ESC/POS manual reference
 
@@ -34,6 +36,9 @@ the full boilerplate switch structure per CLAUDE.md, then add the new case.
 
 ## Constraints
 
-- Read all existing files before writing. Do not regenerate content that 
-  already exists; only add the delta.
+- Choose an appropriate category folder
+- Choose an appropriate builder signature
+- Offer high level methods and types, if possible
+- Verify signatures and category folders are appropriate and suggest, if it exists, a better alternative. Ensure implementations do not contradict information reported in the printer manual and printer programmer manual. 
+- Read all existing files before writing. Do not regenerate content that already exists; only add the delta.
 - Validate parameter ranges in the instruction record if the manual specifies them. Use ArgumentOutOfRangeException with a descriptive message.

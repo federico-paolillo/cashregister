@@ -1,7 +1,9 @@
 using System.Collections.Immutable;
 
 using Cashregister.Printmon.Instructions;
+using Cashregister.Printmon.Instructions.CodePage;
 using Cashregister.Printmon.Instructions.Core;
+using Cashregister.Printmon.Instructions.Cut;
 using Cashregister.Printmon.Instructions.Formatting;
 using Cashregister.Printmon.Instructions.Layout;
 using Cashregister.Printmon.Instructions.Feed;
@@ -16,8 +18,10 @@ namespace Cashregister.Printmon;
 /// </summary>
 public sealed class PrintProgramBuilder
 {
-    private readonly List<Instruction> instructions = [new InitializeInstruction(), new SelectCodeTableInstruction(), new ResetPrintModeInstruction()];
+    private readonly List<Instruction> instructions = [new InitializeInstruction(), new SelectCodePageInstruction(CharacterCodePage.OEM437), new ResetPrintModeInstruction()];
     private bool frozen;
+
+    // Core
 
     public PrintProgramBuilder NoOp()
     {
@@ -25,6 +29,27 @@ public sealed class PrintProgramBuilder
 
         return this;
     }
+
+    public PrintProgramBuilder Text(string text)
+    {
+        AddInstruction(new TextInstruction(text));
+
+        return this;
+    }
+
+    public PrintProgramBuilder LineFeed()
+    {
+        AddInstruction(new LineFeedInstruction());
+
+        return this;
+    }
+
+    public PrintProgramBuilder PrintLine(string text)
+    {
+        return Text(text).LineFeed();
+    }
+
+    // Formatting
 
     public PrintProgramBuilder UseFontA(FormatMode formatMode)
     {
@@ -145,6 +170,8 @@ public sealed class PrintProgramBuilder
         return this;
     }
 
+    // Layout
+
     public PrintProgramBuilder Justify(Justification justification)
     {
         AddInstruction(new JustifyInstruction(justification));
@@ -180,40 +207,14 @@ public sealed class PrintProgramBuilder
         return this;
     }
 
-    public PrintProgramBuilder Text(string text)
+    public PrintProgramBuilder SetPrintAreaWidth(ushort width)
     {
-        AddInstruction(new TextInstruction(text));
+        AddInstruction(new PrintAreaWidthInstruction(width));
 
         return this;
     }
 
-    public PrintProgramBuilder HorizontalTab()
-    {
-        AddInstruction(new HorizontalTabInstruction());
-
-        return this;
-    }
-
-    public PrintProgramBuilder SetHorizontalTabs(params byte[] positions)
-    {
-        AddInstruction(new SetHorizontalTabsInstruction([.. positions]));
-
-        return this;
-    }
-
-    public PrintProgramBuilder ClearHorizontalTabs()
-    {
-        AddInstruction(new SetHorizontalTabsInstruction([]));
-
-        return this;
-    }
-
-    public PrintProgramBuilder LineFeed()
-    {
-        AddInstruction(new LineFeedInstruction());
-
-        return this;
-    }
+    // Feed
 
     public PrintProgramBuilder ResetLineSpacing()
     {
@@ -243,10 +244,30 @@ public sealed class PrintProgramBuilder
         return this;
     }
 
-    public PrintProgramBuilder PrintLine(string text)
+    // Motion
+
+    public PrintProgramBuilder HorizontalTab()
     {
-        return Text(text).LineFeed();
+        AddInstruction(new HorizontalTabInstruction());
+
+        return this;
     }
+
+    public PrintProgramBuilder SetHorizontalTabs(params byte[] positions)
+    {
+        AddInstruction(new SetHorizontalTabsInstruction([.. positions]));
+
+        return this;
+    }
+
+    public PrintProgramBuilder ClearHorizontalTabs()
+    {
+        AddInstruction(new SetHorizontalTabsInstruction([]));
+
+        return this;
+    }
+
+    // Cut
 
     public PrintProgramBuilder CutAfter(byte distance)
     {
@@ -254,6 +275,31 @@ public sealed class PrintProgramBuilder
 
         return this;
     }
+
+    public PrintProgramBuilder HalfCut()
+    {
+        AddInstruction(new HalfCutInstruction());
+
+        return this;
+    }
+
+    public PrintProgramBuilder Cut()
+    {
+        AddInstruction(new CutInstruction());
+
+        return this;
+    }
+
+    // CodePage
+
+    public PrintProgramBuilder SelectCodePage(CharacterCodePage page)
+    {
+        AddInstruction(new SelectCodePageInstruction(page));
+
+        return this;
+    }
+
+    // Peripheral
 
     public PrintProgramBuilder KickDrawer(ConnectorPin pin, byte onTime, byte offTime)
     {
@@ -265,6 +311,13 @@ public sealed class PrintProgramBuilder
     public PrintProgramBuilder OpenCashDrawer()
     {
         AddInstruction(new GeneratePulseInstruction(ConnectorPin.Pin2, 25, 250));
+
+        return this;
+    }
+
+    public PrintProgramBuilder RealTimePulse(ConnectorPin pin, byte duration)
+    {
+        AddInstruction(new RealTimePulseInstruction(pin, duration));
 
         return this;
     }

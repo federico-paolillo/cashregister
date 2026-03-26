@@ -1,13 +1,15 @@
 using System.Collections.Immutable;
 
+using Cashregister.Printmon.Instructions.CodePage;
 using Cashregister.Printmon.Instructions.Core;
+using Cashregister.Printmon.Instructions.Cut;
 using Cashregister.Printmon.Instructions.Feed;
 using Cashregister.Printmon.Instructions.Formatting;
 using Cashregister.Printmon.Instructions.Layout;
 using Cashregister.Printmon.Instructions.Motion;
 using Cashregister.Printmon.Instructions.Peripheral;
 
-// Preamble: [0] InitializeInstruction, [1] SelectCodeTableInstruction, [2] ResetPrintModeInstruction
+// Preamble: [0] InitializeInstruction, [1] SelectCodePageInstruction, [2] ResetPrintModeInstruction
 // User instructions start at index 3
 // Postamble: LineFeedInstruction, CutAfterInstruction(1)
 
@@ -24,7 +26,7 @@ public sealed class PrintProgramBuilderTests
 
         Assert.Equal(5, program.Instructions.Length);
         Assert.IsType<InitializeInstruction>(program.Instructions[0]);
-        Assert.IsType<SelectCodeTableInstruction>(program.Instructions[1]);
+        Assert.IsType<SelectCodePageInstruction>(program.Instructions[1]);
         Assert.IsType<ResetPrintModeInstruction>(program.Instructions[2]);
         Assert.IsType<LineFeedInstruction>(program.Instructions[3]);
         var cutAfter = Assert.IsType<CutAfterInstruction>(program.Instructions[4]);
@@ -40,7 +42,7 @@ public sealed class PrintProgramBuilderTests
 
         Assert.Equal(6, program.Instructions.Length);
         Assert.IsType<InitializeInstruction>(program.Instructions[0]);
-        Assert.IsType<SelectCodeTableInstruction>(program.Instructions[1]);
+        Assert.IsType<SelectCodePageInstruction>(program.Instructions[1]);
         Assert.IsType<ResetPrintModeInstruction>(program.Instructions[2]);
         Assert.IsType<NoOpInstruction>(program.Instructions[3]);
         Assert.IsType<LineFeedInstruction>(program.Instructions[4]);
