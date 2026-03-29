@@ -1,4 +1,5 @@
 using Cashregister.Printmon.Emulator;
+using Cashregister.Printmon.Emulator.Problems;
 
 namespace Cashregister.Printmon.Tools;
 
@@ -13,7 +14,16 @@ public sealed class EmulateTool(
 
         if (result.NotOk)
         {
-            await Console.Error.WriteLineAsync($"Emulation failed: {result.Error.GetType().Name}");
+            switch (result.Error)
+            {
+                case UnrecognizedBytesProblem u:
+                    await Console.Error.WriteLineAsync($"At offset '{u.Offset}' within '{u.Context}'");
+                    break;
+                default:
+                    await Console.Error.WriteLineAsync($"Emulation failed: {result.Error.GetType().Name}");
+                    break;
+            }
+
             return 1;
         }
 
