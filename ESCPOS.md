@@ -116,6 +116,144 @@ When adding a new instruction, insert the new case before the default arm.
 **Before implementing a new instruction, check this table.** If the command is already listed, the work is done.
 After implementing a new instruction, append a row to this table.
 
+## Emulator
+
+### Project layout
+
+```
+Cashregister.Printmon.Emulator/
+├── PrinterState.cs        ← immutable printer configuration snapshot
+├── DocumentIr.cs          ← IDocumentElement hierarchy + TextStyle
+├── PrinterDocument.cs     ← state+elements pair (time-travel step)
+├── InstructionDecoder.cs  ← IInstructionDecoder + InstructionDecoder
+├── InstructionExecutor.cs ← IInstructionExecutor + InstructionExecutor
+├── ProgramExecutor.cs     ← IProgramExecutor + ProgramExecutor
+└── MarkdownRenderer.cs    ← IMarkdownRenderer + MarkdownRenderer
+Cashregister.Printmon.Emulator.Tests/
+```
+
+### Architecture
+
+The emulator is a pipeline:
+
+```
+byte[] ──► InstructionDecoder ──► Instruction[]
+                                       │
+                              InstructionExecutor (per step)
+                                       │
+                              PrinterDocument (state + elements)
+                                       │
+                              ProgramExecutor (orchestrator)
+                                       │
+                              DocumentIr ──► MarkdownRenderer ──► string
+```
+
+- `InstructionDecoder` is the inverse of `BinaryEncoder`: same byte sequences, decoded back to instruction records.
+- `InstructionExecutor` is a pure function. Given the current `PrinterState` and one `Instruction`, it returns a `PrinterDocument` containing the next state and zero or more `IDocumentElement` values.
+- `ProgramExecutor` wires the pipeline together. `Execute` returns a flat `DocumentIr`. `ExecuteWithHistory` returns the full trace, one `PrinterDocument` per instruction, enabling time-travel inspection.
+- `MarkdownRenderer` maps `IDocumentElement` values to Markdown text.
+
+### PrinterState
+
+An immutable `sealed record` with init-only properties representing the printer's configuration at any point during execution. All fields mirror the power-on defaults from the printer manual.
+
+| Property | Type | Default |
+|---|---|---|
+| `Bold` | `bool` | `false` |
+| `Underline` | `Thickness` | `None` |
+| `DoubleStrike` | `bool` | `false` |
+| `Font` | `CharacterFont` | `A` |
+| `Rotation` | `bool` | `false` |
+| `UpsideDown` | `bool` | `false` |
+| `Reverse` | `bool` | `false` |
+| `WidthMultiplier` | `byte` | `1` |
+| `HeightMultiplier` | `byte` | `1` |
+| `Justification` | `Alignment` | `Left` |
+| `LeftMargin` | `ushort` | `0` |
+| `PrintAreaWidth` | `ushort` | `0` |
+| `RightSpacing` | `byte` | `0` |
+| `LineSpacing` | `byte` | `30` |
+| `CodePage` | `CharacterCodePage` | `OEM437` |
+| `TabPositions` | `ImmutableArray<byte>` | `[9,17,25,33,41,49,57]` |
+
+`PrinterState.Default` is the static singleton representing these defaults. `InitializeInstruction` always resets to it.
+
+### DocumentIr element hierarchy
+
+```
+abstract record IDocumentElement
+  sealed record TextSpan(string Text, TextStyle Style)
+  sealed record LineBreak
+  sealed record FeedLines(byte Count)
+  sealed record HorizontalRule              ← emitted by all cut instructions
+  sealed record Barcode                     ← placeholder
+  sealed record QrCode                      ← placeholder
+  sealed record Image                       ← placeholder
+```
+
+`TextStyle` is a formatting snapshot taken at the moment a `TextInstruction` is executed. It carries: `Bold`, `Underline`, `DoubleStrike`, `Font`, `Rotation`, `UpsideDown`, `Reverse`, `WidthMultiplier`, `HeightMultiplier`, `Justification`.
+
+`DocumentIr(ImmutableArray<IDocumentElement> Elements)` is the final output of a full program execution.
+
+`PrinterDocument(PrinterState State, ImmutableArray<IDocumentElement> Elements)` pairs the state after one instruction with the elements it emitted. The time-travel history is `ImmutableArray<PrinterDocument>` — one entry per instruction.
+
+### Decoder scope
+
+`InstructionDecoder` handles exactly the commands that `BinaryEncoder` encodes. Instructions without a builder method cannot be round-trip tested and are excluded:
+
+- `PartialCutInstruction` (`ESC m`, `0x1B 0x6D`) is encoded by `BinaryEncoder` but has no builder method. The decoder throws on this byte sequence.
+- `NoOpInstruction` encodes to zero bytes and is never produced by the decoder.
+
+Fail-fast rule: any unrecognized byte or truncated sequence throws `InvalidOperationException` with the byte offset and value.
+
+ESC ! disambiguation:
+- `0x1B 0x21 0x00` → `ResetPrintModeInstruction`
+- `0x1B 0x21 n` (n ≠ 0) → `SelectPrintModeInstruction(fontB: (n & 0x01) != 0, flags: (FormatMode)(n & ~0x01))`
+
+GS V disambiguation:
+- `0x1D 0x56 0x01` → `CutInstruction`
+- `0x1D 0x56 0x42 n` → `CutAfterInstruction(n)`
+
+### Executor behavior
+
+State-modifying instructions return a new `PrinterState` and emit no elements. Content-emitting instructions return the unchanged state plus one or more elements:
+
+| Instruction | Element emitted |
+|---|---|
+| `TextInstruction` | `TextSpan(text, StyleFrom(state))` |
+| `LineFeedInstruction` | `LineBreak` |
+| `HorizontalTabInstruction` | `TextSpan("\t", StyleFrom(state))` |
+| `FeedLinesInstruction` | `FeedLines(count)` |
+| `FeedPaperInstruction` | `FeedLines(1)` |
+| `CutAfterInstruction` / `CutInstruction` / `HalfCutInstruction` / `PartialCutInstruction` | `HorizontalRule` |
+
+`SelectPrintModeInstruction` sets `Font`, `Bold`, `WidthMultiplier`, `HeightMultiplier`, and `Underline` simultaneously from its `Flags` bitmask. Peripheral instructions (`GeneratePulseInstruction`, `RealTimePulseInstruction`) are no-ops: no state change, no elements.
+
+### Markdown rendering rules
+
+| Element | Markdown |
+|---|---|
+| `TextSpan` bold | `**text**` |
+| `TextSpan` underline | `<u>text</u>` |
+| `TextSpan` reverse | `` `text` `` |
+| `TextSpan` height ≥ 2 | `## text` |
+| `TextSpan` center-justified | `<p align="center">text</p>` |
+| `TextSpan` right-justified | `<p align="right">text</p>` |
+| `LineBreak` | newline |
+| `FeedLines(n)` | n blank lines |
+| `HorizontalRule` | `---` |
+| `Barcode` / `QrCode` / `Image` | `[BARCODE]` / `[QR]` / `[IMAGE]` placeholders |
+
+Formatting is applied inside-out: reverse → underline → bold/double-strike. Alignment wraps the result last.
+
+### CLI usage
+
+```bash
+dotnet run --project be/Cashregister.Cli -- emulate --input receipt.bin
+```
+
+Reads a raw ESC/POS binary file, decodes it, executes the instructions, and writes Markdown to stdout.
+
 ## Per-session contract
 
 Each session implements exactly one instruction. Always implement relevant tests focusing on expected behavior rather than edge-cases. After completing, always run:

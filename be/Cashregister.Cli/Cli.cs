@@ -1,6 +1,7 @@
 using System.CommandLine;
 
 using Cashregister.Printmon.Devices;
+using Cashregister.Printmon.Emulator;
 using Cashregister.Printmon.Tools;
 
 using Microsoft.Extensions.DependencyInjection;
@@ -14,6 +15,7 @@ public static class Cli
         var rootCommand = new RootCommand();
 
         rootCommand.Subcommands.Add(CreatePrintCommand(services));
+        rootCommand.Subcommands.Add(CreateEmulateCommand(services));
 
         return rootCommand;
     }
@@ -51,5 +53,26 @@ public static class Cli
         printCommand.Subcommands.Add(testCommand);
 
         return printCommand;
+    }
+
+    private static Command CreateEmulateCommand(IServiceCollection services)
+    {
+        var inputOption = new Option<string>("--input") { Required = true };
+
+        var emulateCommand = new Command("emulate") { inputOption };
+
+        emulateCommand.SetAction(async (parseResult, cancellationToken) =>
+        {
+            var input = parseResult.GetValue(inputOption)!;
+
+            using var svcProvider = services.BuildServiceProvider();
+            using var scope = svcProvider.CreateScope();
+
+            var tool = scope.ServiceProvider.GetRequiredService<EmulateTool>();
+
+            return await tool.ExecuteAsync(input, cancellationToken);
+        });
+
+        return emulateCommand;
     }
 }

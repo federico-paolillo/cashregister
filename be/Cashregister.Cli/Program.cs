@@ -1,5 +1,6 @@
 using Cashregister.Printmon;
 using Cashregister.Printmon.Devices;
+using Cashregister.Printmon.Emulator;
 using Cashregister.Printmon.Encoders;
 using Cashregister.Printmon.Tools;
 
@@ -11,6 +12,12 @@ services.AddScoped<IDevice, FileDevice>();
 services.AddScoped<IEncoder<byte[]>, BinaryEncoder>();
 
 services.AddScoped<TestTool>();
+
+services.AddScoped<IInstructionDecoder, InstructionDecoder>();
+services.AddScoped<IInstructionExecutor, InstructionExecutor>();
+services.AddScoped<IProgramExecutor, ProgramExecutor>();
+services.AddScoped<IMarkdownRenderer, MarkdownRenderer>();
+services.AddScoped<EmulateTool>();
 
 var rootCommand = Cli.Create(services);
 

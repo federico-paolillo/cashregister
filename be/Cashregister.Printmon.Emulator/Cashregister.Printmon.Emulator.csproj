@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <ItemGroup>
+        <ProjectReference Include="..\Cashregister.Printmon\Cashregister.Printmon.csproj"/>
+    </ItemGroup>
+</Project>

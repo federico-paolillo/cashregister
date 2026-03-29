@@ -8,6 +8,8 @@
     <Project Path="Cashregister.Activities\Cashregister.Activities.csproj" Type="C#"/>
     <Project Path="Cashregister.Printmon/Cashregister.Printmon.csproj"/>
     <Project Path="Cashregister.Printmon.Tests\Cashregister.Printmon.Tests.csproj" Type="C#"/>
+    <Project Path="Cashregister.Printmon.Emulator\Cashregister.Printmon.Emulator.csproj" Type="C#"/>
+    <Project Path="Cashregister.Printmon.Emulator.Tests\Cashregister.Printmon.Emulator.Tests.csproj" Type="C#"/>
     <Project Path="Cashregister.Tests.Integration\Cashregister.Tests.Integration.csproj" Type="C#"/>
     <Folder Name="/Miscellaneous/">
         <File Path="..\.editorconfig"/>
