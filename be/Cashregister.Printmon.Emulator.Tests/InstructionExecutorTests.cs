@@ -1,5 +1,6 @@
 using Cashregister.Printmon.Emulator;
 using Cashregister.Printmon.Encoders;
+using Cashregister.Printmon.Instructions;
 using Cashregister.Printmon.Instructions.CodePage;
 using Cashregister.Printmon.Instructions.Core;
 using Cashregister.Printmon.Instructions.Cut;
@@ -14,38 +15,41 @@ namespace Cashregister.Printmon.Emulator.Tests;
 public sealed class InstructionExecutorTests
 {
     private readonly InstructionExecutor _executor = new();
-    private readonly PrinterState _default = PrinterState.Default;
+    private readonly Printer _printer = Printer.Default;
+
+    // Unwraps the result for happy-path tests
+    private Printer Execute(Printer printer, Instruction instruction) =>
+        _executor.Execute(printer, instruction).Value!;
 
     // ---- Core ----
 
     [Fact]
-    public void Execute_NoOp_ReturnsUnchangedStateAndNoElements()
+    public void Execute_NoOp_ReturnsUnchangedPrinter()
     {
-        var doc = _executor.Execute(_default, new NoOpInstruction());
+        var result = Execute(_printer, new NoOpInstruction());
 
-        Assert.Equal(_default, doc.State);
-        Assert.Empty(doc.Elements);
+        Assert.Equal(_printer, result);
     }
 
     [Fact]
-    public void Execute_Initialize_ResetsToDefault()
+    public void Execute_Initialize_ResetsStateToDefault()
     {
-        var modified = _default with { Bold = true, Justification = Alignment.Center };
+        var modified = _printer with { State = _printer.State with { Bold = true, Justification = Alignment.Center } };
 
-        var doc = _executor.Execute(modified, new InitializeInstruction());
+        var result = Execute(modified, new InitializeInstruction());
 
-        Assert.Equal(PrinterState.Default, doc.State);
-        Assert.Empty(doc.Elements);
+        Assert.Equal(PrinterState.Default, result.State);
+        Assert.Empty(result.Receipt.Elements);
     }
 
     [Fact]
     public void Execute_Text_EmitsTextSpanWithCurrentStyle()
     {
-        var state = _default with { Bold = true };
+        var printer = _printer with { State = _printer.State with { Bold = true } };
 
-        var doc = _executor.Execute(state, new TextInstruction("hello"));
+        var result = Execute(printer, new TextInstruction("hello"));
 
-        var span = Assert.IsType<TextSpan>(Assert.Single(doc.Elements));
+        var span = Assert.IsType<TextSpan>(Assert.Single(result.Receipt.Elements));
         Assert.Equal("hello", span.Text);
         Assert.True(span.Style.Bold);
     }
@@ -53,23 +57,26 @@ public sealed class InstructionExecutorTests
     [Fact]
     public void Execute_Text_StyleSnapshotMatchesCurrentState()
     {
-        var state = _default with
+        var printer = _printer with
         {
-            Bold = true,
-            Underline = Thickness.Thin,
-            DoubleStrike = true,
-            Font = CharacterFont.B,
-            Rotation = true,
-            UpsideDown = true,
-            Reverse = true,
-            WidthMultiplier = 2,
-            HeightMultiplier = 3,
-            Justification = Alignment.Center
+            State = _printer.State with
+            {
+                Bold = true,
+                Underline = Thickness.Thin,
+                DoubleStrike = true,
+                Font = CharacterFont.B,
+                Rotation = true,
+                UpsideDown = true,
+                Reverse = true,
+                WidthMultiplier = 2,
+                HeightMultiplier = 3,
+                Justification = Alignment.Center
+            }
         };
 
-        var doc = _executor.Execute(state, new TextInstruction("x"));
+        var result = Execute(printer, new TextInstruction("x"));
 
-        var span = Assert.IsType<TextSpan>(Assert.Single(doc.Elements));
+        var span = Assert.IsType<TextSpan>(Assert.Single(result.Receipt.Elements));
         Assert.True(span.Style.Bold);
         Assert.Equal(Thickness.Thin, span.Style.Underline);
         Assert.True(span.Style.DoubleStrike);
@@ -85,10 +92,10 @@ public sealed class InstructionExecutorTests
     [Fact]
     public void Execute_LineFeed_EmitsLineBreak()
     {
-        var doc = _executor.Execute(_default, new LineFeedInstruction());
+        var result = Execute(_printer, new LineFeedInstruction());
 
-        Assert.IsType<LineBreak>(Assert.Single(doc.Elements));
-        Assert.Equal(_default, doc.State);
+        Assert.IsType<LineBreak>(Assert.Single(result.Receipt.Elements));
+        Assert.Equal(_printer.State, result.State);
     }
 
     // ---- Formatting ----
@@ -96,119 +103,121 @@ public sealed class InstructionExecutorTests
     [Fact]
     public void Execute_EmphasizeOn_SetsBold()
     {
-        var doc = _executor.Execute(_default, new EmphasizeInstruction(true));
+        var result = Execute(_printer, new EmphasizeInstruction(true));
 
-        Assert.True(doc.State.Bold);
-        Assert.Empty(doc.Elements);
-        // All other fields unchanged
-        Assert.Equal(_default with { Bold = true }, doc.State);
+        Assert.True(result.State.Bold);
+        Assert.Empty(result.Receipt.Elements);
+        Assert.Equal(_printer.State with { Bold = true }, result.State);
     }
 
     [Fact]
     public void Execute_EmphasizeOff_ClearsBold()
     {
-        var state = _default with { Bold = true };
+        var printer = _printer with { State = _printer.State with { Bold = true } };
 
-        var doc = _executor.Execute(state, new EmphasizeInstruction(false));
+        var result = Execute(printer, new EmphasizeInstruction(false));
 
-        Assert.False(doc.State.Bold);
+        Assert.False(result.State.Bold);
     }
 
     [Fact]
     public void Execute_DoubleStrikeOn_SetsDoubleStrike()
     {
-        var doc = _executor.Execute(_default, new DoubleStrikeInstruction(true));
+        var result = Execute(_printer, new DoubleStrikeInstruction(true));
 
-        Assert.True(doc.State.DoubleStrike);
-        Assert.Empty(doc.Elements);
+        Assert.True(result.State.DoubleStrike);
+        Assert.Empty(result.Receipt.Elements);
     }
 
     [Fact]
     public void Execute_UnderlineThin_SetsUnderline()
     {
-        var doc = _executor.Execute(_default, new UnderlineInstruction(true, Thickness.Thin));
+        var result = Execute(_printer, new UnderlineInstruction(true, Thickness.Thin));
 
-        Assert.Equal(Thickness.Thin, doc.State.Underline);
-        Assert.Empty(doc.Elements);
+        Assert.Equal(Thickness.Thin, result.State.Underline);
+        Assert.Empty(result.Receipt.Elements);
     }
 
     [Fact]
     public void Execute_UnderlineOff_ClearsUnderline()
     {
-        var state = _default with { Underline = Thickness.Thick };
+        var printer = _printer with { State = _printer.State with { Underline = Thickness.Thick } };
 
-        var doc = _executor.Execute(state, new UnderlineInstruction(false, Thickness.None));
+        var result = Execute(printer, new UnderlineInstruction(false, Thickness.None));
 
-        Assert.Equal(Thickness.None, doc.State.Underline);
+        Assert.Equal(Thickness.None, result.State.Underline);
     }
 
     [Fact]
     public void Execute_SelectFontB_SetsFont()
     {
-        var doc = _executor.Execute(_default, new SelectFontInstruction(CharacterFont.B));
+        var result = Execute(_printer, new SelectFontInstruction(CharacterFont.B));
 
-        Assert.Equal(CharacterFont.B, doc.State.Font);
-        Assert.Empty(doc.Elements);
+        Assert.Equal(CharacterFont.B, result.State.Font);
+        Assert.Empty(result.Receipt.Elements);
     }
 
     [Fact]
     public void Execute_FontSize_SetsWidthAndHeightMultipliers()
     {
         // Size = ((2-1) << 4) | (3-1) = 0x12
-        var doc = _executor.Execute(_default, new FontSizeInstruction(0x12));
+        var result = Execute(_printer, new FontSizeInstruction(0x12));
 
-        Assert.Equal(2, doc.State.WidthMultiplier);
-        Assert.Equal(3, doc.State.HeightMultiplier);
-        Assert.Empty(doc.Elements);
+        Assert.Equal(2, result.State.WidthMultiplier);
+        Assert.Equal(3, result.State.HeightMultiplier);
+        Assert.Empty(result.Receipt.Elements);
     }
 
     [Fact]
     public void Execute_ReverseOn_SetsReverse()
     {
-        var doc = _executor.Execute(_default, new ReverseInstruction(true));
+        var result = Execute(_printer, new ReverseInstruction(true));
 
-        Assert.True(doc.State.Reverse);
-        Assert.Empty(doc.Elements);
+        Assert.True(result.State.Reverse);
+        Assert.Empty(result.Receipt.Elements);
     }
 
     [Fact]
     public void Execute_RotationOn_SetsRotation()
     {
-        var doc = _executor.Execute(_default, new RotationInstruction(true));
+        var result = Execute(_printer, new RotationInstruction(true));
 
-        Assert.True(doc.State.Rotation);
-        Assert.Empty(doc.Elements);
+        Assert.True(result.State.Rotation);
+        Assert.Empty(result.Receipt.Elements);
     }
 
     [Fact]
     public void Execute_UpsideDownOn_SetsUpsideDown()
     {
-        var doc = _executor.Execute(_default, new UpsideDownInstruction(true));
+        var result = Execute(_printer, new UpsideDownInstruction(true));
 
-        Assert.True(doc.State.UpsideDown);
-        Assert.Empty(doc.Elements);
+        Assert.True(result.State.UpsideDown);
+        Assert.Empty(result.Receipt.Elements);
     }
 
     [Fact]
     public void Execute_ResetPrintMode_ClearsBoldFontSizeUnderline()
     {
-        var state = _default with
+        var printer = _printer with
         {
-            Bold = true,
-            Font = CharacterFont.B,
-            WidthMultiplier = 3,
-            HeightMultiplier = 2,
-            Underline = Thickness.Thick
+            State = _printer.State with
+            {
+                Bold = true,
+                Font = CharacterFont.B,
+                WidthMultiplier = 3,
+                HeightMultiplier = 2,
+                Underline = Thickness.Thick
+            }
         };
 
-        var doc = _executor.Execute(state, new ResetPrintModeInstruction());
+        var result = Execute(printer, new ResetPrintModeInstruction());
 
-        Assert.False(doc.State.Bold);
-        Assert.Equal(CharacterFont.A, doc.State.Font);
-        Assert.Equal(1, doc.State.WidthMultiplier);
-        Assert.Equal(1, doc.State.HeightMultiplier);
-        Assert.Equal(Thickness.None, doc.State.Underline);
-        Assert.Empty(doc.Elements);
+        Assert.False(result.State.Bold);
+        Assert.Equal(CharacterFont.A, result.State.Font);
+        Assert.Equal(1, result.State.WidthMultiplier);
+        Assert.Equal(1, result.State.HeightMultiplier);
+        Assert.Equal(Thickness.None, result.State.Underline);
+        Assert.Empty(result.Receipt.Elements);
     }
 
     [Fact]
@@ -218,14 +227,14 @@ public sealed class InstructionExecutorTests
             UseFontB: true,
             Flags: FormatMode.Emphasized | FormatMode.DoubleWidth | FormatMode.DoubleHeight);
 
-        var doc = _executor.Execute(_default, spm);
+        var result = Execute(_printer, spm);
 
-        Assert.Equal(CharacterFont.B, doc.State.Font);
-        Assert.True(doc.State.Bold);
-        Assert.Equal(2, doc.State.WidthMultiplier);
-        Assert.Equal(2, doc.State.HeightMultiplier);
-        Assert.Equal(Thickness.None, doc.State.Underline);
-        Assert.Empty(doc.Elements);
+        Assert.Equal(CharacterFont.B, result.State.Font);
+        Assert.True(result.State.Bold);
+        Assert.Equal(2, result.State.WidthMultiplier);
+        Assert.Equal(2, result.State.HeightMultiplier);
+        Assert.Equal(Thickness.None, result.State.Underline);
+        Assert.Empty(result.Receipt.Elements);
     }
 
     // ---- Layout ----
@@ -233,55 +242,55 @@ public sealed class InstructionExecutorTests
     [Fact]
     public void Execute_JustifyCenter_SetsJustification()
     {
-        var doc = _executor.Execute(_default, new JustifyInstruction(Alignment.Center));
+        var result = Execute(_printer, new JustifyInstruction(Alignment.Center));
 
-        Assert.Equal(Alignment.Center, doc.State.Justification);
-        Assert.Empty(doc.Elements);
+        Assert.Equal(Alignment.Center, result.State.Justification);
+        Assert.Empty(result.Receipt.Elements);
     }
 
     [Fact]
     public void Execute_LeftMargin_SetsLeftMargin()
     {
-        var doc = _executor.Execute(_default, new LeftMarginInstruction(50));
+        var result = Execute(_printer, new LeftMarginInstruction(50));
 
-        Assert.Equal(50, doc.State.LeftMargin);
-        Assert.Empty(doc.Elements);
+        Assert.Equal(50, result.State.LeftMargin);
+        Assert.Empty(result.Receipt.Elements);
     }
 
     [Fact]
     public void Execute_RightSpacing_SetsRightSpacing()
     {
-        var doc = _executor.Execute(_default, new RightSpacingInstruction(5));
+        var result = Execute(_printer, new RightSpacingInstruction(5));
 
-        Assert.Equal(5, doc.State.RightSpacing);
-        Assert.Empty(doc.Elements);
+        Assert.Equal(5, result.State.RightSpacing);
+        Assert.Empty(result.Receipt.Elements);
     }
 
     [Fact]
     public void Execute_PrintAreaWidth_SetsPrintAreaWidth()
     {
-        var doc = _executor.Execute(_default, new PrintAreaWidthInstruction(300));
+        var result = Execute(_printer, new PrintAreaWidthInstruction(300));
 
-        Assert.Equal(300, doc.State.PrintAreaWidth);
-        Assert.Empty(doc.Elements);
+        Assert.Equal(300, result.State.PrintAreaWidth);
+        Assert.Empty(result.Receipt.Elements);
     }
 
     [Fact]
     public void Execute_AbsolutePosition_DoesNotChangeState()
     {
-        var doc = _executor.Execute(_default, new AbsolutePositionInstruction(100));
+        var result = Execute(_printer, new AbsolutePositionInstruction(100));
 
-        Assert.Equal(_default, doc.State);
-        Assert.Empty(doc.Elements);
+        Assert.Equal(_printer.State, result.State);
+        Assert.Empty(result.Receipt.Elements);
     }
 
     [Fact]
     public void Execute_RelativePosition_DoesNotChangeState()
     {
-        var doc = _executor.Execute(_default, new RelativePositionInstruction(50));
+        var result = Execute(_printer, new RelativePositionInstruction(50));
 
-        Assert.Equal(_default, doc.State);
-        Assert.Empty(doc.Elements);
+        Assert.Equal(_printer.State, result.State);
+        Assert.Empty(result.Receipt.Elements);
     }
 
     // ---- Feed ----
@@ -289,39 +298,39 @@ public sealed class InstructionExecutorTests
     [Fact]
     public void Execute_ResetLineSpacing_SetsLineSpacingTo30()
     {
-        var state = _default with { LineSpacing = 40 };
+        var printer = _printer with { State = _printer.State with { LineSpacing = 40 } };
 
-        var doc = _executor.Execute(state, new ResetLineSpacingInstruction());
+        var result = Execute(printer, new ResetLineSpacingInstruction());
 
-        Assert.Equal(30, doc.State.LineSpacing);
-        Assert.Empty(doc.Elements);
+        Assert.Equal(30, result.State.LineSpacing);
+        Assert.Empty(result.Receipt.Elements);
     }
 
     [Fact]
     public void Execute_SetLineSpacing_SetsLineSpacing()
     {
-        var doc = _executor.Execute(_default, new SetLineSpacingInstruction(50));
+        var result = Execute(_printer, new SetLineSpacingInstruction(50));
 
-        Assert.Equal(50, doc.State.LineSpacing);
-        Assert.Empty(doc.Elements);
+        Assert.Equal(50, result.State.LineSpacing);
+        Assert.Empty(result.Receipt.Elements);
     }
 
     [Fact]
     public void Execute_FeedLines_EmitsFeedLinesElement()
     {
-        var doc = _executor.Execute(_default, new FeedLinesInstruction(3));
+        var result = Execute(_printer, new FeedLinesInstruction(3));
 
-        var feed = Assert.IsType<FeedLines>(Assert.Single(doc.Elements));
+        var feed = Assert.IsType<FeedLines>(Assert.Single(result.Receipt.Elements));
         Assert.Equal(3, feed.Count);
-        Assert.Equal(_default, doc.State);
+        Assert.Equal(_printer.State, result.State);
     }
 
     [Fact]
     public void Execute_FeedPaper_EmitsFeedLinesElement()
     {
-        var doc = _executor.Execute(_default, new FeedPaperInstruction(10));
+        var result = Execute(_printer, new FeedPaperInstruction(10));
 
-        var feed = Assert.IsType<FeedLines>(Assert.Single(doc.Elements));
+        var feed = Assert.IsType<FeedLines>(Assert.Single(result.Receipt.Elements));
         Assert.Equal(1, feed.Count);
     }
 
@@ -330,19 +339,19 @@ public sealed class InstructionExecutorTests
     [Fact]
     public void Execute_HorizontalTab_EmitsTextSpanWithTab()
     {
-        var doc = _executor.Execute(_default, new HorizontalTabInstruction());
+        var result = Execute(_printer, new HorizontalTabInstruction());
 
-        var span = Assert.IsType<TextSpan>(Assert.Single(doc.Elements));
+        var span = Assert.IsType<TextSpan>(Assert.Single(result.Receipt.Elements));
         Assert.Equal("\t", span.Text);
     }
 
     [Fact]
     public void Execute_SetHorizontalTabs_SetsTabPositions()
     {
-        var doc = _executor.Execute(_default, new SetHorizontalTabsInstruction([8, 16, 24]));
+        var result = Execute(_printer, new SetHorizontalTabsInstruction([8, 16, 24]));
 
-        Assert.Equal<byte>([8, 16, 24], doc.State.TabPositions);
-        Assert.Empty(doc.Elements);
+        Assert.Equal<byte>([8, 16, 24], result.State.TabPositions);
+        Assert.Empty(result.Receipt.Elements);
     }
 
     // ---- Cut ----
@@ -350,26 +359,26 @@ public sealed class InstructionExecutorTests
     [Fact]
     public void Execute_CutAfter_EmitsHorizontalRule()
     {
-        var doc = _executor.Execute(_default, new CutAfterInstruction(1));
+        var result = Execute(_printer, new CutAfterInstruction(1));
 
-        Assert.IsType<HorizontalRule>(Assert.Single(doc.Elements));
-        Assert.Equal(_default, doc.State);
+        Assert.IsType<HorizontalRule>(Assert.Single(result.Receipt.Elements));
+        Assert.Equal(_printer.State, result.State);
     }
 
     [Fact]
     public void Execute_Cut_EmitsHorizontalRule()
     {
-        var doc = _executor.Execute(_default, new CutInstruction());
+        var result = Execute(_printer, new CutInstruction());
 
-        Assert.IsType<HorizontalRule>(Assert.Single(doc.Elements));
+        Assert.IsType<HorizontalRule>(Assert.Single(result.Receipt.Elements));
     }
 
     [Fact]
     public void Execute_HalfCut_EmitsHorizontalRule()
     {
-        var doc = _executor.Execute(_default, new HalfCutInstruction());
+        var result = Execute(_printer, new HalfCutInstruction());
 
-        Assert.IsType<HorizontalRule>(Assert.Single(doc.Elements));
+        Assert.IsType<HorizontalRule>(Assert.Single(result.Receipt.Elements));
     }
 
     // ---- CodePage ----
@@ -377,10 +386,10 @@ public sealed class InstructionExecutorTests
     [Fact]
     public void Execute_SelectCodePage_SetsCodePage()
     {
-        var doc = _executor.Execute(_default, new SelectCodePageInstruction(CharacterCodePage.OEM850));
+        var result = Execute(_printer, new SelectCodePageInstruction(CharacterCodePage.OEM850));
 
-        Assert.Equal(CharacterCodePage.OEM850, doc.State.CodePage);
-        Assert.Empty(doc.Elements);
+        Assert.Equal(CharacterCodePage.OEM850, result.State.CodePage);
+        Assert.Empty(result.Receipt.Elements);
     }
 
     // ---- Peripheral ----
@@ -388,19 +397,19 @@ public sealed class InstructionExecutorTests
     [Fact]
     public void Execute_GeneratePulse_DoesNotChangeStateOrEmitElements()
     {
-        var doc = _executor.Execute(_default, new GeneratePulseInstruction(ConnectorPin.Pin2, 25, 250));
+        var result = Execute(_printer, new GeneratePulseInstruction(ConnectorPin.Pin2, 25, 250));
 
-        Assert.Equal(_default, doc.State);
-        Assert.Empty(doc.Elements);
+        Assert.Equal(_printer.State, result.State);
+        Assert.Empty(result.Receipt.Elements);
     }
 
     [Fact]
     public void Execute_RealTimePulse_DoesNotChangeStateOrEmitElements()
     {
-        var doc = _executor.Execute(_default, new RealTimePulseInstruction(ConnectorPin.Pin5, 1));
+        var result = Execute(_printer, new RealTimePulseInstruction(ConnectorPin.Pin5, 1));
 
-        Assert.Equal(_default, doc.State);
-        Assert.Empty(doc.Elements);
+        Assert.Equal(_printer.State, result.State);
+        Assert.Empty(result.Receipt.Elements);
     }
 
     // ---- Composite scenario ----
@@ -408,21 +417,17 @@ public sealed class InstructionExecutorTests
     [Fact]
     public void Execute_BoldOnThenOffText_TwoSpansHaveDifferentBoldValues()
     {
-        var state = _default;
+        var p = _printer;
 
-        var doc1 = _executor.Execute(state, new EmphasizeInstruction(true));
-        state = doc1.State;
+        p = Execute(p, new EmphasizeInstruction(true));
+        p = Execute(p, new TextInstruction("bold"));
+        p = Execute(p, new EmphasizeInstruction(false));
+        p = Execute(p, new TextInstruction("normal"));
 
-        var doc2 = _executor.Execute(state, new TextInstruction("bold"));
-        state = doc2.State;
-
-        var doc3 = _executor.Execute(state, new EmphasizeInstruction(false));
-        state = doc3.State;
-
-        var doc4 = _executor.Execute(state, new TextInstruction("normal"));
-
-        var boldSpan = Assert.IsType<TextSpan>(Assert.Single(doc2.Elements));
-        var normalSpan = Assert.IsType<TextSpan>(Assert.Single(doc4.Elements));
+        // Receipt has accumulated: [TextSpan("bold"), TextSpan("normal")]
+        Assert.Equal(2, p.Receipt.Elements.Length);
+        var boldSpan = Assert.IsType<TextSpan>(p.Receipt.Elements[0]);
+        var normalSpan = Assert.IsType<TextSpan>(p.Receipt.Elements[1]);
 
         Assert.True(boldSpan.Style.Bold);
         Assert.False(normalSpan.Style.Bold);

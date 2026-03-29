@@ -11,7 +11,7 @@ public sealed class MarkdownRendererTests
 {
     private readonly MarkdownRenderer _renderer = new();
 
-    private static DocumentIr Doc(params IDocumentElement[] elements) =>
+    private static Receipt Rec(params IDocumentElement[] elements) =>
         new(elements.ToImmutableArray());
 
     private static TextStyle Style(
@@ -33,9 +33,9 @@ public sealed class MarkdownRendererTests
     [Fact]
     public void Render_PlainText_OutputsTextAsIs()
     {
-        var doc = Doc(new TextSpan("hello", Style()));
+        var receipt = Rec(new TextSpan("hello", Style()));
 
-        var md = _renderer.Render(doc);
+        var md = _renderer.Render(receipt);
 
         Assert.Equal("hello", md);
     }
@@ -45,9 +45,9 @@ public sealed class MarkdownRendererTests
     [Fact]
     public void Render_BoldText_WrapsWithDoubleAsterisks()
     {
-        var doc = Doc(new TextSpan("bold", Style(bold: true)));
+        var receipt = Rec(new TextSpan("bold", Style(bold: true)));
 
-        var md = _renderer.Render(doc);
+        var md = _renderer.Render(receipt);
 
         Assert.Equal("**bold**", md);
     }
@@ -55,9 +55,9 @@ public sealed class MarkdownRendererTests
     [Fact]
     public void Render_DoubleStrikeText_WrapsWithDoubleAsterisks()
     {
-        var doc = Doc(new TextSpan("struck", Style(doubleStrike: true)));
+        var receipt = Rec(new TextSpan("struck", Style(doubleStrike: true)));
 
-        var md = _renderer.Render(doc);
+        var md = _renderer.Render(receipt);
 
         Assert.Equal("**struck**", md);
     }
@@ -67,9 +67,9 @@ public sealed class MarkdownRendererTests
     [Fact]
     public void Render_UnderlineText_WrapsWithHtmlUnderlineTag()
     {
-        var doc = Doc(new TextSpan("under", Style(underline: Thickness.Thin)));
+        var receipt = Rec(new TextSpan("under", Style(underline: Thickness.Thin)));
 
-        var md = _renderer.Render(doc);
+        var md = _renderer.Render(receipt);
 
         Assert.Equal("<u>under</u>", md);
     }
@@ -79,9 +79,9 @@ public sealed class MarkdownRendererTests
     [Fact]
     public void Render_BoldAndUnderline_WrapsUnderlineThenBold()
     {
-        var doc = Doc(new TextSpan("both", Style(bold: true, underline: Thickness.Thin)));
+        var receipt = Rec(new TextSpan("both", Style(bold: true, underline: Thickness.Thin)));
 
-        var md = _renderer.Render(doc);
+        var md = _renderer.Render(receipt);
 
         Assert.Equal("**<u>both</u>**", md);
     }
@@ -91,9 +91,9 @@ public sealed class MarkdownRendererTests
     [Fact]
     public void Render_ReverseText_WrapsWithBackticks()
     {
-        var doc = Doc(new TextSpan("inv", Style(reverse: true)));
+        var receipt = Rec(new TextSpan("inv", Style(reverse: true)));
 
-        var md = _renderer.Render(doc);
+        var md = _renderer.Render(receipt);
 
         Assert.Equal("`inv`", md);
     }
@@ -103,9 +103,9 @@ public sealed class MarkdownRendererTests
     [Fact]
     public void Render_DoubleHeightText_PrependHeading()
     {
-        var doc = Doc(new TextSpan("big", Style(heightMultiplier: 2)));
+        var receipt = Rec(new TextSpan("big", Style(heightMultiplier: 2)));
 
-        var md = _renderer.Render(doc);
+        var md = _renderer.Render(receipt);
 
         Assert.Equal("## big", md);
     }
@@ -115,9 +115,9 @@ public sealed class MarkdownRendererTests
     [Fact]
     public void Render_CenteredText_WrapsWithCenterAlignParagraph()
     {
-        var doc = Doc(new TextSpan("center", Style(justification: Alignment.Center)));
+        var receipt = Rec(new TextSpan("center", Style(justification: Alignment.Center)));
 
-        var md = _renderer.Render(doc);
+        var md = _renderer.Render(receipt);
 
         Assert.Equal("<p align=\"center\">center</p>", md);
     }
@@ -125,9 +125,9 @@ public sealed class MarkdownRendererTests
     [Fact]
     public void Render_RightAlignedText_WrapsWithRightAlignParagraph()
     {
-        var doc = Doc(new TextSpan("right", Style(justification: Alignment.Right)));
+        var receipt = Rec(new TextSpan("right", Style(justification: Alignment.Right)));
 
-        var md = _renderer.Render(doc);
+        var md = _renderer.Render(receipt);
 
         Assert.Equal("<p align=\"right\">right</p>", md);
     }
@@ -135,9 +135,9 @@ public sealed class MarkdownRendererTests
     [Fact]
     public void Render_LeftAlignedText_NoWrapper()
     {
-        var doc = Doc(new TextSpan("left", Style(justification: Alignment.Left)));
+        var receipt = Rec(new TextSpan("left", Style(justification: Alignment.Left)));
 
-        var md = _renderer.Render(doc);
+        var md = _renderer.Render(receipt);
 
         Assert.Equal("left", md);
     }
@@ -147,9 +147,9 @@ public sealed class MarkdownRendererTests
     [Fact]
     public void Render_LineBreak_OutputsNewline()
     {
-        var doc = Doc(new LineBreak());
+        var receipt = Rec(new LineBreak());
 
-        var md = _renderer.Render(doc);
+        var md = _renderer.Render(receipt);
 
         Assert.Equal(Environment.NewLine, md);
     }
@@ -159,9 +159,9 @@ public sealed class MarkdownRendererTests
     [Fact]
     public void Render_FeedLines2_OutputsTwoBlankLines()
     {
-        var doc = Doc(new FeedLines(2));
+        var receipt = Rec(new FeedLines(2));
 
-        var md = _renderer.Render(doc);
+        var md = _renderer.Render(receipt);
 
         // AppendLine() adds Environment.NewLine per iteration
         Assert.Equal(Environment.NewLine + Environment.NewLine, md);
@@ -172,9 +172,9 @@ public sealed class MarkdownRendererTests
     [Fact]
     public void Render_HorizontalRule_OutputsThreeDashes()
     {
-        var doc = Doc(new HorizontalRule());
+        var receipt = Rec(new HorizontalRule());
 
-        var md = _renderer.Render(doc);
+        var md = _renderer.Render(receipt);
 
         Assert.Equal("---" + Environment.NewLine, md);
     }
@@ -184,9 +184,9 @@ public sealed class MarkdownRendererTests
     [Fact]
     public void Render_Barcode_OutputsBarcodeToken()
     {
-        var doc = Doc(new Barcode());
+        var receipt = Rec(new Barcode());
 
-        var md = _renderer.Render(doc);
+        var md = _renderer.Render(receipt);
 
         Assert.Contains("[BARCODE]", md, StringComparison.Ordinal);
     }
@@ -194,9 +194,9 @@ public sealed class MarkdownRendererTests
     [Fact]
     public void Render_QrCode_OutputsQrToken()
     {
-        var doc = Doc(new QrCode());
+        var receipt = Rec(new QrCode());
 
-        var md = _renderer.Render(doc);
+        var md = _renderer.Render(receipt);
 
         Assert.Contains("[QR]", md, StringComparison.Ordinal);
     }
@@ -206,9 +206,9 @@ public sealed class MarkdownRendererTests
     [Fact]
     public void Render_CenteredBoldText_AppliesBoldAndAlignment()
     {
-        var doc = Doc(new TextSpan("TITLE", Style(bold: true, justification: Alignment.Center)));
+        var receipt = Rec(new TextSpan("TITLE", Style(bold: true, justification: Alignment.Center)));
 
-        var md = _renderer.Render(doc);
+        var md = _renderer.Render(receipt);
 
         Assert.Equal("<p align=\"center\">**TITLE**</p>", md);
     }
@@ -218,21 +218,21 @@ public sealed class MarkdownRendererTests
     [Fact]
     public void Render_FullReceipt_ProducesExpectedMarkdown()
     {
-        var doc = Doc(
+        var receipt = Rec(
             new TextSpan("SHOP", Style(bold: true, justification: Alignment.Center)),
             new LineBreak(),
             new TextSpan("Item 1", Style()),
             new LineBreak(),
             new HorizontalRule());
 
-        var md = _renderer.Render(doc);
+        var md = _renderer.Render(receipt);
 
         Assert.Contains("<p align=\"center\">**SHOP**</p>", md, StringComparison.Ordinal);
         Assert.Contains("Item 1", md, StringComparison.Ordinal);
         Assert.Contains("---", md, StringComparison.Ordinal);
     }
 
-    // ---- End-to-end: builder -> encoder -> decoder -> executor -> renderer ----
+    // ---- End-to-end: builder -> encoder -> decoder -> executor -> emulator -> renderer ----
 
     [Fact]
     public void Render_EndToEnd_BuilderEncoderDecoderExecutorRenderer()
@@ -241,9 +241,9 @@ public sealed class MarkdownRendererTests
         builder.Align(Alignment.Center).BoldOn().PrintLine("RECEIPT").BoldOff();
         var bytes = new BinaryEncoder().Encode(builder.Build()).Value;
 
-        var executor = new ProgramExecutor(new InstructionDecoder(), new InstructionExecutor());
-        var document = executor.Execute(bytes);
-        var md = _renderer.Render(document);
+        var emulator = new PrinterEmulator(new InstructionDecoder(), new InstructionExecutor());
+        var history = emulator.Emulate(bytes).Value!;
+        var md = _renderer.Render(history[^1].Receipt);
 
         Assert.Contains("RECEIPT", md, StringComparison.Ordinal);
         Assert.Contains("---", md, StringComparison.Ordinal);

@@ -6,7 +6,7 @@ using Cashregister.Printmon.Instructions.Layout;
 
 namespace Cashregister.Printmon.Emulator;
 
-public sealed record DocumentIr(ImmutableArray<IDocumentElement> Elements);
+public sealed record Receipt(ImmutableArray<IDocumentElement> Elements);
 
 public abstract record IDocumentElement;
 

@@ -15,7 +15,7 @@ services.AddScoped<TestTool>();
 
 services.AddScoped<IInstructionDecoder, InstructionDecoder>();
 services.AddScoped<IInstructionExecutor, InstructionExecutor>();
-services.AddScoped<IProgramExecutor, ProgramExecutor>();
+services.AddScoped<IPrinterEmulator, PrinterEmulator>();
 services.AddScoped<IMarkdownRenderer, MarkdownRenderer>();
 services.AddScoped<EmulateTool>();
 

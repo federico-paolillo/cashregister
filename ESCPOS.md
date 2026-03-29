@@ -123,11 +123,11 @@ After implementing a new instruction, append a row to this table.
 ```
 Cashregister.Printmon.Emulator/
 ├── PrinterState.cs        ← immutable printer configuration snapshot
-├── DocumentIr.cs          ← IDocumentElement hierarchy + TextStyle
-├── PrinterDocument.cs     ← state+elements pair (time-travel step)
+├── Receipt.cs             ← IDocumentElement hierarchy + TextStyle + Receipt
+├── Printer.cs             ← state+receipt pair (time-travel step)
 ├── InstructionDecoder.cs  ← IInstructionDecoder + InstructionDecoder
 ├── InstructionExecutor.cs ← IInstructionExecutor + InstructionExecutor
-├── ProgramExecutor.cs     ← IProgramExecutor + ProgramExecutor
+├── PrinterEmulator.cs     ← IPrinterEmulator + PrinterEmulator
 └── MarkdownRenderer.cs    ← IMarkdownRenderer + MarkdownRenderer
 Cashregister.Printmon.Emulator.Tests/
 ```
@@ -141,17 +141,17 @@ byte[] ──► InstructionDecoder ──► Instruction[]
                                        │
                               InstructionExecutor (per step)
                                        │
-                              PrinterDocument (state + elements)
+                              Printer (state + receipt)
                                        │
-                              ProgramExecutor (orchestrator)
+                              PrinterEmulator (orchestrator)
                                        │
-                              DocumentIr ──► MarkdownRenderer ──► string
+                              ImmutableArray<Printer> ──► history[^1].Receipt ──► MarkdownRenderer ──► string
 ```
 
 - `InstructionDecoder` is the inverse of `BinaryEncoder`: same byte sequences, decoded back to instruction records.
-- `InstructionExecutor` is a pure function. Given the current `PrinterState` and one `Instruction`, it returns a `PrinterDocument` containing the next state and zero or more `IDocumentElement` values.
-- `ProgramExecutor` wires the pipeline together. `Execute` returns a flat `DocumentIr`. `ExecuteWithHistory` returns the full trace, one `PrinterDocument` per instruction, enabling time-travel inspection.
-- `MarkdownRenderer` maps `IDocumentElement` values to Markdown text.
+- `InstructionExecutor` is a pure function: `Printer Execute(Printer printer, Instruction instruction)`. Each call takes the full current `Printer` and returns a new one — new elements are appended to the receipt, state changes are applied. Each execution reads like `printer = printer + instruction`.
+- `PrinterEmulator` wires the pipeline together. `Emulate` always returns the full trace — one `Printer` per instruction — enabling time-travel inspection. The final receipt is `history[^1].Receipt`.
+- `MarkdownRenderer` maps a `Receipt` to Markdown text.
 
 ### PrinterState
 
@@ -178,7 +178,7 @@ An immutable `sealed record` with init-only properties representing the printer'
 
 `PrinterState.Default` is the static singleton representing these defaults. `InitializeInstruction` always resets to it.
 
-### DocumentIr element hierarchy
+### Receipt element hierarchy
 
 ```
 abstract record IDocumentElement
@@ -193,9 +193,9 @@ abstract record IDocumentElement
 
 `TextStyle` is a formatting snapshot taken at the moment a `TextInstruction` is executed. It carries: `Bold`, `Underline`, `DoubleStrike`, `Font`, `Rotation`, `UpsideDown`, `Reverse`, `WidthMultiplier`, `HeightMultiplier`, `Justification`.
 
-`DocumentIr(ImmutableArray<IDocumentElement> Elements)` is the final output of a full program execution.
+`Receipt(ImmutableArray<IDocumentElement> Elements)` is the accumulated output of all executed instructions. Renderers consume a `Receipt` directly.
 
-`PrinterDocument(PrinterState State, ImmutableArray<IDocumentElement> Elements)` pairs the state after one instruction with the elements it emitted. The time-travel history is `ImmutableArray<PrinterDocument>` — one entry per instruction.
+`Printer(PrinterState State, Receipt Receipt)` is the emulator's representation of the hardware: `State` is the current printer configuration, `Receipt` is the paper being printed. Each instruction produces a new `Printer` where state may change and new elements may be appended to the receipt. The time-travel history is `ImmutableArray<Printer>` — one entry per instruction. `Printer.Default` is the initial power-on state with an empty receipt.
 
 ### Decoder scope
 
@@ -216,7 +216,7 @@ GS V disambiguation:
 
 ### Executor behavior
 
-State-modifying instructions return a new `PrinterState` and emit no elements. Content-emitting instructions return the unchanged state plus one or more elements:
+State-modifying instructions update `PrinterState` and append no elements. Content-emitting instructions leave state unchanged and append one or more elements to the receipt:
 
 | Instruction | Element emitted |
 |---|---|

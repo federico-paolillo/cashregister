@@ -1,6 +1,9 @@
 using System.Collections.Immutable;
 using System.Text;
 
+using Cashregister.Factories;
+using Cashregister.Printmon;
+using Cashregister.Printmon.Emulator.Problems;
 using Cashregister.Printmon.Instructions;
 using Cashregister.Printmon.Instructions.CodePage;
 using Cashregister.Printmon.Instructions.Core;
@@ -15,12 +18,12 @@ namespace Cashregister.Printmon.Emulator;
 
 public interface IInstructionDecoder
 {
-    ImmutableArray<Instruction> Decode(ReadOnlyMemory<byte> data);
+    Result<PrintProgram> Decode(ReadOnlyMemory<byte> data);
 }
 
 public sealed class InstructionDecoder : IInstructionDecoder
 {
-    public ImmutableArray<Instruction> Decode(ReadOnlyMemory<byte> data)
+    public Result<PrintProgram> Decode(ReadOnlyMemory<byte> data)
     {
         var span = data.Span;
         var instructions = ImmutableArray.CreateBuilder<Instruction>();
@@ -42,16 +45,18 @@ public sealed class InstructionDecoder : IInstructionDecoder
 
                 case 0x10: // DLE
                     // DLE DC4 0x01 m t -> RealTimePulseInstruction
-                    RequireBytes(span, i, 5);
+                    if (RequireBytes(span, i, 5) is { } truncDle)
+                        return Result.Error<PrintProgram>(truncDle);
                     if (span[i + 1] != 0x14 || span[i + 2] != 0x01)
-                        throw new InvalidOperationException(
-                            $"Unknown ESC/POS sequence 0x{span[i]:X2} 0x{span[i + 1]:X2} 0x{span[i + 2]:X2} at offset {i}.");
+                        return Result.Error<PrintProgram>(new UnrecognizedBytesProblem(
+                            i, $"0x{span[i]:X2} 0x{span[i + 1]:X2} 0x{span[i + 2]:X2}"));
                     instructions.Add(new RealTimePulseInstruction((ConnectorPin)span[i + 3], span[i + 4]));
                     i += 5;
                     break;
 
                 case 0x1B: // ESC
-                    RequireBytes(span, i, 2);
+                    if (RequireBytes(span, i, 2) is { } truncEsc)
+                        return Result.Error<PrintProgram>(truncEsc);
                     switch (span[i + 1])
                     {
                         case 0x40: // ESC @ -- Initialize
@@ -60,7 +65,7 @@ public sealed class InstructionDecoder : IInstructionDecoder
                             break;
 
                         case 0x21: // ESC ! n -- print mode / reset print mode
-                            RequireBytes(span, i, 3);
+                            if (RequireBytes(span, i, 3) is { } t) return Result.Error<PrintProgram>(t);
                             var printModeN = span[i + 2];
                             instructions.Add(printModeN == 0
                                 ? new ResetPrintModeInstruction()
@@ -69,19 +74,19 @@ public sealed class InstructionDecoder : IInstructionDecoder
                             break;
 
                         case 0x20: // ESC SP n -- right spacing
-                            RequireBytes(span, i, 3);
+                            if (RequireBytes(span, i, 3) is { } t2) return Result.Error<PrintProgram>(t2);
                             instructions.Add(new RightSpacingInstruction(span[i + 2]));
                             i += 3;
                             break;
 
                         case 0x24: // ESC $ nL nH -- absolute position
-                            RequireBytes(span, i, 4);
+                            if (RequireBytes(span, i, 4) is { } t3) return Result.Error<PrintProgram>(t3);
                             instructions.Add(new AbsolutePositionInstruction((ushort)(span[i + 2] | (span[i + 3] << 8))));
                             i += 4;
                             break;
 
                         case 0x2D: // ESC - n -- underline
-                            RequireBytes(span, i, 3);
+                            if (RequireBytes(span, i, 3) is { } t4) return Result.Error<PrintProgram>(t4);
                             var underlineN = span[i + 2];
                             instructions.Add(new UnderlineInstruction(underlineN != 0, (Thickness)underlineN));
                             i += 3;
@@ -93,7 +98,7 @@ public sealed class InstructionDecoder : IInstructionDecoder
                             break;
 
                         case 0x33: // ESC 3 n -- set line spacing
-                            RequireBytes(span, i, 3);
+                            if (RequireBytes(span, i, 3) is { } t5) return Result.Error<PrintProgram>(t5);
                             instructions.Add(new SetLineSpacingInstruction(span[i + 2]));
                             i += 3;
                             break;
@@ -107,56 +112,55 @@ public sealed class InstructionDecoder : IInstructionDecoder
                                 i++;
                             }
                             if (i >= span.Length)
-                                throw new InvalidOperationException(
-                                    $"Truncated ESC D sequence: missing NUL terminator at offset {i}.");
+                                return Result.Error<PrintProgram>(new TruncatedSequenceProblem(i, 1, 0));
                             i++; // consume NUL
                             instructions.Add(new SetHorizontalTabsInstruction(tabPositions.ToImmutable()));
                             break;
 
                         case 0x45: // ESC E n -- emphasize
-                            RequireBytes(span, i, 3);
+                            if (RequireBytes(span, i, 3) is { } t6) return Result.Error<PrintProgram>(t6);
                             instructions.Add(new EmphasizeInstruction(span[i + 2] != 0));
                             i += 3;
                             break;
 
                         case 0x47: // ESC G n -- double-strike
-                            RequireBytes(span, i, 3);
+                            if (RequireBytes(span, i, 3) is { } t7) return Result.Error<PrintProgram>(t7);
                             instructions.Add(new DoubleStrikeInstruction(span[i + 2] != 0));
                             i += 3;
                             break;
 
                         case 0x4A: // ESC J n -- feed paper
-                            RequireBytes(span, i, 3);
+                            if (RequireBytes(span, i, 3) is { } t8) return Result.Error<PrintProgram>(t8);
                             instructions.Add(new FeedPaperInstruction(span[i + 2]));
                             i += 3;
                             break;
 
                         case 0x4D: // ESC M n -- select font
-                            RequireBytes(span, i, 3);
+                            if (RequireBytes(span, i, 3) is { } t9) return Result.Error<PrintProgram>(t9);
                             instructions.Add(new SelectFontInstruction((CharacterFont)span[i + 2]));
                             i += 3;
                             break;
 
                         case 0x56: // ESC V n -- rotation
-                            RequireBytes(span, i, 3);
+                            if (RequireBytes(span, i, 3) is { } t10) return Result.Error<PrintProgram>(t10);
                             instructions.Add(new RotationInstruction(span[i + 2] != 0));
                             i += 3;
                             break;
 
                         case 0x5C: // ESC \ nL nH -- relative position
-                            RequireBytes(span, i, 4);
+                            if (RequireBytes(span, i, 4) is { } t11) return Result.Error<PrintProgram>(t11);
                             instructions.Add(new RelativePositionInstruction((ushort)(span[i + 2] | (span[i + 3] << 8))));
                             i += 4;
                             break;
 
                         case 0x61: // ESC a n -- justification
-                            RequireBytes(span, i, 3);
+                            if (RequireBytes(span, i, 3) is { } t12) return Result.Error<PrintProgram>(t12);
                             instructions.Add(new JustifyInstruction((Alignment)span[i + 2]));
                             i += 3;
                             break;
 
                         case 0x64: // ESC d n -- feed lines
-                            RequireBytes(span, i, 3);
+                            if (RequireBytes(span, i, 3) is { } t13) return Result.Error<PrintProgram>(t13);
                             instructions.Add(new FeedLinesInstruction(span[i + 2]));
                             i += 3;
                             break;
@@ -167,53 +171,54 @@ public sealed class InstructionDecoder : IInstructionDecoder
                             break;
 
                         case 0x70: // ESC p m t1 t2 -- generate pulse
-                            RequireBytes(span, i, 5);
+                            if (RequireBytes(span, i, 5) is { } t14) return Result.Error<PrintProgram>(t14);
                             instructions.Add(new GeneratePulseInstruction((ConnectorPin)span[i + 2], span[i + 3], span[i + 4]));
                             i += 5;
                             break;
 
                         case 0x74: // ESC t n -- select code page
-                            RequireBytes(span, i, 3);
+                            if (RequireBytes(span, i, 3) is { } t15) return Result.Error<PrintProgram>(t15);
                             instructions.Add(new SelectCodePageInstruction((CharacterCodePage)span[i + 2]));
                             i += 3;
                             break;
 
                         case 0x7B: // ESC { n -- upside-down
-                            RequireBytes(span, i, 3);
+                            if (RequireBytes(span, i, 3) is { } t16) return Result.Error<PrintProgram>(t16);
                             instructions.Add(new UpsideDownInstruction(span[i + 2] != 0));
                             i += 3;
                             break;
 
                         default:
-                            throw new InvalidOperationException(
-                                $"Unknown ESC/POS sequence ESC 0x{span[i + 1]:X2} at offset {i}.");
+                            return Result.Error<PrintProgram>(new UnrecognizedBytesProblem(
+                                i, $"ESC 0x{span[i + 1]:X2}"));
                     }
                     break;
 
                 case 0x1D: // GS
-                    RequireBytes(span, i, 2);
+                    if (RequireBytes(span, i, 2) is { } truncGs)
+                        return Result.Error<PrintProgram>(truncGs);
                     switch (span[i + 1])
                     {
                         case 0x21: // GS ! n -- font size
-                            RequireBytes(span, i, 3);
+                            if (RequireBytes(span, i, 3) is { } t17) return Result.Error<PrintProgram>(t17);
                             instructions.Add(new FontSizeInstruction(span[i + 2]));
                             i += 3;
                             break;
 
                         case 0x42: // GS B n -- reverse
-                            RequireBytes(span, i, 3);
+                            if (RequireBytes(span, i, 3) is { } t18) return Result.Error<PrintProgram>(t18);
                             instructions.Add(new ReverseInstruction(span[i + 2] != 0));
                             i += 3;
                             break;
 
                         case 0x4C: // GS L nL nH -- left margin
-                            RequireBytes(span, i, 4);
+                            if (RequireBytes(span, i, 4) is { } t19) return Result.Error<PrintProgram>(t19);
                             instructions.Add(new LeftMarginInstruction((ushort)(span[i + 2] | (span[i + 3] << 8))));
                             i += 4;
                             break;
 
                         case 0x56: // GS V -- cut variants
-                            RequireBytes(span, i, 3);
+                            if (RequireBytes(span, i, 3) is { } t20) return Result.Error<PrintProgram>(t20);
                             switch (span[i + 2])
                             {
                                 case 0x01: // GS V 1 -- CutInstruction
@@ -221,25 +226,25 @@ public sealed class InstructionDecoder : IInstructionDecoder
                                     i += 3;
                                     break;
                                 case 0x42: // GS V 66 n -- CutAfterInstruction
-                                    RequireBytes(span, i, 4);
+                                    if (RequireBytes(span, i, 4) is { } t21) return Result.Error<PrintProgram>(t21);
                                     instructions.Add(new CutAfterInstruction(span[i + 3]));
                                     i += 4;
                                     break;
                                 default:
-                                    throw new InvalidOperationException(
-                                        $"Unknown GS V subcommand 0x{span[i + 2]:X2} at offset {i + 2}.");
+                                    return Result.Error<PrintProgram>(new UnrecognizedBytesProblem(
+                                        i + 2, $"GS V 0x{span[i + 2]:X2}"));
                             }
                             break;
 
                         case 0x57: // GS W nL nH -- print area width
-                            RequireBytes(span, i, 4);
+                            if (RequireBytes(span, i, 4) is { } t22) return Result.Error<PrintProgram>(t22);
                             instructions.Add(new PrintAreaWidthInstruction((ushort)(span[i + 2] | (span[i + 3] << 8))));
                             i += 4;
                             break;
 
                         default:
-                            throw new InvalidOperationException(
-                                $"Unknown ESC/POS sequence GS 0x{span[i + 1]:X2} at offset {i}.");
+                            return Result.Error<PrintProgram>(new UnrecognizedBytesProblem(
+                                i, $"GS 0x{span[i + 1]:X2}"));
                     }
                     break;
 
@@ -251,18 +256,18 @@ public sealed class InstructionDecoder : IInstructionDecoder
                     break;
 
                 default:
-                    throw new InvalidOperationException(
-                        $"Unknown ESC/POS byte 0x{span[i]:X2} at offset {i}.");
+                    return Result.Error<PrintProgram>(new UnrecognizedBytesProblem(
+                        i, $"0x{span[i]:X2}"));
             }
         }
 
-        return instructions.ToImmutable();
+        return Result.Ok(new PrintProgram(instructions.ToImmutable()));
     }
 
-    private static void RequireBytes(ReadOnlySpan<byte> span, int offset, int count)
+    private static TruncatedSequenceProblem? RequireBytes(ReadOnlySpan<byte> span, int offset, int count)
     {
         if (offset + count > span.Length)
-            throw new InvalidOperationException(
-                $"Truncated ESC/POS sequence at offset {offset}: expected {count} bytes, only {span.Length - offset} available.");
+            return new TruncatedSequenceProblem(offset, count, span.Length - offset);
+        return null;
     }
 }

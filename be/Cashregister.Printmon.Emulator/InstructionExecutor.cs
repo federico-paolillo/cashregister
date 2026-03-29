@@ -1,5 +1,7 @@
 using System.Collections.Immutable;
 
+using Cashregister.Factories;
+using Cashregister.Printmon.Emulator.Problems;
 using Cashregister.Printmon.Instructions;
 using Cashregister.Printmon.Instructions.CodePage;
 using Cashregister.Printmon.Instructions.Core;
@@ -14,150 +16,158 @@ namespace Cashregister.Printmon.Emulator;
 
 public interface IInstructionExecutor
 {
-    PrinterDocument Execute(PrinterState state, Instruction instruction);
+    Result<Printer> Execute(Printer printer, Instruction instruction);
 }
 
 public sealed class InstructionExecutor : IInstructionExecutor
 {
-    public PrinterDocument Execute(PrinterState state, Instruction instruction)
+    public Result<Printer> Execute(Printer printer, Instruction instruction)
     {
-        ArgumentNullException.ThrowIfNull(state);
+        ArgumentNullException.ThrowIfNull(printer);
         ArgumentNullException.ThrowIfNull(instruction);
 
         return instruction switch
         {
             // Core
             NoOpInstruction =>
-                new PrinterDocument(state, []),
+                Result.Ok(printer),
 
             InitializeInstruction =>
-                new PrinterDocument(PrinterState.Default, []),
+                Result.Ok(printer with { State = PrinterState.Default }),
 
             TextInstruction text =>
-                new PrinterDocument(state, [new TextSpan(text.Text, StyleFrom(state))]),
+                Result.Ok(Emit(printer, new TextSpan(text.Text, StyleFrom(printer.State)))),
 
             LineFeedInstruction =>
-                new PrinterDocument(state, [new LineBreak()]),
+                Result.Ok(Emit(printer, new LineBreak())),
 
             // Formatting
             ResetPrintModeInstruction =>
-                new PrinterDocument(state with
+                Result.Ok(printer with
                 {
-                    Bold = false,
-                    Underline = Thickness.None,
-                    Font = CharacterFont.A,
-                    WidthMultiplier = 1,
-                    HeightMultiplier = 1
-                }, []),
+                    State = printer.State with
+                    {
+                        Bold = false,
+                        Underline = Thickness.None,
+                        Font = CharacterFont.A,
+                        WidthMultiplier = 1,
+                        HeightMultiplier = 1
+                    }
+                }),
 
             SelectPrintModeInstruction spm =>
-                new PrinterDocument(state with
+                Result.Ok(printer with
                 {
-                    Font = spm.UseFontB ? CharacterFont.B : CharacterFont.A,
-                    Bold = spm.Flags.HasFlag(FormatMode.Emphasized),
-                    WidthMultiplier = (byte)(spm.Flags.HasFlag(FormatMode.DoubleWidth) ? 2 : 1),
-                    HeightMultiplier = (byte)(spm.Flags.HasFlag(FormatMode.DoubleHeight) ? 2 : 1),
-                    Underline = spm.Flags.HasFlag(FormatMode.Underline) ? Thickness.Thin : Thickness.None
-                }, []),
+                    State = printer.State with
+                    {
+                        Font = spm.UseFontB ? CharacterFont.B : CharacterFont.A,
+                        Bold = spm.Flags.HasFlag(FormatMode.Emphasized),
+                        WidthMultiplier = (byte)(spm.Flags.HasFlag(FormatMode.DoubleWidth) ? 2 : 1),
+                        HeightMultiplier = (byte)(spm.Flags.HasFlag(FormatMode.DoubleHeight) ? 2 : 1),
+                        Underline = spm.Flags.HasFlag(FormatMode.Underline) ? Thickness.Thin : Thickness.None
+                    }
+                }),
 
             UnderlineInstruction u =>
-                new PrinterDocument(state with
-                {
-                    Underline = u.Enabled ? u.Thickness : Thickness.None
-                }, []),
+                Result.Ok(printer with { State = printer.State with { Underline = u.Enabled ? u.Thickness : Thickness.None } }),
 
             EmphasizeInstruction e =>
-                new PrinterDocument(state with { Bold = e.Enabled }, []),
+                Result.Ok(printer with { State = printer.State with { Bold = e.Enabled } }),
 
             DoubleStrikeInstruction ds =>
-                new PrinterDocument(state with { DoubleStrike = ds.Enabled }, []),
+                Result.Ok(printer with { State = printer.State with { DoubleStrike = ds.Enabled } }),
 
             SelectFontInstruction sf =>
-                new PrinterDocument(state with { Font = sf.Font }, []),
+                Result.Ok(printer with { State = printer.State with { Font = sf.Font } }),
 
             FontSizeInstruction fs =>
-                new PrinterDocument(state with
+                Result.Ok(printer with
                 {
-                    WidthMultiplier = (byte)((fs.Size >> 4) + 1),
-                    HeightMultiplier = (byte)((fs.Size & 0x0F) + 1)
-                }, []),
+                    State = printer.State with
+                    {
+                        WidthMultiplier = (byte)((fs.Size >> 4) + 1),
+                        HeightMultiplier = (byte)((fs.Size & 0x0F) + 1)
+                    }
+                }),
 
             RotationInstruction r =>
-                new PrinterDocument(state with { Rotation = r.Enabled }, []),
+                Result.Ok(printer with { State = printer.State with { Rotation = r.Enabled } }),
 
             UpsideDownInstruction ud =>
-                new PrinterDocument(state with { UpsideDown = ud.Enabled }, []),
+                Result.Ok(printer with { State = printer.State with { UpsideDown = ud.Enabled } }),
 
             ReverseInstruction rev =>
-                new PrinterDocument(state with { Reverse = rev.Enabled }, []),
+                Result.Ok(printer with { State = printer.State with { Reverse = rev.Enabled } }),
 
             // Layout
             JustifyInstruction j =>
-                new PrinterDocument(state with { Justification = j.Alignment }, []),
+                Result.Ok(printer with { State = printer.State with { Justification = j.Alignment } }),
 
             AbsolutePositionInstruction =>
-                new PrinterDocument(state, []),
+                Result.Ok(printer),
 
             RelativePositionInstruction =>
-                new PrinterDocument(state, []),
+                Result.Ok(printer),
 
             LeftMarginInstruction lm =>
-                new PrinterDocument(state with { LeftMargin = lm.Margin }, []),
+                Result.Ok(printer with { State = printer.State with { LeftMargin = lm.Margin } }),
 
             RightSpacingInstruction rs =>
-                new PrinterDocument(state with { RightSpacing = rs.Spacing }, []),
+                Result.Ok(printer with { State = printer.State with { RightSpacing = rs.Spacing } }),
 
             PrintAreaWidthInstruction pw =>
-                new PrinterDocument(state with { PrintAreaWidth = pw.Width }, []),
+                Result.Ok(printer with { State = printer.State with { PrintAreaWidth = pw.Width } }),
 
             // Feed
             ResetLineSpacingInstruction =>
-                new PrinterDocument(state with { LineSpacing = 30 }, []),
+                Result.Ok(printer with { State = printer.State with { LineSpacing = 30 } }),
 
             SetLineSpacingInstruction sls =>
-                new PrinterDocument(state with { LineSpacing = sls.Spacing }, []),
+                Result.Ok(printer with { State = printer.State with { LineSpacing = sls.Spacing } }),
 
             FeedLinesInstruction fl =>
-                new PrinterDocument(state, [new FeedLines(fl.Lines)]),
+                Result.Ok(Emit(printer, new FeedLines(fl.Lines))),
 
             FeedPaperInstruction =>
-                new PrinterDocument(state, [new FeedLines(1)]),
+                Result.Ok(Emit(printer, new FeedLines(1))),
 
             // Motion
             HorizontalTabInstruction =>
-                new PrinterDocument(state, [new TextSpan("\t", StyleFrom(state))]),
+                Result.Ok(Emit(printer, new TextSpan("\t", StyleFrom(printer.State)))),
 
             SetHorizontalTabsInstruction st =>
-                new PrinterDocument(state with { TabPositions = st.Positions }, []),
+                Result.Ok(printer with { State = printer.State with { TabPositions = st.Positions } }),
 
             // Cut
             PartialCutInstruction =>
-                new PrinterDocument(state, [new HorizontalRule()]),
+                Result.Ok(Emit(printer, new HorizontalRule())),
 
             CutAfterInstruction =>
-                new PrinterDocument(state, [new HorizontalRule()]),
+                Result.Ok(Emit(printer, new HorizontalRule())),
 
             HalfCutInstruction =>
-                new PrinterDocument(state, [new HorizontalRule()]),
+                Result.Ok(Emit(printer, new HorizontalRule())),
 
             CutInstruction =>
-                new PrinterDocument(state, [new HorizontalRule()]),
+                Result.Ok(Emit(printer, new HorizontalRule())),
 
             // CodePage
             SelectCodePageInstruction cp =>
-                new PrinterDocument(state with { CodePage = cp.Page }, []),
+                Result.Ok(printer with { State = printer.State with { CodePage = cp.Page } }),
 
             // Peripheral
             GeneratePulseInstruction =>
-                new PrinterDocument(state, []),
+                Result.Ok(printer),
 
             RealTimePulseInstruction =>
-                new PrinterDocument(state, []),
+                Result.Ok(printer),
 
-            _ => throw new NotSupportedException(
-                $"Instruction {instruction.GetType().Name} is not supported by this executor.")
+            _ => Result.Error<Printer>(new UnsupportedInstructionProblem(instruction.GetType().Name))
         };
     }
+
+    private static Printer Emit(Printer printer, IDocumentElement element) =>
+        printer with { Receipt = new Receipt(printer.Receipt.Elements.Add(element)) };
 
     private static TextStyle StyleFrom(PrinterState s) => new(
         Bold: s.Bold,

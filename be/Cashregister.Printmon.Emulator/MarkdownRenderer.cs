@@ -7,18 +7,18 @@ namespace Cashregister.Printmon.Emulator;
 
 public interface IMarkdownRenderer
 {
-    string Render(DocumentIr document);
+    string Render(Receipt receipt);
 }
 
 public sealed class MarkdownRenderer : IMarkdownRenderer
 {
-    public string Render(DocumentIr document)
+    public string Render(Receipt receipt)
     {
-        ArgumentNullException.ThrowIfNull(document);
+        ArgumentNullException.ThrowIfNull(receipt);
 
         var sb = new StringBuilder();
 
-        foreach (var element in document.Elements)
+        foreach (var element in receipt.Elements)
         {
             switch (element)
             {
