@@ -42,3 +42,20 @@ export interface PlaceOrderItemDto {
   article: string;
   quantity: number;
 }
+
+export interface OrderItemDto {
+  id: string;
+  article: string;
+  description: string;
+  price: number;
+  quantity: number;
+}
+
+export interface OrderDto {
+  id: string;
+  number: string;
+  date: number;
+  total: number;
+  totalOverride: number | null;
+  items: OrderItemDto[];
+}

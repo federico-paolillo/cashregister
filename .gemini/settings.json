@@ -14,7 +14,10 @@
     "disableYoloMode": true
   },
   "general": {
-    "defaultApprovalMode": "plan"
+    "defaultApprovalMode": "plan",
+    "plan": {
+      "modelRouting": true
+    }
   },
   "experimental": {
     "enableAgents": true,

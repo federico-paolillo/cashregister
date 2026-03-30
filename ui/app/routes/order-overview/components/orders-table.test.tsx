@@ -1,7 +1,20 @@
-import { describe, it, expect, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, cleanup } from "@testing-library/react";
 import { OrdersTable } from "@cashregister/routes/order-overview/components/orders-table";
+import * as reactRouter from "react-router";
 import type { OrderListItemDto } from "@cashregister/model";
+
+vi.mock("react-router", async (importOriginal) => {
+  const actual = await importOriginal<typeof reactRouter>();
+  return {
+    ...actual,
+    useNavigate: vi.fn(),
+  };
+});
+
+beforeEach(() => {
+  vi.mocked(reactRouter.useNavigate).mockReturnValue(vi.fn());
+});
 
 afterEach(cleanup);
 

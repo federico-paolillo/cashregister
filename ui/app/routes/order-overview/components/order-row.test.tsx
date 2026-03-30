@@ -1,7 +1,20 @@
-import { describe, it, expect, afterEach } from "vitest";
-import { render, screen, cleanup } from "@testing-library/react";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { render, screen, cleanup, fireEvent } from "@testing-library/react";
 import { OrderRow } from "@cashregister/routes/order-overview/components/order-row";
+import * as reactRouter from "react-router";
 import type { OrderListItemDto } from "@cashregister/model";
+
+vi.mock("react-router", async (importOriginal) => {
+  const actual = await importOriginal<typeof reactRouter>();
+  return {
+    ...actual,
+    useNavigate: vi.fn(),
+  };
+});
+
+beforeEach(() => {
+  vi.mocked(reactRouter.useNavigate).mockReturnValue(vi.fn());
+});
 
 afterEach(() => {
   cleanup();
@@ -53,5 +66,16 @@ describe("OrderRow", () => {
     renderRow({ striped: false });
     const row = screen.getByText("ORD-001").closest("tr");
     expect(row?.className).not.toContain("bg-gray-50");
+  });
+
+  it("navigates to the order detail page on click", () => {
+    const mockNavigate = vi.fn();
+    vi.mocked(reactRouter.useNavigate).mockReturnValue(mockNavigate);
+
+    renderRow();
+    const row = screen.getByText("ORD-001").closest("tr")!;
+    fireEvent.click(row);
+
+    expect(mockNavigate).toHaveBeenCalledWith("/order/1");
   });
 });
