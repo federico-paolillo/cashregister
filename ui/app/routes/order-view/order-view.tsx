@@ -34,12 +34,12 @@ export default function OrderView({ loaderData }: Route.ComponentProps) {
             <OrderItemsList items={order.items} />
             <div className="mt-3 flex justify-between pt-3 font-semibold">
               <span>Total</span>
-              <span>{formatPrice(order.total)}</span>
+              <span>{formatPrice(order.totalInCents)}</span>
             </div>
-            {order.totalOverride !== null && (
+            {order.totalOverrideInCents !== null && (
               <div className="mt-1 flex justify-between text-sm">
                 <span>Overridden Total</span>
-                <span className="italic">{formatPrice(order.totalOverride)}</span>
+                <span className="italic">{formatPrice(order.totalOverrideInCents)}</span>
               </div>
             )}
           </>

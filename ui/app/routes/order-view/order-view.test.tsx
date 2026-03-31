@@ -30,11 +30,11 @@ const mockOrder: OrderDto = {
   id: "order-123",
   number: "00000000000000000042",
   date: 1700000000,
-  total: 15.5,
-  totalOverride: null,
+  totalInCents: 1550,
+  totalOverrideInCents: null,
   items: [
-    { id: "item-1", article: "art-1", description: "Espresso", price: 3.0, quantity: 2 },
-    { id: "item-2", article: "art-2", description: "Latte", price: 4.75, quantity: 2 },
+    { id: "item-1", article: "art-1", description: "Espresso", priceInCents: 300, quantity: 2 },
+    { id: "item-2", article: "art-2", description: "Latte", priceInCents: 475, quantity: 2 },
   ],
 };
 
@@ -89,16 +89,16 @@ describe("Order View Page", () => {
     expect(screen.getByText("15.50")).toBeDefined();
   });
 
-  it("does not show overridden total when totalOverride is null", () => {
+  it("does not show overridden total when totalOverrideInCents is null", () => {
     renderOrderView();
 
     expect(screen.queryByText("Overridden Total")).toBeNull();
   });
 
-  it("shows overridden total when totalOverride is not null", () => {
+  it("shows overridden total when totalOverrideInCents is not null", () => {
     const result: Result<OrderDto> = {
       ok: true,
-      value: { ...mockOrder, totalOverride: 12.0 },
+      value: { ...mockOrder, totalOverrideInCents: 1200 },
     };
 
     renderOrderView({ loaderData: result });

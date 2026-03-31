@@ -42,7 +42,8 @@ The backend architecture design decisions where guided by the following line of 
 `be/Cashregister.Database/Mappers/OrderListItemMapper.cs:18` computes the total as `entity.Items.Sum(i => i.Quantity * i.Price)` and never checks `entity.TotalOverride`. The sibling query `FetchOrdersListQuery.cs:27-29` correctly uses a ternary on `TotalOverride`. The full-entity mapper `OrderEntityMapper.cs:32` also handles it. This means the same order can report different totals depending on which code path fetches it.
 
 **Fix:** Add the `TotalOverride` check to `OrderListItemMapper.FromEntity`, mirroring the projection in `FetchOrdersListQuery`.
-**Status:** TODO
+**Status:** DONE
+**Decision:** Added the `TotalOverride` check to `OrderListItemMapper.FromEntity`.
 
 ### 1.2 Frontend edit action uses POST instead of PUT (MEDIUM)
 
@@ -57,14 +58,16 @@ The backend architecture design decisions where guided by the following line of 
 `ui/app/routes/articles/articles.tsx:150` passes `priceInCents: editingArticle.price * 100` as initial data to the edit form. But `editingArticle.price` is already the decimal value returned by `Cents.AsPayableMoney()` (e.g. `3.50`), so `* 100` converts it back to cents. However, `AsPayableMoney()` rounds to the nearest 0.05 CHF. If the original stored value was `349` cents, the API returns `3.45` (rounded to 0.05), and the edit form pre-fills `345` - losing 4 cents. This is only a problem if the rounding in `AsPayableMoney` actually changes the value and the user submits the edit without correcting it.
 
 **Fix:** The cashier is aware that whatever price in cents it enters it will be rounded to 0.05. We should ensure that this rounding is enforced by the domain and application layer before persistence. Do not make the database aware of this concern.
-**Status:** TODO
+**Status:** DONE
+**Decision:** Enforced 5-cent rounding in the `Cents.From` factory method. All `Cents` instances are now automatically rounded upon creation.
 
 ### 1.4 `Cents` allows negative values (LOW)
 
 `be/Cashregister.Domain/Cents.cs` accepts any `long`, including negatives. `Identifier.From` validates non-null/whitespace, `TimeStamp.From` validates positive - but `Cents.From` has no guard. Negative prices would propagate silently.
 
 **Fix:** Add `ArgumentOutOfRangeException.ThrowIfNegative(total)` in `Cents.From`.
-**Status:** TODO
+**Status:** DONE
+**Decision:** Added `ArgumentOutOfRangeException.ThrowIfNegative` to the `Cents.From` method.
 
 ## 2. Inconsistencies with AGENTS.md
 
@@ -254,7 +257,8 @@ Edit (`✎`) and delete (`✕`) in `article-row.tsx:28,36` use Unicode symbols, 
 `ui/app/money.ts:formatPrice` uses `toFixed(2)` (locale-unaware, always uses `.` as separator). `ui/app/routes/articles/components/article-row.tsx:16` uses `toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })` (locale-aware, uses the browser's locale separator). The same price will display as `3.50` in one place and `3,50` in another depending on locale. For a Swiss town fair, the locale separator matters.
 
 **Fix:** Use `formatPrice` everywhere, or switch `formatPrice` to use `toLocaleString` and use it consistently. One function, one behavior.
-**Status:** TODO
+**Status:** DONE
+**Decision:** Centralised all price formatting to `formatPrice()` in `money.ts`. All inline `toLocaleString` calls in components were replaced with `formatPrice`. `formatPrice` uses `toFixed(2)` for locale-independent output.
 
 ### 4.8 `IFetchArticleQuery` vs `IFetchArticlesQuery` naming (LOW)
 
@@ -399,7 +403,8 @@ The project is named `Cashregister.Commons` but the root namespace is `Cashregis
 The backend sends prices as `decimal` via JSON (e.g. `3.50`). The frontend `model.ts:10` types this as `number`. JavaScript `number` is IEEE 754 double, which cannot represent all decimals exactly. For a cash register, `3.50` is fine, but `0.1 + 0.2 !== 0.3` in JS. The `money.ts` utility uses `Math.round` to paper over this.
 
 **Fix:** I did a very dumb thing with this. We should always move cents back and forth and let the frontend handle presentation. Backend should still apply payble money coercion to the amounts coming in and the frontend should just present them in decimal notation
-**Status:** TODO
+**Status:** DONE
+**Decision:** All API DTOs updated to use `long` cents instead of `decimal`. Frontend updated to use these cent values and format them for display only.
 
 ### 7.5 `ChangeArticleTransaction` fetches article only to check existence (LOW)
 
@@ -419,15 +424,12 @@ The backend sends prices as `decimal` via JSON (e.g. `3.50`). The frontend `mode
 
 ### Priority TODO items
 
-1. **1.1 `OrderListItemMapper` missing `TotalOverride`** (HIGH) - data correctness bug, same order shows different totals
-2. **1.3 Frontend price mismatch on edit** (MEDIUM) - enforce 0.05 rounding in domain layer before persistence
-3. **7.4 Backend sends decimal prices, should send cents** (MEDIUM) - fundamental data contract issue affecting frontend correctness
-4. **3.1/3.2/3.3/4.1 Blanket `BadRequest` in API handlers** (MEDIUM) - masks 500s as 400s, apply `switch` pattern everywhere
-5. **5.2 API returns no error body** (MEDIUM) - wire `Problem` types to RFC 9457 ProblemDetails
-6. **5.6 No input validation on API DTOs** (MEDIUM) - empty descriptions and negative prices pass through
-7. **3.10 EF Core relationships configured from both sides** (MEDIUM) - redundant and fragile
-8. **4.7 Two different price formatting strategies** (MEDIUM) - `toFixed` vs `toLocaleString` inconsistency
-9. **5.7 Experimental `command`/`commandfor` attributes** (LOW) - modal Cancel button broken in non-Chrome browsers
+1. **3.1/3.2/3.3/4.1 Blanket `BadRequest` in API handlers** (MEDIUM) - masks 500s as 400s, apply `switch` pattern everywhere
+2. **5.2 API returns no error body** (MEDIUM) - wire `Problem` types to RFC 9457 ProblemDetails
+3. **5.6 No input validation on API DTOs** (MEDIUM) - empty descriptions and negative prices pass through
+4. **3.10 EF Core relationships configured from both sides** (MEDIUM) - redundant and fragile
+5. **4.7 Two different price formatting strategies** (MEDIUM) - `toFixed` vs `toLocaleString` inconsistency
+6. **5.7 Experimental `command`/`commandfor` attributes** (LOW) - modal Cancel button broken in non-Chrome browsers
 
 ### Architecture evaluation
 

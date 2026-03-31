@@ -125,10 +125,10 @@ public sealed class OrdersEndpointTests(
         Assert.Equal(placeOrderResult.Value.Value, order.Id);
         Assert.NotEmpty(order.Number);
         Assert.True(order.Date > 0);
-        Assert.Equal(15m, order.Total);
+        Assert.Equal(1500L, order.TotalInCents);
         Assert.Single(order.Items);
         Assert.Equal("Test article for order", order.Items[0].Description);
-        Assert.Equal(5m, order.Items[0].Price);
+        Assert.Equal(500L, order.Items[0].PriceInCents);
         Assert.Equal(3u, order.Items[0].Quantity);
     }
 
@@ -173,15 +173,15 @@ public sealed class OrdersEndpointTests(
 
         Assert.NotNull(order);
         Assert.Equal(2, order.Items.Length);
-        Assert.Equal(45m, order.Total);
+        Assert.Equal(4500L, order.TotalInCents);
 
         var itemA = order.Items.Single(i => i.Description == "Article A");
-        Assert.Equal(10m, itemA.Price);
+        Assert.Equal(1000L, itemA.PriceInCents);
         Assert.Equal(2u, itemA.Quantity);
         Assert.Equal(article1Id.Value, itemA.Article);
 
         var itemB = order.Items.Single(i => i.Description == "Article B");
-        Assert.Equal(25m, itemB.Price);
+        Assert.Equal(2500L, itemB.PriceInCents);
         Assert.Equal(1u, itemB.Quantity);
         Assert.Equal(article2Id.Value, itemB.Article);
     }
@@ -278,7 +278,7 @@ public sealed class OrdersEndpointTests(
         Assert.Single(ordersPage.Items);
         Assert.Equal(orderId.Value, ordersPage.Items[0].Id);
         Assert.NotEmpty(ordersPage.Items[0].Number);
-        Assert.Equal(15m, ordersPage.Items[0].Total);
+        Assert.Equal(1500L, ordersPage.Items[0].TotalInCents);
         Assert.True(ordersPage.Items[0].Date > 0);
     }
 
@@ -392,8 +392,8 @@ public sealed class OrdersEndpointTests(
 
         var order = await getResponse.Content.ReadFromJsonAsync<OrderDto>();
         Assert.NotNull(order);
-        Assert.Equal(10.00m, order.TotalOverride);
-        Assert.Equal(10.00m, order.Total);
+        Assert.Equal(1000L, order.TotalOverrideInCents);
+        Assert.Equal(1000L, order.TotalInCents);
     }
 
     [Fact]
@@ -420,8 +420,8 @@ public sealed class OrdersEndpointTests(
 
         var order = await getResponse.Content.ReadFromJsonAsync<OrderDto>();
         Assert.NotNull(order);
-        Assert.Null(order.TotalOverride);
-        Assert.Equal(15m, order.Total);
+        Assert.Null(order.TotalOverrideInCents);
+        Assert.Equal(1500L, order.TotalInCents);
     }
 
     private async Task<Identifier> CreateArticleForOrderAsync(string description, long priceInCents)

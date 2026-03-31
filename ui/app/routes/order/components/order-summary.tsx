@@ -9,7 +9,7 @@ interface CartEntry {
 interface OrderSummaryProps {
   cartEntries: CartEntry[];
   hasOverride: boolean;
-  displayTotal: number;
+  displayTotalCents: number;
   totalOverride: string;
   onTotalOverrideChange: (value: string) => void;
   onDecrease: (articleId: string) => void;
@@ -19,7 +19,7 @@ interface OrderSummaryProps {
 export function OrderSummary({
   cartEntries,
   hasOverride,
-  displayTotal,
+  displayTotalCents,
   totalOverride,
   onTotalOverrideChange,
   onDecrease,
@@ -50,7 +50,7 @@ export function OrderSummary({
                   −
                 </button>
                 <span>
-                  {formatPrice(entry.article.price * entry.quantity)}
+                  {formatPrice(entry.article.priceInCents * entry.quantity)}
                 </span>
                 <button
                   type="button"
@@ -66,7 +66,7 @@ export function OrderSummary({
           <div className="mt-3 flex justify-between pt-3 font-semibold">
             <span>Total</span>
             <span className={hasOverride ? "italic" : ""}>
-              {formatPrice(displayTotal)}
+              {formatPrice(displayTotalCents)}
             </span>
           </div>
           <div className="mt-2">

@@ -7,7 +7,7 @@ export interface ArticlesPageDto {
 export interface ArticleListItemDto {
   id: string;
   description: string;
-  price: number;
+  priceInCents: number;
 }
 
 export interface RegisterArticleRequestDto {
@@ -29,13 +29,13 @@ export interface OrdersPageDto {
 export interface OrderListItemDto {
   id: string;
   number: string;
-  total: number;
+  totalInCents: number;
   date: number;
 }
 
 export interface PlaceOrderRequestDto {
   items: PlaceOrderItemDto[];
-  totalOverride?: number;
+  totalOverrideInCents?: number;
 }
 
 export interface PlaceOrderItemDto {
@@ -47,7 +47,7 @@ export interface OrderItemDto {
   id: string;
   article: string;
   description: string;
-  price: number;
+  priceInCents: number;
   quantity: number;
 }
 
@@ -55,7 +55,7 @@ export interface OrderDto {
   id: string;
   number: string;
   date: number;
-  total: number;
-  totalOverride: number | null;
+  totalInCents: number;
+  totalOverrideInCents: number | null;
   items: OrderItemDto[];
 }

@@ -34,8 +34,8 @@ vi.mock("@cashregister/components/use-error-messages", () => ({
 }));
 
 const articles = [
-  { id: "art1", description: "Espresso", price: 3.0 },
-  { id: "art2", description: "Latte", price: 4.5 },
+  { id: "art1", description: "Espresso", priceInCents: 300 },
+  { id: "art2", description: "Latte", priceInCents: 450 },
 ];
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -262,7 +262,7 @@ describe("clientAction", () => {
     expect(result).toEqual({ ok: true });
   });
 
-  it("sends totalOverride when present in form data", async () => {
+  it("sends totalOverrideInCents when present in form data", async () => {
     vi.mocked(deps.apiClient.post).mockResolvedValue({
       ok: true,
       value: undefined,
@@ -271,7 +271,7 @@ describe("clientAction", () => {
     const formData = new FormData();
     formData.append("articleId", "art1");
     formData.append("quantity", "2");
-    formData.append("totalOverride", "550");
+    formData.append("totalOverrideInCents", "550");
 
     await clientAction({
       request: new Request("http://localhost/order", {
@@ -283,11 +283,11 @@ describe("clientAction", () => {
 
     expect(deps.apiClient.post).toHaveBeenCalledWith("/orders", {
       items: [{ article: "art1", quantity: 2 }],
-      totalOverride: 550,
+      totalOverrideInCents: 550,
     });
   });
 
-  it("does not send totalOverride when not in form data", async () => {
+  it("does not send totalOverrideInCents when not in form data", async () => {
     vi.mocked(deps.apiClient.post).mockResolvedValue({
       ok: true,
       value: undefined,

@@ -20,7 +20,7 @@ export function OrderItemsList({ items }: OrderItemsListProps) {
           <span>
             {item.description} × {item.quantity}
           </span>
-          <span>{formatPrice(item.price * item.quantity)}</span>
+          <span>{formatPrice(item.priceInCents * item.quantity)}</span>
         </div>
       ))}
     </>

@@ -38,8 +38,8 @@ vi.mock("@cashregister/deps", () => ({
 
 const mockInitialData: ArticlesPageDto = {
   items: [
-    { id: "1", description: "Article 1", price: 10.0 },
-    { id: "2", description: "Article 2", price: 20.0 },
+    { id: "1", description: "Article 1", priceInCents: 1000 },
+    { id: "2", description: "Article 2", priceInCents: 2000 },
   ],
   next: "cursor-1",
   hasNext: true,

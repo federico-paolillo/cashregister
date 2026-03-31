@@ -13,7 +13,7 @@ public sealed record OrdersPageDto(
 public sealed record OrderListItemDto(
     string Id,
     string Number,
-    decimal Total,
+    long TotalInCents,
     long Date
 )
 {
@@ -24,7 +24,7 @@ public sealed record OrderListItemDto(
         return new OrderListItemDto(
             order.Id.Value,
             order.Number.Value,
-            order.Total.AsPayableMoney(),
+            order.Total.Value,
             order.Date.Value
         );
     }

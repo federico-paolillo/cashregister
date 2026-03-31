@@ -32,8 +32,8 @@ vi.mock("@cashregister/deps", () => ({
 
 const mockInitialData: OrdersPageDto = {
   items: [
-    { id: "1", number: "ORD-001", total: 10.0, date: 1700000000 },
-    { id: "2", number: "ORD-002", total: 20.0, date: 1700100000 },
+    { id: "1", number: "ORD-001", totalInCents: 1000, date: 1700000000 },
+    { id: "2", number: "ORD-002", totalInCents: 2000, date: 1700100000 },
   ],
   next: "cursor-1",
   hasNext: true,

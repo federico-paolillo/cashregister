@@ -10,7 +10,7 @@ afterEach(() => {
 const article: ArticleListItemDto = {
   id: "1",
   description: "Espresso",
-  price: 3.5,
+  priceInCents: 350,
 };
 
 function renderRow(props?: { striped?: boolean; onEdit?: (a: ArticleListItemDto) => void }) {

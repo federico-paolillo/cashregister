@@ -147,7 +147,7 @@ export default function Articles({ loaderData }: Route.ComponentProps) {
             articleId={editingArticle.id}
             initialData={{
               description: editingArticle.description,
-              priceInCents: editingArticle.price * 100,
+              priceInCents: editingArticle.priceInCents,
             }}
             onSubmit={() => {
               closeEdit();

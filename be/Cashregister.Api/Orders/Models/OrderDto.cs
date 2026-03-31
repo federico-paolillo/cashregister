@@ -8,7 +8,7 @@ public sealed record OrderItemDto(
     string Id,
     string Article,
     string Description,
-    decimal Price,
+    long PriceInCents,
     uint Quantity
 );
 
@@ -16,8 +16,8 @@ public sealed record OrderDto(
     string Id,
     string Number,
     long Date,
-    decimal Total,
-    decimal? TotalOverride,
+    long TotalInCents,
+    long? TotalOverrideInCents,
     ImmutableArray<OrderItemDto> Items
 )
 {
@@ -31,7 +31,7 @@ public sealed record OrderDto(
                 item.Id.Value,
                 item.Article.Value,
                 item.Description,
-                item.Price.AsPayableMoney(),
+                item.Price.Value,
                 item.Quantity
             ))
         ];
@@ -40,8 +40,8 @@ public sealed record OrderDto(
             order.Id.Value,
             order.Number.Value,
             order.Date.Value,
-            order.Total().AsPayableMoney(),
-            order.TotalOverride?.AsPayableMoney(),
+            order.Total().Value,
+            order.TotalOverride?.Value,
             items
         );
     }

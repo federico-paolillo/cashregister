@@ -5,7 +5,7 @@ namespace Cashregister.Api.Articles.Models;
 public sealed record ArticleDto(
     string Id,
     string Description,
-    decimal Price
+    long PriceInCents
 )
 {
     public static ArticleDto From(Article article)
@@ -15,7 +15,7 @@ public sealed record ArticleDto(
         return new ArticleDto(
             article.Id.Value,
             article.Description,
-            article.Price.AsPayableMoney()
+            article.Price.Value
         );
     }
 }

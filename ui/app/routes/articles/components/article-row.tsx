@@ -1,4 +1,5 @@
 import type { ArticleListItemDto } from "@cashregister/model";
+import { formatPrice } from "@cashregister/money";
 
 interface ArticleRowProps {
   article: ArticleListItemDto;
@@ -13,10 +14,7 @@ export function ArticleRow({ article, striped, onEdit }: ArticleRowProps) {
     >
       <td className="p-2">{article.description}</td>
       <td className="p-2 text-right">
-        {article.price.toLocaleString(undefined, {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-        })}
+        {formatPrice(article.priceInCents)}
       </td>
       <td className="p-2 text-right">
         <button

@@ -19,8 +19,8 @@ beforeEach(() => {
 afterEach(cleanup);
 
 const orders: OrderListItemDto[] = [
-  { id: "1", number: "ORD-001", total: 3.5, date: 1700000000 },
-  { id: "2", number: "ORD-002", total: 4.5, date: 1700100000 },
+  { id: "1", number: "ORD-001", totalInCents: 350, date: 1700000000 },
+  { id: "2", number: "ORD-002", totalInCents: 450, date: 1700100000 },
 ];
 
 describe("OrdersTable", () => {

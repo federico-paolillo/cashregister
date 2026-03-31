@@ -6,8 +6,8 @@ import type { ArticleListItemDto } from "@cashregister/model";
 afterEach(cleanup);
 
 const articles: ArticleListItemDto[] = [
-  { id: "1", description: "Espresso", price: 3.5 },
-  { id: "2", description: "Latte", price: 4.5 },
+  { id: "1", description: "Espresso", priceInCents: 350 },
+  { id: "2", description: "Latte", priceInCents: 450 },
 ];
 
 describe("ArticlesTable", () => {

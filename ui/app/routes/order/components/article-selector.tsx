@@ -18,7 +18,7 @@ export function ArticleSelector({ articles, onSelect }: ArticleSelectorProps) {
         >
           <div className="font-medium text-sm">{article.description}</div>
           <div className="text-sm text-gray-500">
-            {formatPrice(article.price)}
+            {formatPrice(article.priceInCents)}
           </div>
         </button>
       ))}

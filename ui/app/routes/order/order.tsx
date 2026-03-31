@@ -26,14 +26,14 @@ export async function clientAction({ request }: Route.ClientActionArgs) {
 
   const articleIds = formData.getAll("articleId") as string[];
   const quantities = formData.getAll("quantity") as string[];
-  const totalOverrideRaw = formData.get("totalOverride") as string | null;
+  const totalOverrideRaw = formData.get("totalOverrideInCents") as string | null;
 
   const body: PlaceOrderRequestDto = {
     items: articleIds.map((article, i) => ({
       article,
       quantity: Number(quantities[i]),
     })),
-    ...(totalOverrideRaw ? { totalOverride: Number(totalOverrideRaw) } : {}),
+    ...(totalOverrideRaw ? { totalOverrideInCents: Number(totalOverrideRaw) } : {}),
   };
 
   const result = await deps.apiClient.post("/orders", body);
@@ -60,15 +60,15 @@ export default function Order({ loaderData, actionData }: Route.ComponentProps) 
   const articles = loaderData;
   const isPending = navigation.state !== "idle";
   const cartEntries = Array.from(cart.values());
-  const computedTotal = cartEntries.reduce(
-    (sum, e) => sum + e.article.price * e.quantity,
+  const computedTotalCents = cartEntries.reduce(
+    (sum, e) => sum + e.article.priceInCents * e.quantity,
     0,
   );
   const hasOverride = totalOverride !== "" && !isNaN(Number(totalOverride));
-  const displayTotal = hasOverride ? Number(totalOverride) : computedTotal;
   const totalOverrideCents = hasOverride
     ? decimalToCents(Number(totalOverride))
     : null;
+  const displayTotalCents = totalOverrideCents ?? computedTotalCents;
 
   useEffect(() => {
     if (actionData?.ok === true) {
@@ -142,14 +142,14 @@ export default function Order({ loaderData, actionData }: Route.ComponentProps) 
             {totalOverrideCents !== null && (
               <input
                 type="hidden"
-                name="totalOverride"
+                name="totalOverrideInCents"
                 value={String(totalOverrideCents)}
               />
             )}
             <OrderSummary
               cartEntries={cartEntries}
               hasOverride={hasOverride}
-              displayTotal={displayTotal}
+              displayTotalCents={displayTotalCents}
               totalOverride={totalOverride}
               onTotalOverrideChange={setTotalOverride}
               onDecrease={decreaseQuantity}

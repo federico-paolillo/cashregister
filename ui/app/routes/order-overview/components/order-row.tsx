@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router";
 import type { OrderListItemDto } from "@cashregister/model";
+import { formatPrice } from "@cashregister/money";
 
 interface OrderRowProps {
   order: OrderListItemDto;
@@ -16,10 +17,7 @@ export function OrderRow({ order, striped }: OrderRowProps) {
     >
       <td className="p-2">{order.number}</td>
       <td className="p-2 text-right">
-        {order.total.toLocaleString(undefined, {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-        })}
+        {formatPrice(order.totalInCents)}
       </td>
       <td className="p-2 text-right">
         {new Date(order.date * 1000).toLocaleString()}

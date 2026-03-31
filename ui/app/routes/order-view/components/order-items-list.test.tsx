@@ -8,8 +8,8 @@ afterEach(() => {
 });
 
 const items: OrderItemDto[] = [
-  { id: "item-1", article: "art-1", description: "Espresso", price: 3.0, quantity: 2 },
-  { id: "item-2", article: "art-2", description: "Latte", price: 4.75, quantity: 1 },
+  { id: "item-1", article: "art-1", description: "Espresso", priceInCents: 300, quantity: 2 },
+  { id: "item-2", article: "art-2", description: "Latte", priceInCents: 475, quantity: 1 },
 ];
 
 describe("OrderItemsList", () => {

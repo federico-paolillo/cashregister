@@ -13,7 +13,7 @@ public sealed record ArticlesPageDto(
 public sealed record ArticleListItemDto(
     string Id,
     string Description,
-    decimal Price
+    long PriceInCents
 )
 {
     public static ArticleListItemDto From(ArticleListItem article)
@@ -23,7 +23,7 @@ public sealed record ArticleListItemDto(
         return new ArticleListItemDto(
             article.Id.Value,
             article.Description,
-            article.Price.AsPayableMoney()
+            article.Price.Value
         );
     }
 }

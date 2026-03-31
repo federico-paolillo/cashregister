@@ -23,7 +23,7 @@ afterEach(() => {
 const order: OrderListItemDto = {
   id: "1",
   number: "ORD-001",
-  total: 3.5,
+  totalInCents: 350,
   date: 1700000000,
 };
 

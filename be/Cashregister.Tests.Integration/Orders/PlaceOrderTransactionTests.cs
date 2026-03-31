@@ -23,7 +23,7 @@ public sealed class PlaceOrderTransactionTests(
             tx.ExecuteAsync(new ArticleDefinition
             {
                 Description = "Some test article",
-                Price = Cents.From(1L)
+                Price = Cents.From(5L)
             })
         );
 
@@ -54,7 +54,7 @@ public sealed class PlaceOrderTransactionTests(
         );
 
         Assert.NotNull(order);
-        Assert.Equal(Cents.From(21L), order.Total());
+        Assert.Equal(Cents.From(105L), order.Total());
         Assert.Single(order.Items);
         Assert.Equal("Some test article", order.Items[0].Description);
         Assert.Equal(21u, order.Items[0].Quantity);
