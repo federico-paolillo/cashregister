@@ -21,6 +21,7 @@ export function OrdersTable({ orders }: OrdersTableProps) {
             key={order.id}
             order={order}
             striped={index % 2 === 1}
+            to={`/order/${order.id}`}
           />
         ))}
         {orders.length === 0 && (

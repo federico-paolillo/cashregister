@@ -1,6 +1,7 @@
 import { useNavigation, Form, Link, redirect } from "react-router";
 import { useState, useRef } from "react";
 import { deps } from "@cashregister/deps";
+import { failure } from "@cashregister/result";
 import type { RegisterArticleRequestDto } from "@cashregister/model";
 import type { Route } from "./+types/articles-bulk";
 import { BulkRow } from "@cashregister/routes/articles-bulk/components/bulk-row";
@@ -25,9 +26,10 @@ export async function clientAction({ request }: Route.ClientActionArgs) {
   const failedCount = results.filter((r) => !r.ok).length;
 
   if (failedCount > 0) {
-    return {
+    return failure({
       message: `${failedCount} of ${results.length} article(s) failed to save.`,
-    };
+      status: 400,
+    });
   }
 
   return redirect("/articles");
@@ -54,7 +56,7 @@ export default function ArticlesBulk({ actionData }: Route.ComponentProps) {
   }
 
   return (
-    <div className="flex h-screen flex-col">
+    <>
       <header className="p-4 border-b">
         <h1 className="text-xl font-semibold">Bulk Add Articles</h1>
       </header>
@@ -68,7 +70,7 @@ export default function ArticlesBulk({ actionData }: Route.ComponentProps) {
           }
         }}
       >
-        <div className="flex flex-col gap-3">
+        <main className="flex flex-col gap-3">
           {rows.map((row) => (
             <BulkRow
               key={row.id}
@@ -76,36 +78,36 @@ export default function ArticlesBulk({ actionData }: Route.ComponentProps) {
               canRemove={rows.length > 1}
             />
           ))}
-        </div>
-        <div>
-          <button
-            type="button"
-            onClick={addRow}
-            disabled={isPending}
-            className="rounded border border-dashed border-gray-400 px-4 py-2 text-sm text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            + Add Article
-          </button>
-        </div>
-        {actionData?.message && (
-          <p className="text-sm text-red-600">{actionData.message}</p>
-        )}
+          <div>
+            <button
+              type="button"
+              onClick={addRow}
+              disabled={isPending}
+              className="rounded border border-dashed border-gray-400 px-4 py-2 text-sm text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              + Add Article
+            </button>
+          </div>
+          {actionData && !actionData.ok && (
+            <p className="text-sm text-red-600">{actionData.error.message}</p>
+          )}
+        </main>
         <div className="flex justify-end gap-2 border-t pt-4">
           <Link
             to="/articles"
-            className="rounded border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+            className="btn-secondary"
           >
             Cancel
           </Link>
           <button
             type="submit"
             disabled={isPending}
-            className="rounded bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+            className="btn-primary"
           >
             {isPending ? "Saving..." : "Save"}
           </button>
         </div>
       </Form>
-    </div>
+    </>
   );
 }

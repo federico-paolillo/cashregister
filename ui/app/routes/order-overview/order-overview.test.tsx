@@ -12,9 +12,10 @@ vi.mock("react-router", async (importOriginal) => {
   return {
     ...actual,
     useNavigation: vi.fn(),
-    useNavigate: vi.fn(),
     Form: ({ children, ...props }: React.FormHTMLAttributes<HTMLFormElement>) =>
       <form {...props}>{children}</form>,
+    Link: ({ children, to, ...props }: { children: React.ReactNode; to: string } & React.AnchorHTMLAttributes<HTMLAnchorElement>) =>
+      <a href={String(to)} {...props}>{children}</a>,
   };
 });
 
@@ -57,7 +58,6 @@ describe("Order Overview Page", () => {
     vi.mocked(reactRouter.useNavigation).mockReturnValue({
       state: "idle",
     } as reactRouter.Navigation);
-    vi.mocked(reactRouter.useNavigate).mockReturnValue(vi.fn());
     vi.mocked(errorMessages.useErrorMessages).mockReturnValue({
       errors: [],
       addError: vi.fn(),

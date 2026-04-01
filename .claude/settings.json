@@ -6,6 +6,7 @@
       "Bash(dotnet test *)",
       "Bash(dotnet build *)",
       "Bash(npm test *)",
+      "Bash(npm run test *)",
       "Bash(* --version)",
       "Bash(* --help)"
     ],

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Form, Link, useNavigation } from "react-router";
 import { ArticleForm } from "@cashregister/routes/articles/components/article-form";
 import { ArticlesTable } from "@cashregister/routes/articles/components/articles-table";
@@ -6,6 +6,7 @@ import { Spinner } from "@cashregister/components/spinner";
 import { Modal } from "@cashregister/components/modal";
 import { useModal } from "@cashregister/components/use-modal";
 import { useErrorMessages } from "@cashregister/components/use-error-messages";
+import { useLoaderError } from "@cashregister/components/use-loader-error";
 import { deps } from "@cashregister/deps";
 import type {
   ArticleListItemDto,
@@ -92,50 +93,46 @@ export default function Articles({ loaderData }: Route.ComponentProps) {
     openEdit();
   }
 
-  useEffect(() => {
-    if (!loaderData.ok) {
-      addError(loaderData.error.message);
-    }
-  }, [loaderData, addError]);
+  useLoaderError(loaderData);
 
   return (
-    <div className="flex h-screen flex-col">
+    <>
       <header className="p-4 border-b">
         <h1 className="text-xl font-semibold">Articles</h1>
       </header>
-      <div className="flex justify-end p-4 gap-2">
+      <nav aria-label="Article actions" className="flex justify-end p-4 gap-2">
         <button
           type="button"
           onClick={openCreateModal}
-          className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+          className="btn-primary"
         >
           New Article
         </button>
         <Link
           to="/articles/bulk"
-          className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 inline-block"
+          className="btn-primary inline-block"
         >
           New Articles
         </Link>
-      </div>
-      <div className="relative flex-1 overflow-auto p-4">
+      </nav>
+      <main className="relative flex-1 overflow-auto p-4">
         <ArticlesTable articles={page?.items ?? []} onEdit={openEditModal} />
         {isLoadingMore && <Spinner />}
-      </div>
-      <div className="flex justify-center p-4 border-t">
+      </main>
+      <footer className="flex justify-center p-4 border-t">
         {page?.next && (
           <Form method="get">
             <input type="hidden" name="until" value={page.next} />
             <button
               type="submit"
               disabled={isLoadingMore}
-              className="rounded border border-gray-300 px-6 py-2 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="btn-outline"
             >
               {isLoadingMore ? "Loading..." : "Load More"}
             </button>
           </Form>
         )}
-      </div>
+      </footer>
       <Modal open={isCreateOpen} onClose={closeCreate}>
         <ArticleForm key={createKey} intent="create" onSubmit={() => closeCreate()} onError={(msg) => { closeCreate(); addError(msg); }} />
       </Modal>
@@ -159,6 +156,6 @@ export default function Articles({ loaderData }: Route.ComponentProps) {
           />
         )}
       </Modal>
-    </div>
+    </>
   );
 }

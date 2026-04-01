@@ -18,7 +18,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <StrictMode>
           <ErrorMessagesProvider>
             <ErrorMessageList />
-            {children}
+            <div className="flex h-screen flex-col">
+              {children}
+            </div>
           </ErrorMessagesProvider>
         </StrictMode>
         <ScrollRestoration />
@@ -47,14 +49,14 @@ export function ErrorBoundary() {
   }
 
   return (
-    <div className="flex h-screen items-center justify-center">
+    <div className="flex flex-1 items-center justify-center">
       <div className="text-center">
         <h1 className="text-xl font-semibold text-red-600">Something went wrong</h1>
         <p className="mt-2 text-gray-600">{message}</p>
         <button
           type="button"
           onClick={() => window.location.reload()}
-          className="mt-4 rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+          className="mt-4 btn-primary"
         >
           Try Again
         </button>

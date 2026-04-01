@@ -80,7 +80,8 @@ describe("ErrorMessageList", () => {
 
     expect(screen.getByText("Error one")).toBeDefined();
     expect(screen.getByText("Error two")).toBeDefined();
-    expect(screen.getAllByRole("alert")).toHaveLength(2);
+    const log = screen.getByRole("log");
+    expect(log.childElementCount).toBe(2);
   });
 
   it("dismisses an error when the dismiss button is clicked", async () => {
@@ -134,7 +135,7 @@ describe("ErrorMessageList", () => {
     await user.click(screen.getByText("add error"));
     await user.click(screen.getByLabelText("Dismiss"));
 
-    expect(screen.queryByRole("alert")).toBeNull();
+    expect(screen.queryByRole("log")).toBeNull();
   });
 });
 
@@ -178,6 +179,7 @@ describe("ErrorMessageList circular buffer", () => {
     expect(screen.queryByText("first")).toBeNull();
     expect(screen.getByText("second")).toBeDefined();
     expect(screen.getByText("third")).toBeDefined();
-    expect(screen.getAllByRole("alert")).toHaveLength(2);
+    const log = screen.getByRole("log");
+    expect(log.childElementCount).toBe(2);
   });
 });

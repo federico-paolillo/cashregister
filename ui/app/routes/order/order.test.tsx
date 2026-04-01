@@ -1,7 +1,8 @@
 import React from "react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, cleanup, fireEvent } from "@testing-library/react";
-import Order, { clientAction } from "@cashregister/routes/order/order";
+import Order, { clientAction, cartReducer } from "@cashregister/routes/order/order";
+import type { CartEntry } from "@cashregister/routes/order/order";
 import * as reactRouter from "react-router";
 import * as errorMessages from "@cashregister/components/use-error-messages";
 import { deps } from "@cashregister/deps";
@@ -38,10 +39,12 @@ const articles = [
   { id: "art2", description: "Latte", priceInCents: 450 },
 ];
 
+const loaderResult = { ok: true as const, value: { next: null, hasNext: false, items: articles } };
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function renderOrder(props: any = {}) {
   return render(
-    <Order loaderData={articles} actionData={undefined} {...props} />,
+    <Order loaderData={loaderResult} actionData={undefined} {...props} />,
   );
 }
 
@@ -164,7 +167,7 @@ describe("Order", () => {
     expect(screen.getByText(/Espresso × 1/)).toBeDefined();
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const rerenderProps: any = { loaderData: articles, actionData: { ok: true } };
+    const rerenderProps: any = { loaderData: loaderResult, actionData: { ok: true, value: undefined } };
     rerender(<Order {...rerenderProps} />);
 
     expect(screen.queryByText(/Espresso × 1/)).toBeNull();
@@ -259,7 +262,7 @@ describe("clientAction", () => {
       buildOrderRequest([{ articleId: "art1", quantity: "1" }]),
     );
 
-    expect(result).toEqual({ ok: true });
+    expect(result).toEqual({ ok: true, value: undefined });
   });
 
   it("sends totalOverrideInCents when present in form data", async () => {
@@ -312,6 +315,56 @@ describe("clientAction", () => {
       buildOrderRequest([{ articleId: "art1", quantity: "1" }]),
     );
 
-    expect(result).toEqual({ ok: false, message: "Bad request" });
+    expect(result).toEqual({ ok: false, error: { status: 400, message: "Bad request" } });
+  });
+});
+
+const espresso = { id: "art1", description: "Espresso", priceInCents: 300 };
+const latte = { id: "art2", description: "Latte", priceInCents: 450 };
+
+describe("cartReducer", () => {
+  it("adds an article with quantity 1", () => {
+    const state = cartReducer(new Map(), { type: "add", article: espresso });
+    expect(state.get("art1")).toEqual({ article: espresso, quantity: 1 });
+  });
+
+  it("increments quantity when the same article is added again", () => {
+    let state = cartReducer(new Map(), { type: "add", article: espresso });
+    state = cartReducer(state, { type: "add", article: espresso });
+    expect(state.get("art1")?.quantity).toBe(2);
+  });
+
+  it("decreases quantity by one", () => {
+    let state = cartReducer(new Map(), { type: "add", article: espresso });
+    state = cartReducer(state, { type: "add", article: espresso });
+    state = cartReducer(state, { type: "decrease", articleId: "art1" });
+    expect(state.get("art1")?.quantity).toBe(1);
+  });
+
+  it("removes the article when quantity reaches zero via decrease", () => {
+    let state = cartReducer(new Map(), { type: "add", article: espresso });
+    state = cartReducer(state, { type: "decrease", articleId: "art1" });
+    expect(state.has("art1")).toBe(false);
+  });
+
+  it("decrease on missing article returns unchanged state", () => {
+    const state = new Map<string, CartEntry>();
+    const next = cartReducer(state, { type: "decrease", articleId: "unknown" });
+    expect(next).toBe(state);
+  });
+
+  it("removes an article", () => {
+    let state = cartReducer(new Map(), { type: "add", article: espresso });
+    state = cartReducer(state, { type: "add", article: latte });
+    state = cartReducer(state, { type: "remove", articleId: "art1" });
+    expect(state.has("art1")).toBe(false);
+    expect(state.has("art2")).toBe(true);
+  });
+
+  it("clears all articles", () => {
+    let state = cartReducer(new Map(), { type: "add", article: espresso });
+    state = cartReducer(state, { type: "add", article: latte });
+    state = cartReducer(state, { type: "clear" });
+    expect(state.size).toBe(0);
   });
 });

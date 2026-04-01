@@ -43,10 +43,11 @@ ui/
 │   ├── money.ts               # Price formatting utilities
 │   ├── settings.ts            # Application settings
 │   ├── routes.ts              # Route definitions (registers all routes)
-│   ├── root.tsx               # Root layout component
+│   ├── root.tsx               # Root layout component (provides flex h-screen container for all routes)
 │   ├── components/            # Cross-cutting, reusable components only
 │   │   ├── modal.tsx          # Generic modal dialog wrapper
 │   │   ├── spinner.tsx        # Loading spinner overlay
+│   │   ├── use-loader-error.ts  # Hook: adds error toast when loader Result is not ok
 │   │   ├── use-modal.tsx      # Modal state hook and context
 │   │   ├── error-message-list.tsx   # Error toast list (uses ErrorMessageItem)
 │   │   ├── error-message-item.tsx   # Single error toast item
@@ -205,6 +206,7 @@ The frontend uses **Tailwind CSS v4** with the `@tailwindcss/vite` plugin. Confi
 - The global stylesheet `app/app.css` imports Tailwind via `@import "tailwindcss"`
 - `app/app.css` is imported in `app/root.tsx` so styles are available to all routes
 - Tailwind v4 uses CSS-first configuration — customize themes and utilities directly in `app/app.css` using `@theme` directives rather than a `tailwind.config.js` file
+- Shared component utility classes are defined in `app/app.css` under `@layer components`: `.btn-primary`, `.btn-secondary`, `.btn-outline` (buttons), `.input-field` (text inputs). Use these instead of repeating the full Tailwind class strings.
 
 ### Testing (Vitest)
 

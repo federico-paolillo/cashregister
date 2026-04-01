@@ -33,14 +33,14 @@ describe("ErrorMessageItem", () => {
     expect(onDismiss).toHaveBeenCalledOnce();
   });
 
-  it("has role alert for accessibility", () => {
-    render(
+  it("does not carry role=alert (items live inside a role=log container)", () => {
+    const { container } = render(
       <ErrorMessageItem
         error={{ id: 1, message: "alert me" }}
         onDismiss={() => { }}
       />,
     );
 
-    expect(screen.getByRole("alert")).toBeDefined();
+    expect(container.querySelector("[role='alert']")).toBeNull();
   });
 });

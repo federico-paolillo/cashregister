@@ -1,4 +1,5 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import React from "react";
+import { describe, it, expect, vi, afterEach } from "vitest";
 import { render, screen, cleanup } from "@testing-library/react";
 import { OrdersTable } from "@cashregister/routes/order-overview/components/orders-table";
 import * as reactRouter from "react-router";
@@ -8,12 +9,9 @@ vi.mock("react-router", async (importOriginal) => {
   const actual = await importOriginal<typeof reactRouter>();
   return {
     ...actual,
-    useNavigate: vi.fn(),
+    Link: ({ children, to, ...props }: { children: React.ReactNode; to: string } & React.AnchorHTMLAttributes<HTMLAnchorElement>) =>
+      <a href={String(to)} {...props}>{children}</a>,
   };
-});
-
-beforeEach(() => {
-  vi.mocked(reactRouter.useNavigate).mockReturnValue(vi.fn());
 });
 
 afterEach(cleanup);

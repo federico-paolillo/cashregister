@@ -1,6 +1,7 @@
-import { Fragment, useEffect, useState } from "react";
+import { Fragment, useEffect, useReducer, useState } from "react";
 import { Form, useNavigation } from "react-router";
 import { useErrorMessages } from "@cashregister/components/use-error-messages";
+import { useLoaderError } from "@cashregister/components/use-loader-error";
 import { deps } from "@cashregister/deps";
 import { decimalToCents } from "@cashregister/money";
 import type {
@@ -13,12 +14,7 @@ import { OrderSummary } from "./components/order-summary";
 import type { Route } from "./+types/order";
 
 export async function clientLoader() {
-  const result = await deps.apiClient.get<ArticlesPageDto>("/articles", {
-    pageSize: "500",
-  });
-  if (!result.ok)
-    throw new Response(result.error.message, { status: result.error.status });
-  return result.value.items;
+  return deps.apiClient.get<ArticlesPageDto>("/articles", { pageSize: "500" });
 }
 
 export async function clientAction({ request }: Route.ClientActionArgs) {
@@ -36,28 +32,59 @@ export async function clientAction({ request }: Route.ClientActionArgs) {
     ...(totalOverrideRaw ? { totalOverrideInCents: Number(totalOverrideRaw) } : {}),
   };
 
-  const result = await deps.apiClient.post("/orders", body);
-
-  if (!result.ok) {
-    return { ok: false as const, message: result.error.message };
-  }
-
-  return { ok: true as const };
+  return deps.apiClient.post("/orders", body);
 }
 
-interface CartEntry {
+export interface CartEntry {
   article: ArticleListItemDto;
   quantity: number;
+}
+
+export type CartAction =
+  | { type: "add"; article: ArticleListItemDto }
+  | { type: "decrease"; articleId: string }
+  | { type: "remove"; articleId: string }
+  | { type: "clear" };
+
+export function cartReducer(state: Map<string, CartEntry>, action: CartAction): Map<string, CartEntry> {
+  const next = new Map(state);
+  switch (action.type) {
+    case "add": {
+      const existing = next.get(action.article.id);
+      if (existing) {
+        next.set(action.article.id, { ...existing, quantity: existing.quantity + 1 });
+      } else {
+        next.set(action.article.id, { article: action.article, quantity: 1 });
+      }
+      return next;
+    }
+    case "decrease": {
+      const existing = next.get(action.articleId);
+      if (!existing) return state;
+      if (existing.quantity <= 1) {
+        next.delete(action.articleId);
+      } else {
+        next.set(action.articleId, { ...existing, quantity: existing.quantity - 1 });
+      }
+      return next;
+    }
+    case "remove": {
+      next.delete(action.articleId);
+      return next;
+    }
+    case "clear":
+      return new Map();
+  }
 }
 
 export default function Order({ loaderData, actionData }: Route.ComponentProps) {
   const navigation = useNavigation();
   const { addError } = useErrorMessages();
 
-  const [cart, setCart] = useState<Map<string, CartEntry>>(new Map());
+  const [cart, dispatch] = useReducer(cartReducer, new Map<string, CartEntry>());
   const [totalOverride, setTotalOverride] = useState<string>("");
 
-  const articles = loaderData;
+  const articles = loaderData.ok ? loaderData.value.items : [];
   const isPending = navigation.state !== "idle";
   const cartEntries = Array.from(cart.values());
   const computedTotalCents = cartEntries.reduce(
@@ -70,58 +97,25 @@ export default function Order({ loaderData, actionData }: Route.ComponentProps) 
     : null;
   const displayTotalCents = totalOverrideCents ?? computedTotalCents;
 
+  useLoaderError(loaderData);
+
   useEffect(() => {
     if (actionData?.ok === true) {
-      setCart(new Map());
+      dispatch({ type: "clear" });
       setTotalOverride("");
     } else if (actionData?.ok === false) {
-      addError(actionData.message);
+      addError(actionData.error.message);
     }
   }, [actionData, addError]);
 
-  function decreaseQuantity(articleId: string) {
-    setCart((prev) => {
-      const next = new Map(prev);
-      const existing = next.get(articleId);
-      if (!existing) return prev;
-      if (existing.quantity <= 1) {
-        next.delete(articleId);
-      } else {
-        next.set(articleId, { ...existing, quantity: existing.quantity - 1 });
-      }
-      return next;
-    });
-  }
-
-  function removeFromCart(articleId: string) {
-    setCart((prev) => {
-      const next = new Map(prev);
-      next.delete(articleId);
-      return next;
-    });
-  }
-
-  function addToCart(article: ArticleListItemDto) {
-    setCart((prev) => {
-      const next = new Map(prev);
-      const existing = next.get(article.id);
-      if (existing) {
-        next.set(article.id, { ...existing, quantity: existing.quantity + 1 });
-      } else {
-        next.set(article.id, { article, quantity: 1 });
-      }
-      return next;
-    });
-  }
-
   return (
-    <div className="flex h-screen flex-col">
+    <>
       <header className="p-4 border-b">
         <h1 className="text-xl font-semibold">New Order</h1>
       </header>
-      <div className="flex flex-1 overflow-hidden">
+      <main className="flex flex-1 overflow-hidden">
         <div className="flex-7 overflow-auto p-4 border-r">
-          <ArticleSelector articles={articles} onSelect={addToCart} />
+          <ArticleSelector articles={articles} onSelect={(article) => dispatch({ type: "add", article })} />
         </div>
         <div className="flex-3 flex flex-col">
           <Form method="post" className="flex h-full flex-col">
@@ -152,21 +146,21 @@ export default function Order({ loaderData, actionData }: Route.ComponentProps) 
               displayTotalCents={displayTotalCents}
               totalOverride={totalOverride}
               onTotalOverrideChange={setTotalOverride}
-              onDecrease={decreaseQuantity}
-              onRemove={removeFromCart}
+              onDecrease={(articleId) => dispatch({ type: "decrease", articleId })}
+              onRemove={(articleId) => dispatch({ type: "remove", articleId })}
             />
             <div className="p-4 border-t">
               <button
                 type="submit"
                 disabled={isPending || cartEntries.length === 0}
-                className="w-full rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                className="w-full btn-primary"
               >
                 {isPending ? "Submitting..." : "Submit Order"}
               </button>
             </div>
           </Form>
         </div>
-      </div>
-    </div>
+      </main>
+    </>
   );
 }

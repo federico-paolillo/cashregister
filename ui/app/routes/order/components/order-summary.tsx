@@ -1,10 +1,5 @@
 import { formatPrice } from "@cashregister/money";
-import type { ArticleListItemDto } from "@cashregister/model";
-
-interface CartEntry {
-  article: ArticleListItemDto;
-  quantity: number;
-}
+import type { CartEntry } from "../order";
 
 interface OrderSummaryProps {
   cartEntries: CartEntry[];
@@ -84,7 +79,7 @@ export function OrderSummary({
               placeholder="Override total..."
               value={totalOverride}
               onChange={(e) => onTotalOverrideChange(e.target.value)}
-              className="w-full rounded border border-gray-300 px-2 py-1 text-sm"
+              className="w-full input-field"
             />
           </div>
         </>

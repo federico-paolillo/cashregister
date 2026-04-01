@@ -89,7 +89,7 @@ describe("ArticlesBulk", () => {
   });
 
   it("shows error message from actionData", () => {
-    renderBulk({ actionData: { message: "2 of 3 article(s) failed to save." } });
+    renderBulk({ actionData: { ok: false, error: { message: "2 of 3 article(s) failed to save.", status: 400 } } });
 
     expect(screen.getByText("2 of 3 article(s) failed to save.")).toBeDefined();
   });
@@ -174,6 +174,6 @@ describe("clientAction", () => {
       ]),
     );
 
-    expect(result).toEqual({ message: "1 of 2 article(s) failed to save." });
+    expect(result).toEqual({ ok: false, error: { message: "1 of 2 article(s) failed to save.", status: 400 } });
   });
 });

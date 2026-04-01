@@ -35,7 +35,7 @@ export function ArticleForm({ articleId, initialData, intent, onSubmit, onError 
     }
 
     prevFetcherState.current = fetcher.state;
-  }, [fetcher.state, fetcher.data, onSubmit, onError]);
+  }, [fetcher.state, fetcher.data, onSubmit, onError, idling]);
 
   return (
     <fetcher.Form method="post" action="/articles" className="flex flex-col gap-6 p-6 min-w-80">
@@ -51,7 +51,7 @@ export function ArticleForm({ articleId, initialData, intent, onSubmit, onError 
           type="text"
           defaultValue={initialData?.description ?? ""}
           required
-          className="rounded border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          className="input-field"
         />
       </div>
       <div className="flex flex-col gap-1">
@@ -65,7 +65,7 @@ export function ArticleForm({ articleId, initialData, intent, onSubmit, onError 
           defaultValue={initialData?.priceInCents ?? 0}
           required
           min={0}
-          className="rounded border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          className="input-field"
         />
       </div>
       <div className="flex justify-end gap-2">
@@ -74,14 +74,14 @@ export function ArticleForm({ articleId, initialData, intent, onSubmit, onError 
           disabled={pending}
           command="close"
           commandfor={modalId}
-          className="rounded border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+          className="btn-secondary"
         >
           Cancel
         </button>
         <button
           type="submit"
           disabled={pending}
-          className="rounded bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+          className="btn-primary"
         >
           Save
         </button>

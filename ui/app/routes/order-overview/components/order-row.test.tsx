@@ -1,20 +1,8 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { render, screen, cleanup, fireEvent } from "@testing-library/react";
+import { describe, it, expect, afterEach } from "vitest";
+import { render, screen, cleanup } from "@testing-library/react";
+import { MemoryRouter } from "react-router";
 import { OrderRow } from "@cashregister/routes/order-overview/components/order-row";
-import * as reactRouter from "react-router";
 import type { OrderListItemDto } from "@cashregister/model";
-
-vi.mock("react-router", async (importOriginal) => {
-  const actual = await importOriginal<typeof reactRouter>();
-  return {
-    ...actual,
-    useNavigate: vi.fn(),
-  };
-});
-
-beforeEach(() => {
-  vi.mocked(reactRouter.useNavigate).mockReturnValue(vi.fn());
-});
 
 afterEach(() => {
   cleanup();
@@ -29,14 +17,17 @@ const order: OrderListItemDto = {
 
 function renderRow(props?: { striped?: boolean }) {
   return render(
-    <table>
-      <tbody>
-        <OrderRow
-          order={order}
-          striped={props?.striped ?? false}
-        />
-      </tbody>
-    </table>,
+    <MemoryRouter>
+      <table>
+        <tbody>
+          <OrderRow
+            order={order}
+            striped={props?.striped ?? false}
+            to="/order/1"
+          />
+        </tbody>
+      </table>
+    </MemoryRouter>,
   );
 }
 
@@ -68,14 +59,12 @@ describe("OrderRow", () => {
     expect(row?.className).not.toContain("bg-gray-50");
   });
 
-  it("navigates to the order detail page on click", () => {
-    const mockNavigate = vi.fn();
-    vi.mocked(reactRouter.useNavigate).mockReturnValue(mockNavigate);
-
+  it("renders links to the order detail page", () => {
     renderRow();
-    const row = screen.getByText("ORD-001").closest("tr")!;
-    fireEvent.click(row);
-
-    expect(mockNavigate).toHaveBeenCalledWith("/order/1");
+    const links = screen.getAllByRole("link");
+    expect(links.length).toBeGreaterThan(0);
+    for (const link of links) {
+      expect(link.getAttribute("href")).toBe("/order/1");
+    }
   });
 });

@@ -38,4 +38,14 @@ describe("BulkRow", () => {
 
     expect(screen.getByRole("spinbutton")).toHaveProperty("value", "0");
   });
+
+  it("label is associated with the description input", () => {
+    render(<BulkRow onRemove={vi.fn()} canRemove={false} />);
+    expect(screen.getByLabelText("Description")).toBeDefined();
+  });
+
+  it("label is associated with the price input", () => {
+    render(<BulkRow onRemove={vi.fn()} canRemove={false} />);
+    expect(screen.getByLabelText("Price (cents)")).toBeDefined();
+  });
 });
