@@ -4,13 +4,24 @@
   .btn-primary {
     @apply rounded bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50;
   }
+
   .btn-secondary {
     @apply rounded border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50;
   }
+
   .btn-outline {
     @apply rounded border border-gray-300 px-6 py-2 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed;
   }
+
   .input-field {
     @apply rounded border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500;
+  }
+
+  .active-nav-link {
+    @apply text-white hover:text-gray-200 border-b-2 border-white pb-0.5;
+  }
+
+  .inactive-nav-link {
+    @apply text-white hover:text-gray-200;
   }
 }

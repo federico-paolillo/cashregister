@@ -1,9 +1,10 @@
-import { StrictMode } from "react";
-import { Links, Meta, Outlet, Scripts, ScrollRestoration, useRouteError, isRouteErrorResponse } from "react-router";
 import "@cashregister/app.css";
-import { ErrorMessagesProvider } from "@cashregister/components/use-error-messages";
 import { ErrorMessageList } from "@cashregister/components/error-message-list";
 import { Spinner } from "@cashregister/components/spinner";
+import { ErrorMessagesProvider } from "@cashregister/components/use-error-messages";
+import { StrictMode } from "react";
+import { isRouteErrorResponse, Links, Meta, Outlet, Scripts, ScrollRestoration, useRouteError } from "react-router";
+import NavigationMenu from "./components/navigation-menu";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
@@ -17,10 +18,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <body>
         <StrictMode>
           <ErrorMessagesProvider>
-            <ErrorMessageList />
+            <NavigationMenu />
             <div className="flex h-screen flex-col">
               {children}
             </div>
+            <ErrorMessageList />
           </ErrorMessagesProvider>
         </StrictMode>
         <ScrollRestoration />
