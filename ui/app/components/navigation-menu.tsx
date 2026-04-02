@@ -35,8 +35,8 @@ export default function NavigationMenu() {
 
   return (
     <nav className="w-full p-4 bg-blue-600 grid grid-cols-3 items-center">
-      <div className="flex items-center gap-2">
-        <img alt="Cashregister logo" className="h-8 w-8" />
+      <div className="flex items-center gap-4">
+        <img alt="Cashregister logo" src="/icons/printer.svg" className="h-8 w-8 text-white" />
         <span className="text-white font-semibold">Cashregister</span>
       </div>
       <ul className="flex flex-row gap-16 justify-center">

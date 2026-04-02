@@ -9,7 +9,7 @@ describe("ErrorMessageItem", () => {
   it("displays the error message", () => {
     render(
       <ErrorMessageItem
-        error={{ id: 1, message: "broken pipe" }}
+        error={{ id: 1, message: "broken pipe", severity: "error" }}
         onDismiss={() => { }}
       />,
     );
@@ -23,7 +23,7 @@ describe("ErrorMessageItem", () => {
 
     render(
       <ErrorMessageItem
-        error={{ id: 42, message: "something" }}
+        error={{ id: 42, message: "something", severity: "error" }}
         onDismiss={onDismiss}
       />,
     );
@@ -36,11 +36,34 @@ describe("ErrorMessageItem", () => {
   it("does not carry role=alert (items live inside a role=log container)", () => {
     const { container } = render(
       <ErrorMessageItem
-        error={{ id: 1, message: "alert me" }}
+        error={{ id: 1, message: "alert me", severity: "error" }}
         onDismiss={() => { }}
       />,
     );
 
     expect(container.querySelector("[role='alert']")).toBeNull();
+  });
+
+  it("applies error styles for error severity", () => {
+    const { container } = render(
+      <ErrorMessageItem
+        error={{ id: 1, message: "oops", severity: "error" }}
+        onDismiss={() => { }}
+      />,
+    );
+
+    expect(container.firstChild).toHaveProperty("className");
+    expect((container.firstChild as HTMLElement).className).toContain("border-red-300");
+  });
+
+  it("applies info styles for info severity", () => {
+    const { container } = render(
+      <ErrorMessageItem
+        error={{ id: 2, message: "done", severity: "info" }}
+        onDismiss={() => { }}
+      />,
+    );
+
+    expect((container.firstChild as HTMLElement).className).toContain("border-green-300");
   });
 });

@@ -59,3 +59,8 @@ export interface OrderDto {
   totalOverrideInCents: number | null;
   items: OrderItemDto[];
 }
+
+export interface EntityPointerDto {
+  id: string;
+  location: string;
+}

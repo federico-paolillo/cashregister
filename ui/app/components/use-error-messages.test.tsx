@@ -59,6 +59,26 @@ describe("useErrorMessagesState", () => {
     expect(result.current.errors[0].message).toBe("something broke");
   });
 
+  it("defaults severity to error when not specified", () => {
+    const { result } = renderHook(() => useErrorMessagesState(5000));
+
+    act(() => {
+      result.current.addError("something broke");
+    });
+
+    expect(result.current.errors[0].severity).toBe("error");
+  });
+
+  it("stores the provided severity", () => {
+    const { result } = renderHook(() => useErrorMessagesState(5000));
+
+    act(() => {
+      result.current.addError("order placed", "info");
+    });
+
+    expect(result.current.errors[0].severity).toBe("info");
+  });
+
   it("assigns unique ids to each error", () => {
     const { result } = renderHook(() => useErrorMessagesState(5000));
 

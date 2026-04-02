@@ -8,14 +8,17 @@ import {
   useState,
 } from "react";
 
+export type ErrorMessageSeverity = "error" | "info";
+
 export interface ErrorMessage {
   id: number;
   message: string;
+  severity: ErrorMessageSeverity;
 }
 
 interface ErrorMessagesContextValue {
   errors: ErrorMessage[];
-  addError: (message: string) => void;
+  addError: (message: string, severity?: ErrorMessageSeverity) => void;
   dismissError: (id: number) => void;
 }
 
@@ -81,11 +84,11 @@ export function useErrorMessagesState(
   );
 
   const addError = useCallback(
-    (message: string) => {
+    (message: string, severity: ErrorMessageSeverity = "error") => {
       const id = nextId.current++;
 
       setErrors((prev) => {
-        const next = [...prev, { id, message }];
+        const next = [...prev, { id, message, severity }];
 
         if (maxMessages > 0 && next.length > maxMessages) {
           const evicted = next.shift()!;

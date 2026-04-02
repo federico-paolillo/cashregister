@@ -4,10 +4,11 @@ import { useErrorMessages } from "@cashregister/components/use-error-messages";
 import { useLoaderError } from "@cashregister/components/use-loader-error";
 import { deps } from "@cashregister/deps";
 import { decimalToCents } from "@cashregister/money";
-import type {
-  ArticleListItemDto,
-  ArticlesPageDto,
-  PlaceOrderRequestDto,
+import {
+  type EntityPointerDto,
+  type ArticleListItemDto,
+  type ArticlesPageDto,
+  type PlaceOrderRequestDto,
 } from "@cashregister/model";
 import { ArticleSelector } from "./components/article-selector";
 import { OrderSummary } from "./components/order-summary";
@@ -32,7 +33,7 @@ export async function clientAction({ request }: Route.ClientActionArgs) {
     ...(totalOverrideRaw ? { totalOverrideInCents: Number(totalOverrideRaw) } : {}),
   };
 
-  return deps.apiClient.post("/orders", body);
+  return deps.apiClient.post<EntityPointerDto>("/orders", body);
 }
 
 export interface CartEntry {
@@ -103,6 +104,7 @@ export default function Order({ loaderData, actionData }: Route.ComponentProps) 
     if (actionData?.ok === true) {
       dispatch({ type: "clear" });
       setTotalOverride("");
+      addError(`Order '${actionData.value.id}' created`, "info");
     } else if (actionData?.ok === false) {
       addError(actionData.error.message);
     }
