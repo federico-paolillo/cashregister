@@ -10,6 +10,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <head>
+        <title>Cashregister</title>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <Meta />
@@ -18,8 +19,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <body>
         <StrictMode>
           <ErrorMessagesProvider>
-            <NavigationMenu />
             <div className="flex h-screen flex-col">
+              <NavigationMenu />
               {children}
             </div>
             <ErrorMessageList />
@@ -65,4 +66,14 @@ export function ErrorBoundary() {
       </div>
     </div>
   );
+}
+
+export function links() {
+  return [
+    {
+      rel: "icon",
+      href: "/icons/printer.svg",
+      type: "image/svg+xml"
+    }
+  ]
 }
