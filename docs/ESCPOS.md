@@ -1,5 +1,7 @@
 # Cashregister.Printmon — ESC/POS Printer Library
 
+> This document provides development guidelines and project structure information for the Cash Register application ESC/POS integration.
+
 ## Project layout
 
 ```
@@ -45,12 +47,7 @@ Cashregister.Printmon.Tests/
 
 ## Namespace
 
-Cashregister.Printmon
-All files use file-scoped namespace declaration.
-
-## Target
-
-.NET 10, C# 14. No external dependencies. Must compile with `dotnet build`.
+`Cashregister.Printmon`. All files use file-scoped namespace declaration.
 
 ## Encoders — structure
 
@@ -253,13 +250,3 @@ dotnet run --project be/Cashregister.Cli -- emulate --input receipt.bin
 ```
 
 Reads a raw ESC/POS binary file, decodes it, executes the instructions, and writes Markdown to stdout.
-
-## Per-session contract
-
-Each session implements exactly one instruction. Always implement relevant tests focusing on expected behavior rather than edge-cases. After completing, always run:
-
-    dotnet build be/Cashregister.Printmon/Cashregister.Printmon.csproj
-    dotnet test be/Cashregister.Printmon.Tests/Cashregister.Printmon.Tests.csproj
-
-Fix any compiler errors and failing tests before considering the task done. Do not leave
-warnings unaddressed.
