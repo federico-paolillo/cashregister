@@ -167,7 +167,7 @@ describe("Order", () => {
     expect(screen.getByText(/Espresso × 1/)).toBeDefined();
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const rerenderProps: any = { loaderData: loaderResult, actionData: { ok: true, value: undefined } };
+    const rerenderProps: any = { loaderData: loaderResult, actionData: { ok: true, value: { id: "ord-1", location: "/orders/ord-1" } } };
     rerender(<Order {...rerenderProps} />);
 
     expect(screen.queryByText(/Espresso × 1/)).toBeNull();

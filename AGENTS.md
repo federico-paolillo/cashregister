@@ -63,7 +63,9 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 ## In general
 
 - **Be idiomatic and consistent at all costs !**
-- The backend code is comples and enterprise-grade on purpose. The backend codebase is a style exercise in enterprise applications.
+- Backend code might feel over-engineered, complex and "enterprise-grade". That is **on purpose**. 
+- Backend code is a style exercise in enterprise applications. Follow same style.
+- Follow conventional commit format (e.g., `feat:`, `fix:`, `chore:`)
 
 ## When you plan
 
@@ -79,7 +81,10 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 - Make lightweight interfaces to aid testing. Do not try to anticipate greater abstractions unless necessary.
 - Do follow SOLID principles and GRASP principles but do not forget about KISS and YAGNI.
 - Do not take shortcuts or make stub implementations. If you find something difficult to implement challenge the design.
-- Follow conventional commit format (e.g., `feat:`, `fix:`, `chore:`)
+- Leave a `/// <summary>` comment on classes and interfaces stating their purpose.
+- Remember we have `<ImplicitUsings>` enabled in `Directory.Build.props`. Don't add unecessary usings.
+- `<>` not `<Fragment>` in React
+- Backend default implementations of interfaces go under a `Defaults/` folder of the parent folder.
 
 ## Verification step
 
@@ -114,12 +119,30 @@ Follow this format for an entry of the diary:
 ```markdown
 ## Short task description
 
-More detailed description (max. 150 words)
+More detailed description (max. 200 words)
 
 ### Key decisions
 
 - We did this because of that. We did not do something else because of another reason.
 ```
+
+## System requirements
+
+The backend and frontend will run on an Arduino Uno Q. The UI will be rendered using embedded brower [WPE](https://wpewebkit.org/) via Wayland-powered kiosk compositor [Cage](https://github.com/cage-kiosk/cage).
+
+Arduino Uno Q has following specifications:
+
+- Microprocessor (MPU): Qualcomm Dragonwing™ QRB2210: Quad-core Arm® Cortex®-A53 @ 2.0 GHz; Adreno GPU 3D graphics accelerator; 2x ISP (13 MP + 13 MP or 25 MP) @ 30 fps
+- Microcontroller (MCU): STM32U585 Arm® Cortex®-M33 up to 160 MHz; 2 MB flash memory; 786 KB SRAM
+- RAM: 4 GB LPDDR4
+- Power Supply: 32 GB eMMC built-in (no SD card required)
+- Storage: 32GB eMMC
+- USB: 1x USB-C port with host/device role switching, power role switch and video output 
+- Connectivity: Wi-Fi® 5 2.4/5GHz with onboard antenna; Bluetooth® 5.1 with onboard antenna
+- MPU Operating System: Linux Debian OS with upstream support
+- Real-time Operating System: Arduino Core on Zephyr OS
+
+Keep these system capabilities in mind when you suggest or plan an implementation.
 
 ## Further references
 

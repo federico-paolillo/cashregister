@@ -1,9 +1,12 @@
 using Cashregister.Api.Articles;
+using Cashregister.Api.Devices;
 using Cashregister.Api.Orders;
 using Cashregister.Application.Articles.Extensions;
 using Cashregister.Application.Orders.Extensions;
 using Cashregister.Database;
 using Cashregister.Database.Extensions;
+using Cashregister.Printmon.Devices;
+using Cashregister.Printmon.Encoders;
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Console;
@@ -23,15 +26,24 @@ builder.Logging.AddSimpleConsole(options =>
 
 builder.Configuration.AddEnvironmentVariables("CASHREGISTER_");
 
+builder.Services.Configure<FileDeviceSettings>(builder.Configuration.GetSection(FileDeviceSettings.Section));
+
 builder.Services
     .AddCashregisterDatabase(builder.Configuration)
     .AddCashregisterArticles()
     .AddCashregisterOrders();
 
+builder.Services.AddSingleton<FileDeviceTargetStore>();
+builder.Services.AddScoped<IPrinterDeviceCatalog, FilePrinterDeviceCatalog>();
+builder.Services.AddScoped<FileDeviceTargetSelector>();
+builder.Services.AddScoped<IDevice, FileDevice>();
+builder.Services.AddScoped<IEncoder<byte[]>, BinaryEncoder>();
+
 var app = builder.Build();
 
 app.MapArticles();
 app.MapOrders();
+app.MapDevices();
 
 await ApplyMigrationsAsync(app);
 
@@ -39,7 +51,7 @@ await app.RunAsync();
 
 return;
 
-async Task ApplyMigrationsAsync(WebApplication webApplication)
+static async Task ApplyMigrationsAsync(WebApplication webApplication)
 {
     // A local function ensures that the scope and the DbContext for migrations gets released before continuing
 

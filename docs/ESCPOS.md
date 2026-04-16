@@ -44,6 +44,7 @@ Cashregister.Printmon.Tests/
     - Valued commands: [ALIGN:CENTER], [CUT:FULL]
     - Text commands:   emit text as-is; PrintLine appends \n
     - Parameterless:   [INIT], [NOP]
+- Represent devices as writable Linux printer file paths, not CUPS queues. The current printing implementation writes to `FileStream`, so a printable device choice must be a filesystem path such as `/dev/usb/lp0`, not a CUPS URI.
 
 ## Namespace
 

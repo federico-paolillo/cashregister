@@ -9,6 +9,11 @@ vi.mock("react-router", async (importOriginal) => {
     ...actual,
     useRouteError: vi.fn(),
     isRouteErrorResponse: vi.fn(),
+    useLocation: vi.fn(() => ({ pathname: "/", search: "", hash: "", state: null, key: "default" })),
+    Link: ({ children, to, ...props }: { children: React.ReactNode; to: string } & React.AnchorHTMLAttributes<HTMLAnchorElement>) =>
+      <a href={String(to)} {...props}>{children}</a>,
+    NavLink: ({ children, to, className, ...props }: { children: React.ReactNode; to: string; className?: string | ((args: { isActive: boolean }) => string) } & React.AnchorHTMLAttributes<HTMLAnchorElement>) =>
+      <a href={String(to)} className={typeof className === "function" ? className({ isActive: false }) : className} {...props}>{children}</a>,
     Outlet: () => <div data-testid="outlet" />,
     Links: () => null,
     Meta: () => null,

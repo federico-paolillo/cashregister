@@ -64,3 +64,11 @@ export interface EntityPointerDto {
   id: string;
   location: string;
 }
+
+export interface DeviceDto {
+  id: string;
+  name: string;
+  target: string;
+  description: string | null;
+  selected: boolean;
+}
