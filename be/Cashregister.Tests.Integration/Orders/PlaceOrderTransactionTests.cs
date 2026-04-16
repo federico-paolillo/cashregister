@@ -33,8 +33,8 @@ public sealed class PlaceOrderTransactionTests(
 
         var placeOrderResult = await RunScoped<IPlaceOrderTransaction, Result<Identifier>>(tx =>
             tx.ExecuteAsync(new OrderRequest
-                {
-                    Items =
+            {
+                Items =
                     [
                         new OrderRequestItem
                         {
@@ -42,7 +42,7 @@ public sealed class PlaceOrderTransactionTests(
                             Quantity = 21
                         }
                     ]
-                }
+            }
             )
         );
 
@@ -79,8 +79,8 @@ public sealed class PlaceOrderTransactionTests(
 
         var placeOrderResult = await RunScoped<IPlaceOrderTransaction, Result<Identifier>>(tx =>
             tx.ExecuteAsync(new OrderRequest
-                {
-                    Items =
+            {
+                Items =
                     [
                         new OrderRequestItem
                         {
@@ -88,8 +88,8 @@ public sealed class PlaceOrderTransactionTests(
                             Quantity = 5
                         }
                     ],
-                    TotalOverride = Cents.From(350L)
-                }
+                TotalOverride = Cents.From(350L)
+            }
             )
         );
 

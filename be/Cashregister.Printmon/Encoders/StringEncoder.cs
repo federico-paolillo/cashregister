@@ -5,9 +5,9 @@ using Cashregister.Factories;
 using Cashregister.Printmon.Instructions.CodePage;
 using Cashregister.Printmon.Instructions.Core;
 using Cashregister.Printmon.Instructions.Cut;
+using Cashregister.Printmon.Instructions.Feed;
 using Cashregister.Printmon.Instructions.Formatting;
 using Cashregister.Printmon.Instructions.Layout;
-using Cashregister.Printmon.Instructions.Feed;
 using Cashregister.Printmon.Instructions.Motion;
 using Cashregister.Printmon.Instructions.Peripheral;
 

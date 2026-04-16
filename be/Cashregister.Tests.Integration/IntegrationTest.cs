@@ -3,6 +3,7 @@ using System.Globalization;
 using Cashregister.Database;
 
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 
 using NUlid;
@@ -29,7 +30,7 @@ public abstract class IntegrationTest(
         }
     }
 
-    protected async Task PrepareEnvironmentAsync()
+    protected async Task PrepareEnvironmentAsync(Action<IServiceCollection>? configureTestServices = null)
     {
         _dataSource = GenerateDatabaseName();
 
@@ -46,6 +47,10 @@ public abstract class IntegrationTest(
                 builder.ConfigureLogging(l => l.AddProvider(new XUnitLoggerProvider(testOutputHelper)));
                 builder.UseEnvironment(Environments.Development);
                 builder.UseConfiguration(cfg);
+                builder.ConfigureTestServices(services =>
+                {
+                    configureTestServices?.Invoke(services);
+                });
             });
 
         await ApplyMigrationsAsync();

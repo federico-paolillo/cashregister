@@ -81,9 +81,9 @@ internal static class Handlers
         }
 
         var location = linkGenerator.GetPathByName("GetArticle", new
-                       {
-                           id = result.Value.Value
-                       })
+        {
+            id = result.Value.Value
+        })
                        ?? throw new InvalidOperationException("Failed to generate location for article");
 
         var orderPointerDto = new EntityPointerDto
