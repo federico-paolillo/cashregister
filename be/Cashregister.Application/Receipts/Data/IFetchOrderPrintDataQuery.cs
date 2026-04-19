@@ -3,7 +3,10 @@ using Cashregister.Domain;
 
 namespace Cashregister.Application.Receipts.Data;
 
+/// <summary>
+///     Fetches the receipt-specific order projection used by receipt print program builders.
+/// </summary>
 public interface IFetchOrderPrintDataQuery
 {
-    Task<OrderPrintData> Fetch(Identifier orderId);
+    Task<OrderPrintData?> FetchAsync(Identifier orderId);
 }

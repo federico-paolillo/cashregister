@@ -3,6 +3,7 @@ using Cashregister.Api.Devices;
 using Cashregister.Api.Orders;
 using Cashregister.Application.Articles.Extensions;
 using Cashregister.Application.Orders.Extensions;
+using Cashregister.Application.Receipts.Extensions;
 using Cashregister.Database;
 using Cashregister.Database.Extensions;
 using Cashregister.Printmon.Devices;
@@ -31,7 +32,8 @@ builder.Services.Configure<FileDeviceSettings>(builder.Configuration.GetSection(
 builder.Services
     .AddCashregisterDatabase(builder.Configuration)
     .AddCashregisterArticles()
-    .AddCashregisterOrders();
+    .AddCashregisterOrders()
+    .AddCashregisterReceipts();
 
 builder.Services.AddSingleton<FileDeviceTargetStore>();
 builder.Services.AddScoped<IPrinterDeviceCatalog, FilePrinterDeviceCatalog>();

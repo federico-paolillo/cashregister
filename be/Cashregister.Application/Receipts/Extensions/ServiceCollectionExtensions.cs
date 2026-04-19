@@ -1,3 +1,5 @@
+using Cashregister.Application.Receipts.Services;
+using Cashregister.Application.Receipts.Services.Defaults;
 using Cashregister.Application.Receipts.Transactions;
 using Cashregister.Application.Receipts.Transactions.Defaults;
 
@@ -9,6 +11,7 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddCashregisterReceipts(this IServiceCollection serviceCollection)
     {
+        serviceCollection.AddScoped<IReceiptPrintProgramService, ReceiptPrintProgramService>();
         serviceCollection.AddScoped<IPrintReceiptTransaction, PrintReceiptTransaction>();
 
         return serviceCollection;

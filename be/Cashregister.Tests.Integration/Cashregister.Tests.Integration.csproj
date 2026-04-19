@@ -15,6 +15,8 @@
     <ItemGroup>
         <ProjectReference Include="..\Cashregister.Database\Cashregister.Database.csproj"/>
         <ProjectReference Include="..\Cashregister.Api\Cashregister.Api.csproj"/>
+        <ProjectReference Include="..\Cashregister.Printmon\Cashregister.Printmon.csproj"/>
+        <ProjectReference Include="..\Cashregister.Printmon.Emulator\Cashregister.Printmon.Emulator.csproj"/>
     </ItemGroup>
 
     <ItemGroup>

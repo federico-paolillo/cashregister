@@ -85,6 +85,7 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 - Remember we have `<ImplicitUsings>` enabled in `Directory.Build.props`. Don't add unecessary usings.
 - `<>` not `<Fragment>` in React
 - Backend default implementations of interfaces go under a `Defaults/` folder of the parent folder.
+- Project convention is explicit `Result<T>` plus `Problem`, not exceptions for expected business/application failures.
 
 ## Verification step
 

@@ -2,6 +2,7 @@
     <ItemGroup>
         <ProjectReference Include="..\Cashregister.Domain\Cashregister.Domain.csproj"/>
         <ProjectReference Include="..\Cashregister.Commons\Cashregister.Commons.csproj"/>
+        <ProjectReference Include="..\Cashregister.Printmon\Cashregister.Printmon.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
