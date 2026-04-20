@@ -1,6 +1,6 @@
 # Cash Register Architecture
 
-This document describes the high-level architecture of Cash Register. It intentionally does not document ESC/POS command details. Printer instruction, encoder, emulator, CLI, and file-device details live in [`ESCPOS.md`](ESCPOS.md).
+> This document describes the high-level architecture of Cash Register. It intentionally does not document ESC/POS command details. Printer instruction, encoder, emulator, CLI, and file-device details live in [`ESCPOS.md`](ESCPOS.md).
 
 ## System Shape
 
@@ -153,7 +153,7 @@ Application receipt code builds a `PrintProgram` through `IReceiptPrintProgramSe
 
 The API currently wires a `FileDeviceTargetStore`, `FileDevice`, and `BinaryEncoder`. Device endpoints enumerate writable Linux printer file paths and allow selecting the active target at runtime. `FileDevice` writes encoded bytes to the selected path.
 
-`PrintReceiptTransaction` is still a stub. Current order creation records orders; it does not yet perform receipt printer I/O as part of order submission.
+`IPrintReceiptHandler` orchestrates receipt printing by asking `IReceiptPrintProgramService` to build a `PrintProgram` for an order id and then sending that program to the configured `IDevice`. `PlaceOrderActivity` uses independent scoped operations to place an order, print its receipt, and fetch the saved order for the API response. Receipt reprinting remains exposed as an explicit order action at `POST /orders/{id}/print`.
 
 ## Testing
 

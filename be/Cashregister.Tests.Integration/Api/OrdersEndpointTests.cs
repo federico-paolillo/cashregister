@@ -8,6 +8,10 @@ using Cashregister.Application.Orders.Models.Input;
 using Cashregister.Application.Orders.Transactions;
 using Cashregister.Domain;
 using Cashregister.Factories;
+using Cashregister.Printmon;
+using Cashregister.Printmon.Devices;
+
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 using Xunit.Abstractions;
 
@@ -60,7 +64,9 @@ public sealed class OrdersEndpointTests(
     [Fact]
     public async Task CreateOrder_ReturnsBadRequest_WhenOrderHasInvalidItems()
     {
-        await PrepareEnvironmentAsync();
+        var device = new RecordingDevice();
+
+        await PrepareEnvironmentAsync(services => ConfigureDevice(services, device));
 
         using var httpClient = CreateHttpClient();
 
@@ -76,6 +82,57 @@ public sealed class OrdersEndpointTests(
         var response = await httpClient.PostAsJsonAsync("/orders", orderRequest);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Equal(0, device.PrintCount);
+    }
+
+    [Fact]
+    public async Task CreateOrder_PrintsReceipt_WhenOrderIsValid()
+    {
+        var device = new RecordingDevice();
+
+        await PrepareEnvironmentAsync(services => ConfigureDevice(services, device));
+
+        var articleId = await CreateArticleForOrderAsync("Printed article", 1000L);
+
+        using var httpClient = CreateHttpClient();
+
+        var orderRequest = new OrderRequestDto(
+            [
+                new OrderRequestItemDto(
+                    articleId.Value,
+                    2u
+                )
+            ]
+        );
+
+        var response = await httpClient.PostAsJsonAsync("/orders", orderRequest);
+
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        Assert.Equal(1, device.PrintCount);
+        Assert.NotNull(device.PrintedProgram);
+    }
+
+    [Fact]
+    public async Task CreateOrder_ReturnsInternalServerError_WhenReceiptPrintingFails()
+    {
+        await PrepareEnvironmentAsync(services => ConfigureDevice(services, new FailingDevice()));
+
+        var articleId = await CreateArticleForOrderAsync("Unprintable article", 1000L);
+
+        using var httpClient = CreateHttpClient();
+
+        var orderRequest = new OrderRequestDto(
+            [
+                new OrderRequestItemDto(
+                    articleId.Value,
+                    2u
+                )
+            ]
+        );
+
+        var response = await httpClient.PostAsJsonAsync("/orders", orderRequest);
+
+        Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
     }
 
     [Fact]
@@ -457,4 +514,35 @@ public sealed class OrdersEndpointTests(
         Assert.True(placeOrderResult.Ok);
         return placeOrderResult.Value;
     }
+
+    private static void ConfigureDevice(IServiceCollection services, IDevice device)
+    {
+        services.RemoveAll<IDevice>();
+        services.AddSingleton(device);
+    }
+
+    private sealed class RecordingDevice : IDevice
+    {
+        public int PrintCount { get; private set; }
+
+        public PrintProgram? PrintedProgram { get; private set; }
+
+        public Task<Result<Unit>> PrintAsync(PrintProgram printProgram)
+        {
+            PrintCount++;
+            PrintedProgram = printProgram;
+
+            return Task.FromResult(Result.Void());
+        }
+    }
+
+    private sealed class FailingDevice : IDevice
+    {
+        public Task<Result<Unit>> PrintAsync(PrintProgram printProgram)
+        {
+            return Task.FromResult(Result.Error(new TestDeviceProblem()));
+        }
+    }
+
+    private sealed record TestDeviceProblem : Problem;
 }

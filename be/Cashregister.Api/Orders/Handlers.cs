@@ -1,12 +1,15 @@
 using System.Collections.Immutable;
 
+using Cashregister.Activities;
 using Cashregister.Api.Commons.Models;
 using Cashregister.Api.Orders.Models;
 using Cashregister.Application.Orders.Data;
 using Cashregister.Application.Orders.Handlers;
 using Cashregister.Application.Orders.Models.Input;
-using Cashregister.Application.Orders.Transactions;
+using Cashregister.Application.Orders.Problems;
 using Cashregister.Application.Pagination;
+using Cashregister.Application.Receipts.Handlers;
+using Cashregister.Application.Receipts.Problems;
 using Cashregister.Domain;
 
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -60,8 +63,8 @@ internal static class Handlers
         return TypedResults.Ok(ordersPageDto);
     }
 
-    public static async Task<Results<BadRequest, Created<EntityPointerDto>>> CreateOrder(
-        IPlaceOrderTransaction placeOrderTransaction,
+    public static async Task<Results<BadRequest, InternalServerError, Created<EntityPointerDto>>> CreateOrder(
+        PlaceOrderActivity placeOrderActivity,
         LinkGenerator linkGenerator,
         [FromBody] OrderRequestDto orderRequestDto
     )
@@ -84,18 +87,22 @@ internal static class Handlers
                 : null
         };
 
-        var orderResult = await placeOrderTransaction.ExecuteAsync(orderRequest);
+        var orderResult = await placeOrderActivity.PlaceOrderAsync(orderRequest);
 
         if (orderResult.NotOk)
         {
-            return TypedResults.BadRequest();
+            return orderResult.Error switch
+            {
+                OrderRequestIsMissingSomeArticles => TypedResults.BadRequest(),
+                _ => TypedResults.InternalServerError()
+            };
         }
 
         var getOrderUrl = linkGenerator.GetPathByName(
             "GetOrder",
             new
             {
-                id = orderResult.Value.Value
+                id = orderResult.Value.Id.Value
             }
         );
 
@@ -106,7 +113,7 @@ internal static class Handlers
 
         var orderPointerDto = new EntityPointerDto
         {
-            Id = orderResult.Value.Value,
+            Id = orderResult.Value.Id.Value,
             Location = getOrderUrl
         };
 
@@ -130,5 +137,26 @@ internal static class Handlers
         var orderDto = OrderDto.From(order);
 
         return TypedResults.Ok(orderDto);
+    }
+
+    public static async Task<Results<NotFound, InternalServerError, NoContent>> PrintOrderReceipt(
+        IPrintReceiptHandler printReceiptHandler,
+        [FromRoute] string id
+    )
+    {
+        var identifier = Identifier.From(id);
+
+        var result = await printReceiptHandler.ExecuteAsync(identifier);
+
+        if (result.NotOk)
+        {
+            return result.Error switch
+            {
+                NoSuchOrderPrintDataProblem => TypedResults.NotFound(),
+                _ => TypedResults.InternalServerError()
+            };
+        }
+
+        return TypedResults.NoContent();
     }
 }

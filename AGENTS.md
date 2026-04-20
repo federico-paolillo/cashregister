@@ -69,9 +69,33 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 - Prefer the existing project style over introducing a new local pattern.
 - Use conventional commits when committing, for example `feat:`, `fix:`, `docs:`, `test:`, or `chore:`.
 
+## Documentation
+
+`docs/` folder has all the documentation, context and information you will need.
+
+### Must reads
+
+- docs/ARCH.md - Main architecture and design choices. Read this to get your bearings.
+- docs/ESCPOS.md - Architecture and design choices for the ESC/POS implementation. Read this to understand how printing works.
+- docs/CONVENTIONS.md - How to work on the project. This is fundamental
+
+### Optional reads
+
+- docs/DIARY.md - Log of implementation decisions and choices. Read it if you need to understand how the code evolved.
+- docs/PLANS.md - "ExecPlan" definition and template. Use it when generating an implementation plan.
+- docs/MANUAL.md - Manual of the target printer we use when printing receipts. Read this if you need to know something about the printer.
+- docs/PRINTER.md - List of all ESC/POS commmands supported by the target printer. Reader this if you need to review how a command works.
+
+`plans/` folder has all the past implementation plans. You can ignore this folder completely. It's just to have some history.
+
+### Ignore
+
+- README.md - It's barren. Save tokens and skip it.
+- docs/REVIEW.md - Past reviews findings. Ignore this as it is outdated and needs human review.
+
 ## Verification
 
-When you finish a task always run verification steps as instructed in `docs/ARCH.md`. If any command report errors or failures you **must** address them before considering the task done.
+When you finish a task always run verification steps. Verification steps are described in `docs/ARCH.md` under section "Operational Notes". If any verification step reports errors or failures you **must** address them before considering the task done.
 
 ## Bookkeeping
 
@@ -95,50 +119,8 @@ More detailed description (max. 200 words)
 - We did this because of that. We did not do something else because of another reason.
 ```
 
-Include `path_to_exec_plan` relative to `docs/` folder if you used an ExecPlan to develop. If you did not use an ExecPlan skip the header alltogether.
+Include an `ExecPlan` section with `path_to_exec_plan` relative to `docs/` folder only if you used an ExecPlan to develop. If you did not use an ExecPlan skip this section.
 
-If you make changes that alter what is referenced in `ARCH.md` or `ESCPOS.md` you have to update those files as well. `ARCH.md` and `ESCPOS.md` must not get out of sync.
+If you make changes that alter what is referenced in `ARCH.md` or `ESCPOS.md` you have to update those files as well. `ARCH.md` and `ESCPOS.md` must not get out of sync. There is no need to document every tiny little detail in `ARCH.md` or `ESCPOS.md` as they document the high-level architecture of Cashregister.
 
 `CONVENTIONS.md` must be updated if you introduce new development conventions or techniques.
-
-## System
-
-The backend and frontend will run on an Arduino Uno Q. The UI will be rendered using embedded brower [WPE](https://wpewebkit.org/) via Wayland-powered kiosk compositor [Cage](https://github.com/cage-kiosk/cage).
-
-Arduino Uno Q has following specifications:
-
-- Microprocessor (MPU): Qualcomm Dragonwing™ QRB2210: Quad-core Arm® Cortex®-A53 @ 2.0 GHz; Adreno GPU 3D graphics accelerator; 2x ISP (13 MP + 13 MP or 25 MP) @ 30 fps
-- Microcontroller (MCU): STM32U585 Arm® Cortex®-M33 up to 160 MHz; 2 MB flash memory; 786 KB SRAM
-- RAM: 4 GB LPDDR4
-- Power Supply: 32 GB eMMC built-in (no SD card required)
-- Storage: 32GB eMMC
-- USB: 1x USB-C port with host/device role switching, power role switch and video output 
-- Connectivity: Wi-Fi® 5 2.4/5GHz with onboard antenna; Bluetooth® 5.1 with onboard antenna
-- MPU Operating System: Linux Debian OS with upstream support
-- Real-time Operating System: Arduino Core on Zephyr OS
-
-Keep these system capabilities in mind when you suggest or plan an implementation.
-
-## References
-
-`docs/` folder has all the documentation, context and information you will need.
-
-### Must reads
-
-- docs/ARCH.md - Main architecture and design choices. Read this to get your bearings.
-- docs/ESCPOS.md - Architecture and design choices for the ESC/POS implementation. Read this to understand how printing works.
-- docs/CONVENTIONS.md - How to work on the project. This is fundamental
-
-### Optional reads
-
-- docs/DIARY.md - Log of implementation decisions and choices. Read it if you need to understand how the code evolved.
-- docs/PLANS.md - "ExecPlan" definition and template. Use it when generating an implementation plan.
-- docs/MANUAL.md - Manual of the target printer we use when printing receipts. Read this if you need to know something about the printer.
-- docs/PRINTER.md - List of all ESC/POS commmands supported by the target printer. Reader this if you need to review how a command works.
-
-`plans/` folder has all the past implementation plans. You can ignore this folder completely. It's just to have some history.
-
-### Ignore
-
-- README.md - It's barren. Save tokens and skip it.
-- docs/REVIEW.md - Past reviews findings. Ignore this as it is outdated and needs human review.

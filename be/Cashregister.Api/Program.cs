@@ -1,3 +1,4 @@
+using Cashregister.Activities.Extensions;
 using Cashregister.Api.Articles;
 using Cashregister.Api.Devices;
 using Cashregister.Api.Orders;
@@ -33,7 +34,8 @@ builder.Services
     .AddCashregisterDatabase(builder.Configuration)
     .AddCashregisterArticles()
     .AddCashregisterOrders()
-    .AddCashregisterReceipts();
+    .AddCashregisterReceipts()
+    .AddCashregisterActivities();
 
 builder.Services.AddSingleton<FileDeviceTargetStore>();
 builder.Services.AddScoped<IPrinterDeviceCatalog, FilePrinterDeviceCatalog>();

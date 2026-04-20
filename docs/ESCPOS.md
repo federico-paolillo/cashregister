@@ -1,6 +1,6 @@
 # Cashregister.Printmon ESC/POS Reference
 
-This document is the source of truth for `Cashregister.Printmon.*`, the printer emulator, and the Printmon CLI. Keep command-level ESC/POS details here, not in `ARCH.md`.
+> This document is the source of truth for `Cashregister.Printmon.*`, the printer emulator, and the Printmon CLI. Keep command-level ESC/POS details here, not in `ARCH.md`.
 
 ## Project Layout
 

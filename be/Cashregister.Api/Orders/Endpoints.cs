@@ -15,6 +15,9 @@ internal static class Endpoints
         routeGroup.MapGet("/{id}", Handlers.GetOrder)
             .WithName("GetOrder");
 
+        routeGroup.MapPost("/{id}/print", Handlers.PrintOrderReceipt)
+            .WithName("PrintOrderReceipt");
+
         return routeGroup;
     }
 }

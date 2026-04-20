@@ -1,7 +1,7 @@
 ﻿using Cashregister.Application.Orders.Data;
 using Cashregister.Application.Orders.Models.Input;
 using Cashregister.Application.Orders.Transactions;
-using Cashregister.Application.Receipts.Transactions;
+using Cashregister.Application.Receipts.Handlers;
 using Cashregister.Domain;
 using Cashregister.Factories;
 using Cashregister.Factories.Problems;
@@ -10,7 +10,7 @@ namespace Cashregister.Activities;
 
 public sealed class PlaceOrderActivity(
     Scoped<IPlaceOrderTransaction> placeOrderTx,
-    Scoped<IPrintReceiptTransaction> printReceiptTx,
+    Scoped<IPrintReceiptHandler> printReceiptHandler,
     Scoped<IFetchOrderQuery> fetchOrderQuery
 )
 {
@@ -27,7 +27,7 @@ public sealed class PlaceOrderActivity(
         var newOrderId = newOrderResult.Value;
 
         var printReceiptResult =
-            await printReceiptTx.ExecuteAsync(tx => tx.ExecuteAsync(newOrderId, CancellationToken.None));
+            await printReceiptHandler.ExecuteAsync(handler => handler.ExecuteAsync(newOrderId));
 
         if (printReceiptResult.NotOk)
         {
