@@ -1,6 +1,8 @@
 using System.Collections.Immutable;
 
 using Cashregister.Api.Devices.Models;
+using Cashregister.Application.Devices;
+using Cashregister.Application.Devices.Defaults;
 
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;

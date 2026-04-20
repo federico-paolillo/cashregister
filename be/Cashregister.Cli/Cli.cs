@@ -1,7 +1,6 @@
 using System.CommandLine;
 
 using Cashregister.Printmon.Devices;
-using Cashregister.Printmon.Emulator;
 using Cashregister.Printmon.Tools;
 
 using Microsoft.Extensions.DependencyInjection;

@@ -1,5 +1,3 @@
-using System.Collections.Immutable;
-
 namespace Cashregister.Printmon.Emulator;
 
 public sealed record Printer(PrinterState State, Receipt Receipt)

@@ -1,4 +1,4 @@
-namespace Cashregister.Api.Devices;
+namespace Cashregister.Application.Devices;
 
 public sealed record PrinterDevice(
     string Id,

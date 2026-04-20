@@ -1,8 +1,6 @@
 using System.Collections.Immutable;
 
-using Cashregister.Printmon.Emulator;
 using Cashregister.Printmon.Encoders;
-using Cashregister.Printmon.Instructions.Formatting;
 using Cashregister.Printmon.Instructions.Layout;
 
 namespace Cashregister.Printmon.Emulator.Tests;

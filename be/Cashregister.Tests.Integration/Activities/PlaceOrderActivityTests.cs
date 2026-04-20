@@ -8,10 +8,7 @@ using Cashregister.Application.Orders.Problems;
 using Cashregister.Application.Pagination;
 using Cashregister.Domain;
 using Cashregister.Factories;
-using Cashregister.Printmon;
-using Cashregister.Printmon.Devices;
-
-using Microsoft.Extensions.DependencyInjection.Extensions;
+using Cashregister.Tests.Integration.Utilities;
 
 using Xunit.Abstractions;
 
@@ -26,7 +23,7 @@ public sealed class PlaceOrderActivityTests(
     {
         var device = new RecordingDevice();
 
-        await PrepareEnvironmentAsync(services => ConfigureDevice(services, device));
+        await PrepareEnvironmentAsync(services => services.ConfigureDevice(device));
 
         var articleId = await CreateArticleAsync("Coffee", 12345);
 
@@ -54,7 +51,7 @@ public sealed class PlaceOrderActivityTests(
     {
         var device = new RecordingDevice();
 
-        await PrepareEnvironmentAsync(services => ConfigureDevice(services, device));
+        await PrepareEnvironmentAsync(services => services.ConfigureDevice(device));
 
         var result = await RunScoped<PlaceOrderActivity, Result<Order>>(activity =>
             activity.PlaceOrderAsync(new OrderRequest
@@ -77,7 +74,7 @@ public sealed class PlaceOrderActivityTests(
     [Fact]
     public async Task PlaceOrderAsync_ReturnsDeviceFailureAndKeepsOrder_WhenPrintingFails()
     {
-        await PrepareEnvironmentAsync(services => ConfigureDevice(services, new FailingDevice()));
+        await PrepareEnvironmentAsync(services => services.ConfigureDevice(new FailingDevice()));
 
         var articleId = await CreateArticleAsync("Coffee", 12345);
 
@@ -107,12 +104,6 @@ public sealed class PlaceOrderActivityTests(
         Assert.Single(ordersPageResult.Value.Items);
     }
 
-    private static void ConfigureDevice(IServiceCollection services, IDevice device)
-    {
-        services.RemoveAll<IDevice>();
-        services.AddSingleton(device);
-    }
-
     private async Task<Identifier> CreateArticleAsync(string description, long priceInCents)
     {
         var result = await RunScoped<IRegisterArticleTransaction, Result<Identifier>>(tx =>
@@ -125,29 +116,4 @@ public sealed class PlaceOrderActivityTests(
         Assert.True(result.Ok);
         return result.Value;
     }
-
-    private sealed class RecordingDevice : IDevice
-    {
-        public int PrintCount { get; private set; }
-
-        public PrintProgram? PrintedProgram { get; private set; }
-
-        public Task<Result<Unit>> PrintAsync(PrintProgram printProgram)
-        {
-            PrintCount++;
-            PrintedProgram = printProgram;
-
-            return Task.FromResult(Result.Void());
-        }
-    }
-
-    private sealed class FailingDevice : IDevice
-    {
-        public Task<Result<Unit>> PrintAsync(PrintProgram printProgram)
-        {
-            return Task.FromResult(Result.Error(new TestDeviceProblem()));
-        }
-    }
-
-    private sealed record TestDeviceProblem : Problem;
 }

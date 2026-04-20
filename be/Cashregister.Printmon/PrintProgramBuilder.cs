@@ -1,5 +1,3 @@
-using System.Collections.Immutable;
-
 using Cashregister.Printmon.Instructions;
 using Cashregister.Printmon.Instructions.CodePage;
 using Cashregister.Printmon.Instructions.Core;

@@ -1,11 +1,17 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <ItemGroup>
-        <ProjectReference Include="..\Cashregister.Domain\Cashregister.Domain.csproj"/>
-        <ProjectReference Include="..\Cashregister.Commons\Cashregister.Commons.csproj"/>
-        <ProjectReference Include="..\Cashregister.Printmon\Cashregister.Printmon.csproj"/>
+        <ProjectReference Include="..\Cashregister.Domain\Cashregister.Domain.csproj" />
+        <ProjectReference Include="..\Cashregister.Commons\Cashregister.Commons.csproj" />
+        <ProjectReference Include="..\Cashregister.Printmon\Cashregister.Printmon.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.0"/>
+        <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.0" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="10.0.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Devices/Extensions/" />
     </ItemGroup>
 </Project>

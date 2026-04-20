@@ -2,7 +2,6 @@ using System.Collections.Immutable;
 using System.Text;
 
 using Cashregister.Factories;
-using Cashregister.Printmon;
 using Cashregister.Printmon.Emulator.Problems;
 using Cashregister.Printmon.Instructions;
 using Cashregister.Printmon.Instructions.CodePage;

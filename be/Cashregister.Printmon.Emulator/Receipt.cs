@@ -1,6 +1,5 @@
 using System.Collections.Immutable;
 
-using Cashregister.Printmon.Instructions.CodePage;
 using Cashregister.Printmon.Instructions.Formatting;
 using Cashregister.Printmon.Instructions.Layout;
 

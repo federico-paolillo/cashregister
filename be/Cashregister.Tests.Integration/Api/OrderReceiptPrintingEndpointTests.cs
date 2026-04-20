@@ -6,10 +6,7 @@ using Cashregister.Application.Orders.Models.Input;
 using Cashregister.Application.Orders.Transactions;
 using Cashregister.Domain;
 using Cashregister.Factories;
-using Cashregister.Printmon;
-using Cashregister.Printmon.Devices;
-
-using Microsoft.Extensions.DependencyInjection.Extensions;
+using Cashregister.Tests.Integration.Utilities;
 
 using Xunit.Abstractions;
 
@@ -24,7 +21,7 @@ public sealed class OrderReceiptPrintingEndpointTests(
     {
         var device = new RecordingDevice();
 
-        await PrepareEnvironmentAsync(services => ConfigureDevice(services, device));
+        await PrepareEnvironmentAsync(services => services.ConfigureDevice(device));
 
         var articleId = await CreateArticleAsync("Coffee", 12345);
         var orderId = await CreateOrderAsync(articleId, 2);
@@ -41,7 +38,7 @@ public sealed class OrderReceiptPrintingEndpointTests(
     [Fact]
     public async Task PrintOrderReceipt_ReturnsNotFound_WhenOrderDoesNotExist()
     {
-        await PrepareEnvironmentAsync(services => ConfigureDevice(services, new RecordingDevice()));
+        await PrepareEnvironmentAsync(services => services.ConfigureDevice(new RecordingDevice()));
 
         using var httpClient = CreateHttpClient();
 
@@ -53,7 +50,7 @@ public sealed class OrderReceiptPrintingEndpointTests(
     [Fact]
     public async Task PrintOrderReceipt_ReturnsInternalServerError_WhenDeviceFails()
     {
-        await PrepareEnvironmentAsync(services => ConfigureDevice(services, new FailingDevice()));
+        await PrepareEnvironmentAsync(services => services.ConfigureDevice(new FailingDevice()));
 
         var articleId = await CreateArticleAsync("Coffee", 12345);
         var orderId = await CreateOrderAsync(articleId, 2);
@@ -68,19 +65,13 @@ public sealed class OrderReceiptPrintingEndpointTests(
     [Fact]
     public async Task ApiPrefixedPrintOrderReceiptRoute_ReturnsNotFound()
     {
-        await PrepareEnvironmentAsync(services => ConfigureDevice(services, new RecordingDevice()));
+        await PrepareEnvironmentAsync(services => services.ConfigureDevice(new RecordingDevice()));
 
         using var httpClient = CreateHttpClient();
 
         var response = await httpClient.PostAsync("/api/orders/nonexistent-order-id/print", null);
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-    }
-
-    private static void ConfigureDevice(IServiceCollection services, IDevice device)
-    {
-        services.RemoveAll<IDevice>();
-        services.AddSingleton(device);
     }
 
     private async Task<Identifier> CreateArticleAsync(string description, long priceInCents)
@@ -115,28 +106,5 @@ public sealed class OrderReceiptPrintingEndpointTests(
         return result.Value;
     }
 
-    private sealed class RecordingDevice : IDevice
-    {
-        public int PrintCount { get; private set; }
 
-        public PrintProgram? PrintedProgram { get; private set; }
-
-        public Task<Result<Unit>> PrintAsync(PrintProgram printProgram)
-        {
-            PrintCount++;
-            PrintedProgram = printProgram;
-
-            return Task.FromResult(Result.Void());
-        }
-    }
-
-    private sealed class FailingDevice : IDevice
-    {
-        public Task<Result<Unit>> PrintAsync(PrintProgram printProgram)
-        {
-            return Task.FromResult(Result.Error(new TestDeviceProblem()));
-        }
-    }
-
-    private sealed record TestDeviceProblem : Problem;
 }

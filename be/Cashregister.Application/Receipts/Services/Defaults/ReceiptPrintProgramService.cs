@@ -3,7 +3,6 @@ using System.Globalization;
 using Cashregister.Application.Receipts.Data;
 using Cashregister.Application.Receipts.Models.Output;
 using Cashregister.Application.Receipts.Problems;
-using Cashregister.Application.Receipts.Services;
 using Cashregister.Domain;
 using Cashregister.Factories;
 using Cashregister.Printmon;

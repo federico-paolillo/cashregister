@@ -1,5 +1,3 @@
-using System.Collections.Immutable;
-
 using Cashregister.Application.Receipts.Data;
 using Cashregister.Application.Receipts.Models.Output;
 using Cashregister.Domain;

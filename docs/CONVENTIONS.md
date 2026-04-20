@@ -19,6 +19,7 @@ Conventions:
 - Register feature services through `ServiceCollectionExtensions` methods instead of scattering registrations in unrelated projects.
 - `*Activity` classes are emulators of out-of-process sagas where each step executes in a indipendent `Scope<T>` 
 - **Always prefer** using `TypeResults` high-level methods from ASP .NET Minimal APIs. **Do** `Task<Results<BadRequest, InternalServerError, Created<EntityPointerDto>>>` instead of`Task<Results<BadRequest, StatusCodeHttpResult, Created<EntityPointerDto>>>`. **Do** `TypedResults.InternalServerError()` instead of `TypedResults.StatusCode(StatusCodes.Status500InternalServerError)`
+- Make ad-hoc `ServiceCollectionExtensions` extensions and provide `AddXxx()` methods to register dependencies. Don't scatter around the codebase dependencies registration code.
 
 Minimal API conventions:
 

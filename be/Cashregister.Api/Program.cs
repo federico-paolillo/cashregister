@@ -3,12 +3,12 @@ using Cashregister.Api.Articles;
 using Cashregister.Api.Devices;
 using Cashregister.Api.Orders;
 using Cashregister.Application.Articles.Extensions;
+using Cashregister.Application.Devices.Extensions;
 using Cashregister.Application.Orders.Extensions;
 using Cashregister.Application.Receipts.Extensions;
 using Cashregister.Database;
 using Cashregister.Database.Extensions;
 using Cashregister.Printmon.Devices;
-using Cashregister.Printmon.Encoders;
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Console;
@@ -35,13 +35,9 @@ builder.Services
     .AddCashregisterArticles()
     .AddCashregisterOrders()
     .AddCashregisterReceipts()
+    .AddCashregisterDevices()
+    .AddFileDevice(builder.Configuration)
     .AddCashregisterActivities();
-
-builder.Services.AddSingleton<FileDeviceTargetStore>();
-builder.Services.AddScoped<IPrinterDeviceCatalog, FilePrinterDeviceCatalog>();
-builder.Services.AddScoped<FileDeviceTargetSelector>();
-builder.Services.AddScoped<IDevice, FileDevice>();
-builder.Services.AddScoped<IEncoder<byte[]>, BinaryEncoder>();
 
 var app = builder.Build();
 

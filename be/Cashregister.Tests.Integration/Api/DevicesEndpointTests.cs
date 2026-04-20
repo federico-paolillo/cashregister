@@ -1,7 +1,7 @@
 using System.Net;
 
-using Cashregister.Api.Devices;
 using Cashregister.Api.Devices.Models;
+using Cashregister.Application.Devices;
 using Cashregister.Printmon.Devices;
 
 using Microsoft.Extensions.DependencyInjection.Extensions;

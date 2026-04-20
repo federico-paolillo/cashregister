@@ -1,5 +1,3 @@
-using Cashregister.Printmon.Emulator;
-using Cashregister.Printmon.Encoders;
 using Cashregister.Printmon.Instructions;
 using Cashregister.Printmon.Instructions.CodePage;
 using Cashregister.Printmon.Instructions.Core;

@@ -1,6 +1,7 @@
+
 using Cashregister.Printmon.Devices;
 
-namespace Cashregister.Api.Devices;
+namespace Cashregister.Application.Devices.Defaults;
 
 public sealed class FileDeviceTargetSelector(
     IPrinterDeviceCatalog deviceCatalog,

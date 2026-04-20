@@ -1,4 +1,4 @@
-namespace Cashregister.Api.Devices;
+namespace Cashregister.Application.Devices.Defaults;
 
 public sealed class FilePrinterDeviceCatalog : IPrinterDeviceCatalog
 {

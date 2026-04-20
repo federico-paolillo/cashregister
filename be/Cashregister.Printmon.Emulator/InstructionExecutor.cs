@@ -1,5 +1,3 @@
-using System.Collections.Immutable;
-
 using Cashregister.Factories;
 using Cashregister.Printmon.Emulator.Problems;
 using Cashregister.Printmon.Instructions;

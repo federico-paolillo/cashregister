@@ -1,7 +1,7 @@
 using System.Buffers.Text;
 using System.Text;
 
-namespace Cashregister.Api.Devices;
+namespace Cashregister.Application.Devices;
 
 internal static class DeviceId
 {
