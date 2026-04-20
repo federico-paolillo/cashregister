@@ -30,3 +30,17 @@ Fixed receipt projection item ordering so printed receipt lines are deterministi
 ### Key decisions
 
 - We order receipt items by their persisted item id because order items currently have no explicit line-number column. This keeps receipt output stable without changing the schema.
+
+## Architecture, ESC/POS, and conventions documentation refresh
+
+Refreshed the project documentation split so `ARCH.md` covers high-level backend/frontend architecture, `ESCPOS.md` owns all `Cashregister.Printmon.*` command-level details, and root `CONVENTIONS.md` captures reusable backend/frontend development rules for a future `AGENTS.md` update.
+
+### ExecPlan
+
+`plans/arch-escpos-conventions-refresh.md`
+
+### Key decisions
+
+- We kept ESC/POS instruction, encoder, emulator, CLI, and printer-device details out of `ARCH.md` because duplicating them there would create documentation drift.
+- We put `CONVENTIONS.md` at repository root because it is intended to feed future agent instructions rather than explain one subsystem.
+- We treated this as documentation-only work and did not touch source code or the existing unrelated `AGENTS.md` modification.

@@ -60,54 +60,18 @@ For multi-step tasks, state a brief plan:
 
 Strong success criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
 
-## In general
+## General
 
 - **Be idiomatic and consistent at all costs !**
 - Backend code might feel over-engineered, complex and "enterprise-grade". That is **on purpose**. 
 - Backend code is a style exercise in enterprise applications. Follow same style.
-- Follow conventional commit format (e.g., `feat:`, `fix:`, `chore:`)
+- Keep changes scoped to the task. Do not refactor adjacent code unless the requested change requires it.
+- Prefer the existing project style over introducing a new local pattern.
+- Use conventional commits when committing, for example `feat:`, `fix:`, `docs:`, `test:`, or `chore:`.
 
-## When you plan
+## Verification
 
-- Make sure your plan output does not contradict `docs/ARCH.md` and `docs/ESCPOS.md`.
-- Do not assume. If you are not sure about something ask me.
-- Use an "ExecPlan" (as described in `docs/PLANS.md`) from design to implementation. 
-- Emit the "ExecPlan" in `docs/plans/` folder.
-
-## When you develop
-
-- You are a senior software engineer with a ridicolous expertise in .NET and React. Act like one.
-- **Tests are mandatory**. Do not try to reach for 100% coverage but make sure you always cover at least the happy path.
-- Make lightweight interfaces to aid testing. Do not try to anticipate greater abstractions unless necessary.
-- Do follow SOLID principles and GRASP principles but do not forget about KISS and YAGNI.
-- Do not take shortcuts or make stub implementations. If you find something difficult to implement challenge the design.
-- Leave a `/// <summary>` comment on classes and interfaces stating their purpose.
-- Remember we have `<ImplicitUsings>` enabled in `Directory.Build.props`. Don't add unecessary usings.
-- `<>` not `<Fragment>` in React
-- Backend default implementations of interfaces go under a `Defaults/` folder of the parent folder.
-- Project convention is explicit `Result<T>` plus `Problem`, not exceptions for expected business/application failures.
-
-## Verification step
-
-Always run these commands in sequence to ensure that your code is acceptable. 
-
-If any of these commands report errors you **must** address them.
-
-### For backend
-
-In `be/` folder
-
-1. `dotnet format`
-2. `dotnet build`
-3. `dotnet test`
-
-### For frontend
-
-In `ui/` folder
-
-1. `npm run lint`
-2. `npm run build`
-3. `npm run test`
+When you finish a task always run verification steps as instructed in `docs/ARCH.md`. If any command report errors or failures you **must** address them before considering the task done.
 
 ## Bookkeeping
 
@@ -122,12 +86,22 @@ Follow this format for an entry of the diary:
 
 More detailed description (max. 200 words)
 
+### ExecPlan
+
+`<path_to_exec_plan>`
+
 ### Key decisions
 
 - We did this because of that. We did not do something else because of another reason.
 ```
 
-## System requirements
+Include `path_to_exec_plan` relative to `docs/` folder if you used an ExecPlan to develop. If you did not use an ExecPlan skip the header alltogether.
+
+If you make changes that alter what is referenced in `ARCH.md` or `ESCPOS.md` you have to update those files as well. `ARCH.md` and `ESCPOS.md` must not get out of sync.
+
+`CONVENTIONS.md` must be updated if you introduce new development conventions or techniques.
+
+## System
 
 The backend and frontend will run on an Arduino Uno Q. The UI will be rendered using embedded brower [WPE](https://wpewebkit.org/) via Wayland-powered kiosk compositor [Cage](https://github.com/cage-kiosk/cage).
 
@@ -145,17 +119,26 @@ Arduino Uno Q has following specifications:
 
 Keep these system capabilities in mind when you suggest or plan an implementation.
 
-## Further references
+## References
 
-`docs/` folder has all the documentation, context and information. In particular:
+`docs/` folder has all the documentation, context and information you will need.
+
+### Must reads
+
+- docs/ARCH.md - Main architecture and design choices. Read this to get your bearings.
+- docs/ESCPOS.md - Architecture and design choices for the ESC/POS implementation. Read this to understand how printing works.
+- docs/CONVENTIONS.md - How to work on the project. This is fundamental
+
+### Optional reads
 
 - docs/DIARY.md - Log of implementation decisions and choices. Read it if you need to understand how the code evolved.
-- docs/PLANS.md - "ExecPlan" definition. Use it when generating an implementation plan.
-- docs/README.md - It's barren. Save tokens and skip it.
-- docs/ARCH.md - Main architecture and design choices. Read this understand how to work on the project
-- docs/ESCPOS.md - Architecture and design choices for the ESC/POS implementation. Read this to understand how printing works.
+- docs/PLANS.md - "ExecPlan" definition and template. Use it when generating an implementation plan.
 - docs/MANUAL.md - Manual of the target printer we use when printing receipts. Read this if you need to know something about the printer.
 - docs/PRINTER.md - List of all ESC/POS commmands supported by the target printer. Reader this if you need to review how a command works.
-- docs/REVIEW.md - Past reviews findings. You might want to review them to understand why some code looks funny.
 
 `plans/` folder has all the past implementation plans. You can ignore this folder completely. It's just to have some history.
+
+### Ignore
+
+- README.md - It's barren. Save tokens and skip it.
+- docs/REVIEW.md - Past reviews findings. Ignore this as it is outdated and needs human review.
