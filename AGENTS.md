@@ -63,6 +63,7 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 ## General
 
 - **Be idiomatic and consistent at all costs !**
+- When writing complex features or significant refactors, use an "ExecPlan". Emit the "ExecPlan" in `docs/plans/` folder.
 - Backend code might feel over-engineered, complex and "enterprise-grade". That is **on purpose**. 
 - Backend code is a style exercise in enterprise applications. Follow same style.
 - Keep changes scoped to the task. Do not refactor adjacent code unless the requested change requires it.

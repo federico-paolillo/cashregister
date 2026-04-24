@@ -27,6 +27,7 @@ vi.mock("@cashregister/deps", () => ({
   deps: {
     apiClient: {
       get: vi.fn(),
+      post: vi.fn(),
     },
   },
 }));

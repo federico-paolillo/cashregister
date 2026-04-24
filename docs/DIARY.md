@@ -2,6 +2,15 @@
 
 > This file records implementation decisions, design choices, and strategies per task to avoid re-deriving the same conclusions when picking up work later.
 
+## Submitted order reprint action
+
+Added a reprint action to the `/orders` frontend table. Each submitted order row now exposes a printer icon button that posts to the existing receipt print endpoint and disables only itself while the request is pending. Successful print requests show an informational confirmation with the order id, and failed print requests surface through the existing frontend error message system.
+
+### Key decisions
+
+- We reused `POST /orders/{id}/print` because the backend already exposes explicit receipt reprinting and has endpoint coverage for success, missing orders, and device failures.
+- We kept the reprint request inside the row component instead of adding a React Router action because printing is a side effect that does not change order list data and should not revalidate the paginated table.
+
 ## Order creation receipt printing saga
 
 Wired `POST /orders` to `PlaceOrderActivity` so order creation now runs the in-process saga: place the order, print its receipt, and fetch the saved order before returning the created pointer. The endpoint still returns `400` for invalid order requests, but printer or orchestration failures now surface as `500`.

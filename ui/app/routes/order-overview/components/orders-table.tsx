@@ -13,6 +13,7 @@ export function OrdersTable({ orders }: OrdersTableProps) {
           <th className="p-2 font-semibold">Number</th>
           <th className="p-2 font-semibold text-right">Total</th>
           <th className="p-2 font-semibold text-right">Date</th>
+          <th className="p-2 font-semibold text-center">Actions</th>
         </tr>
       </thead>
       <tbody>
@@ -26,7 +27,7 @@ export function OrdersTable({ orders }: OrdersTableProps) {
         ))}
         {orders.length === 0 && (
           <tr>
-            <td colSpan={3} className="p-4 text-center text-gray-500 text-sm italic">
+            <td colSpan={4} className="p-4 text-center text-gray-500 text-sm italic">
               No orders found.
             </td>
           </tr>

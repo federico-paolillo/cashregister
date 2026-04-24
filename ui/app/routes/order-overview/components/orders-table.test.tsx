@@ -1,8 +1,9 @@
 import React from "react";
-import { describe, it, expect, vi, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, cleanup } from "@testing-library/react";
 import { OrdersTable } from "@cashregister/routes/order-overview/components/orders-table";
 import * as reactRouter from "react-router";
+import * as errorMessages from "@cashregister/components/use-error-messages";
 import type { OrderListItemDto } from "@cashregister/model";
 
 vi.mock("react-router", async (importOriginal) => {
@@ -14,7 +15,22 @@ vi.mock("react-router", async (importOriginal) => {
   };
 });
 
-afterEach(cleanup);
+vi.mock("@cashregister/components/use-error-messages", () => ({
+  useErrorMessages: vi.fn(),
+}));
+
+vi.mock("@cashregister/deps", () => ({
+  deps: {
+    apiClient: {
+      post: vi.fn(),
+    },
+  },
+}));
+
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+});
 
 const orders: OrderListItemDto[] = [
   { id: "1", number: "ORD-001", totalInCents: 350, date: 1700000000 },
@@ -22,6 +38,14 @@ const orders: OrderListItemDto[] = [
 ];
 
 describe("OrdersTable", () => {
+  beforeEach(() => {
+    vi.mocked(errorMessages.useErrorMessages).mockReturnValue({
+      errors: [],
+      addError: vi.fn(),
+      dismissError: vi.fn(),
+    });
+  });
+
   it("renders all orders", () => {
     render(<OrdersTable orders={orders} />);
 
@@ -33,6 +57,15 @@ describe("OrdersTable", () => {
     render(<OrdersTable orders={[]} />);
 
     expect(screen.getByText("No orders found.")).toBeDefined();
+  });
+
+  it("renders the actions column", () => {
+    render(<OrdersTable orders={orders} />);
+
+    const actionsHeader = screen.getByRole("columnheader", { name: "Actions" });
+    expect(actionsHeader).toBeDefined();
+    expect(actionsHeader.className).toContain("text-center");
+    expect(screen.getByRole("button", { name: "Reprint ORD-001" })).toBeDefined();
   });
 
   it("does not show the empty message when there are orders", () => {
