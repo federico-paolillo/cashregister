@@ -64,3 +64,13 @@ Refreshed the project documentation split so `ARCH.md` covers high-level backend
 - We kept ESC/POS instruction, encoder, emulator, CLI, and printer-device details out of `ARCH.md` because duplicating them there would create documentation drift.
 - We put `CONVENTIONS.md` at repository root because it is intended to feed future agent instructions rather than explain one subsystem.
 - We treated this as documentation-only work and did not touch source code or the existing unrelated `AGENTS.md` modification.
+
+## Development markdown printer device
+
+Added a development-only `MarkdownDevice` in `Cashregister.Printmon.Emulator` and wired the API startup to use it only in the `Development` environment. The device encodes a `PrintProgram`, runs the existing emulator pipeline, renders the final receipt to markdown, and writes it to a timestamped file under the configured root folder. Non-development environments still use `FileDevice`.
+
+### Key decisions
+
+- We placed `MarkdownDevice` in `Cashregister.Printmon.Emulator/Device` because it is defined by the emulator pipeline, not by raw printer file output.
+- We kept `BinaryEncoder` in the flow and ran the full emulator decode/execute path so development output exercises the same ESC/POS bytes that production printing emits.
+- We switched the API composition root on `builder.Environment.IsDevelopment()` instead of adding a runtime toggle because the requirement is environment-specific, not operator-selectable.

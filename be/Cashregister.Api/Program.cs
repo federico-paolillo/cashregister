@@ -8,7 +8,6 @@ using Cashregister.Application.Orders.Extensions;
 using Cashregister.Application.Receipts.Extensions;
 using Cashregister.Database;
 using Cashregister.Database.Extensions;
-using Cashregister.Printmon.Devices;
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Console;
@@ -28,16 +27,22 @@ builder.Logging.AddSimpleConsole(options =>
 
 builder.Configuration.AddEnvironmentVariables("CASHREGISTER_");
 
-builder.Services.Configure<FileDeviceSettings>(builder.Configuration.GetSection(FileDeviceSettings.Section));
-
 builder.Services
     .AddCashregisterDatabase(builder.Configuration)
     .AddCashregisterArticles()
     .AddCashregisterOrders()
     .AddCashregisterReceipts()
     .AddCashregisterDevices()
-    .AddFileDevice(builder.Configuration)
     .AddCashregisterActivities();
+
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.AddMarkdownDevice(builder.Configuration);
+}
+else
+{
+    builder.Services.AddFileDevice(builder.Configuration);
+}
 
 var app = builder.Build();
 

@@ -24,12 +24,12 @@ Current projects:
 ```text
 Cashregister.Domain                 Domain models and value objects
 Cashregister.Commons                Result, Problem, Transaction, UnitOfWork, Scoped helpers
-Cashregister.Application            Use cases, handlers, transactions, pagination, receipt program service
+Cashregister.Application            Use cases, handlers, transactions, pagination, receipt program service, and device registration
 Cashregister.Database               EF Core SQLite persistence, queries, commands, mappers, migrations
 Cashregister.Api                    ASP.NET Core Minimal API composition root and HTTP endpoints
 Cashregister.Activities             Cross-transaction orchestration experiments; not currently API-wired
 Cashregister.Printmon               ESC/POS print program model, encoders, and file device abstraction
-Cashregister.Printmon.Emulator      ESC/POS binary emulator and Markdown renderer
+Cashregister.Printmon.Emulator      ESC/POS binary emulator, Markdown renderer, and development markdown device
 Cashregister.Cli                    Printmon developer CLI
 Cashregister.Tests.Integration      API, database, application, and integration tests
 Cashregister.Printmon.Tests         Printmon encoder and builder tests
@@ -41,7 +41,7 @@ Dependency direction is intentionally simple:
 - `Domain` has no dependency on application, database, API, or printing code.
 - `Commons` contains cross-cutting primitives used by multiple backend projects.
 - `Printmon` depends on `Commons` for `Result<T>` and `Unit`; it does not depend on the application or database.
-- `Application` depends on `Domain`, `Commons`, and `Printmon` for receipt program construction.
+- `Application` depends on `Domain`, `Commons`, `Printmon`, and `Printmon.Emulator` for receipt program construction and device registration.
 - `Database` depends on `Application`, `Domain`, and `Commons` to implement application ports.
 - `Api` is the composition root: it depends on the backend projects it wires together and maps them to HTTP.
 
@@ -91,7 +91,7 @@ The backend API is an ASP.NET Core Minimal API in `Cashregister.Api`.
 
 - configures simple single-line console logging;
 - loads `CASHREGISTER_` environment variables;
-- configures `FileDeviceSettings`;
+- configures printer-device settings through the registered device extension methods;
 - registers database, articles, orders, receipts, and printer-device services;
 - maps article, order, and device route modules;
 - applies database migrations;
@@ -151,7 +151,7 @@ Receipt printing is split across application and Printmon code.
 
 Application receipt code builds a `PrintProgram` through `IReceiptPrintProgramService`. `PrintProgram` is the portable representation of what should be printed. Actual ESC/POS command records, encoders, emulator behavior, CLI tooling, and file-device rules are documented in [`ESCPOS.md`](ESCPOS.md).
 
-The API currently wires a `FileDeviceTargetStore`, `FileDevice`, and `BinaryEncoder`. Device endpoints enumerate writable Linux printer file paths and allow selecting the active target at runtime. `FileDevice` writes encoded bytes to the selected path.
+The API always wires `FileDeviceTargetStore`, the file-printer catalog, and `BinaryEncoder` for device selection and ESC/POS encoding. Outside development it registers `FileDevice`, which writes encoded bytes to the selected filesystem target. In development it registers `MarkdownDevice`, which runs the emulator pipeline and writes rendered markdown receipts to files under the configured root folder.
 
 `IPrintReceiptHandler` orchestrates receipt printing by asking `IReceiptPrintProgramService` to build a `PrintProgram` for an order id and then sending that program to the configured `IDevice`. `PlaceOrderActivity` uses independent scoped operations to place an order, print its receipt, and fetch the saved order for the API response. Receipt reprinting remains exposed as an explicit order action at `POST /orders/{id}/print`.
 

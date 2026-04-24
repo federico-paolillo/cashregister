@@ -1,4 +1,6 @@
-namespace Cashregister.Application.Devices;
+using Cashregister.Application.Devices.Models;
+
+namespace Cashregister.Application.Devices.Services;
 
 public interface IPrinterDeviceCatalog
 {

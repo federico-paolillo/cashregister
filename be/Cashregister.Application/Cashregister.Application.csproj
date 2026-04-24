@@ -3,6 +3,7 @@
         <ProjectReference Include="..\Cashregister.Domain\Cashregister.Domain.csproj" />
         <ProjectReference Include="..\Cashregister.Commons\Cashregister.Commons.csproj" />
         <ProjectReference Include="..\Cashregister.Printmon\Cashregister.Printmon.csproj" />
+        <ProjectReference Include="..\Cashregister.Printmon.Emulator\Cashregister.Printmon.Emulator.csproj" />
     </ItemGroup>
 
     <ItemGroup>

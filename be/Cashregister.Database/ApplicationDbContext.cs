@@ -9,11 +9,11 @@ public sealed class ApplicationDbContext(
     DbContextOptions<ApplicationDbContext> options
 ) : DbContext(options), IApplicationDbContext, IUnitOfWork
 {
-    public DbSet<OrderEntity> Orders { get; set; }
+    public DbSet<OrderEntity> Orders { get; set; } = null!;
 
-    public DbSet<ArticleEntity> Articles { get; set; }
+    public DbSet<ArticleEntity> Articles { get; set; } = null!;
 
-    public DbSet<OrderItemEntity> OrderItems { get; set; }
+    public DbSet<OrderItemEntity> OrderItems { get; set; } = null!;
 
     public Task StartAsync(CancellationToken cancellationToken = default)
     {

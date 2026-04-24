@@ -29,6 +29,9 @@ be/Cashregister.Printmon/
 └── PrintProgramBuilder.cs
 
 be/Cashregister.Printmon.Emulator/
+├── Device/
+│   ├── MarkdownDevice.cs
+│   └── MarkdownDeviceSettings.cs
 ├── InstructionDecoder.cs
 ├── InstructionExecutor.cs
 ├── MarkdownRenderer.cs
@@ -84,6 +87,8 @@ Do not bypass the builder in application code unless a test is explicitly assert
 `FileDevice` depends on `FileDeviceTargetStore` and `IEncoder<byte[]>`. It encodes a program and writes the bytes to the current target with `FileStream`. The target must be an existing writable filesystem path such as `/dev/usb/lp0`; CUPS queue URIs are not valid targets for this implementation.
 
 `FileDeviceSettings.Section` is `FileDevice`, and `FileDeviceSettings.Target` is the startup target. `FileDeviceTargetStore` stores the active target in memory and can be changed at runtime.
+
+`MarkdownDevice` lives in `Cashregister.Printmon.Emulator/Device`. It is development-only and depends on `IEncoder<byte[]>`, `IPrinterEmulator`, `IMarkdownRenderer`, and `MarkdownDeviceSettings`. It encodes the `PrintProgram`, runs the ESC/POS emulator pipeline, renders the final receipt to markdown, and writes the markdown to `<unix_timestamp_milliseconds>_<Path.GetRandomFileName()>` under `MarkdownDeviceSettings.RootFolder`.
 
 The API device catalog enumerates writable `/dev/usb/lp*` and `/dev/lp*` paths, derives URL-safe ids from target paths, and rejects selection ids that are not in the current catalog.
 
@@ -180,6 +185,18 @@ Expected decode failures use `Problem` records:
 `InstructionExecutor` executes one instruction against a `Printer` and returns `Result<Printer>`. It is pure: it does not perform I/O and does not mutate the input printer. Unsupported instruction types return `UnsupportedInstructionProblem`.
 
 `PrinterEmulator` orchestrates decoding and execution and returns the full immutable history, one `Printer` per instruction. This history enables tests to inspect intermediate state, while normal rendering uses the final receipt.
+
+The development `MarkdownDevice` uses this pipeline end to end:
+
+```text
+PrintProgram
+  -> BinaryEncoder.Encode
+  -> byte[]
+  -> PrinterEmulator.Emulate
+  -> history[^1].Receipt
+  -> MarkdownRenderer.Render
+  -> markdown file
+```
 
 ## Printer State
 

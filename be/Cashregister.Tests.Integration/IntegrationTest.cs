@@ -30,7 +30,15 @@ public abstract class IntegrationTest(
         }
     }
 
-    protected async Task PrepareEnvironmentAsync(Action<IServiceCollection>? configureTestServices = null)
+    protected Task PrepareEnvironmentAsync(Action<IServiceCollection>? configureTestServices = null)
+    {
+        return PrepareEnvironmentAsync(Environments.Development, configureTestServices);
+    }
+
+    protected async Task PrepareEnvironmentAsync(
+        string environmentName,
+        Action<IServiceCollection>? configureTestServices = null
+    )
     {
         _dataSource = GenerateDatabaseName();
 
@@ -45,7 +53,7 @@ public abstract class IntegrationTest(
             .WithWebHostBuilder(builder =>
             {
                 builder.ConfigureLogging(l => l.AddProvider(new XUnitLoggerProvider(testOutputHelper)));
-                builder.UseEnvironment(Environments.Development);
+                builder.UseEnvironment(environmentName);
                 builder.UseConfiguration(cfg);
                 builder.ConfigureTestServices(services =>
                 {

@@ -68,6 +68,7 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 - Keep changes scoped to the task. Do not refactor adjacent code unless the requested change requires it.
 - Prefer the existing project style over introducing a new local pattern.
 - Use conventional commits when committing, for example `feat:`, `fix:`, `docs:`, `test:`, or `chore:`.
+- Avoid repetitions. If you see or make a code block twice, refactor.
 
 ## Documentation
 
