@@ -1,4 +1,5 @@
 import { useId } from "react";
+import { MoneyInput } from "@cashregister/components/money-input";
 
 interface BulkRowProps {
   onRemove: () => void;
@@ -23,20 +24,14 @@ export function BulkRow({ onRemove, canRemove }: BulkRowProps) {
           className="input-field"
         />
       </div>
-      <div className="flex flex-col gap-1 w-36">
-        <label htmlFor={priceId} className="text-sm font-medium text-gray-700">
-          Price (cents)
-        </label>
-        <input
-          id={priceId}
-          name="priceInCents"
-          type="number"
-          min={0}
-          required
-          defaultValue={0}
-          className="input-field"
-        />
-      </div>
+      <MoneyInput
+        id={priceId}
+        name="priceInCents"
+        label="Price"
+        defaultCents={0}
+        required
+        className="flex flex-col gap-1 w-36"
+      />
       {canRemove && (
         <button
           type="button"

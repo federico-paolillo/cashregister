@@ -46,7 +46,7 @@ describe("ArticlesBulk", () => {
   it("renders one row on first render", () => {
     renderBulk();
 
-    expect(screen.getAllByRole("textbox")).toHaveLength(1);
+    expect(screen.getAllByLabelText("Description")).toHaveLength(1);
   });
 
   it("adds a row when + Add Article is clicked", () => {
@@ -54,7 +54,7 @@ describe("ArticlesBulk", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "+ Add Article" }));
 
-    expect(screen.getAllByRole("textbox")).toHaveLength(2);
+    expect(screen.getAllByLabelText("Description")).toHaveLength(2);
   });
 
   it("does not show Remove button with a single row", () => {
@@ -77,15 +77,15 @@ describe("ArticlesBulk", () => {
     fireEvent.click(screen.getByRole("button", { name: "+ Add Article" }));
     fireEvent.click(screen.getAllByRole("button", { name: "Remove" })[0]);
 
-    expect(screen.getAllByRole("textbox")).toHaveLength(1);
+    expect(screen.getAllByLabelText("Description")).toHaveLength(1);
   });
 
   it("adds a row when Enter is pressed inside a text input", () => {
     renderBulk();
 
-    fireEvent.keyDown(screen.getByRole("textbox"), { key: "Enter", bubbles: true });
+    fireEvent.keyDown(screen.getByLabelText("Description"), { key: "Enter", bubbles: true });
 
-    expect(screen.getAllByRole("textbox")).toHaveLength(2);
+    expect(screen.getAllByLabelText("Description")).toHaveLength(2);
   });
 
   it("shows error message from actionData", () => {

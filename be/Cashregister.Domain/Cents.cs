@@ -6,8 +6,6 @@ public sealed record Cents(long Value)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(total);
 
-        var rounded = (total + 2L) / 5L * 5L;
-
-        return new Cents(rounded);
+        return new Cents(total);
     }
 }

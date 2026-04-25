@@ -4,7 +4,7 @@ namespace Cashregister.Api.Orders.Models;
 
 public sealed record OrderRequestDto(
     ImmutableArray<OrderRequestItemDto> Items,
-    long? TotalOverride = null
+    long? TotalOverrideInCents = null
 );
 
 public sealed record OrderRequestItemDto(

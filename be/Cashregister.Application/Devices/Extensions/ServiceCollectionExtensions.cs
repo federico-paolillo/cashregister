@@ -26,9 +26,9 @@ public static class ServiceCollectionExtensions
     {
         ArgumentNullException.ThrowIfNull(configuration);
 
-            serviceCollection.AddOptions<FileDeviceSettings>()
-                .BindConfiguration(FileDeviceSettings.Section);
-        
+        serviceCollection.AddOptions<FileDeviceSettings>()
+            .BindConfiguration(FileDeviceSettings.Section);
+
         serviceCollection.AddScoped<IDevice, FileDevice>();
 
         return serviceCollection;

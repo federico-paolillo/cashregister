@@ -92,11 +92,9 @@ export default function Order({ loaderData, actionData }: Route.ComponentProps) 
     (sum, e) => sum + e.article.priceInCents * e.quantity,
     0,
   );
-  const hasOverride = totalOverride !== "" && !isNaN(Number(totalOverride));
-  const totalOverrideCents = hasOverride
-    ? decimalToCents(Number(totalOverride))
-    : null;
-  const displayTotalCents = totalOverrideCents ?? computedTotalCents;
+  const totalOverrideCents = decimalToCents(totalOverride);
+  const hasOverride = totalOverride.trim() !== "" && totalOverrideCents !== null;
+  const displayTotalCents = hasOverride ? totalOverrideCents : computedTotalCents;
 
   useLoaderError(loaderData);
 
@@ -135,13 +133,6 @@ export default function Order({ loaderData, actionData }: Route.ComponentProps) 
                 />
               </Fragment>
             ))}
-            {totalOverrideCents !== null && (
-              <input
-                type="hidden"
-                name="totalOverrideInCents"
-                value={String(totalOverrideCents)}
-              />
-            )}
             <OrderSummary
               cartEntries={cartEntries}
               hasOverride={hasOverride}

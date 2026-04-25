@@ -2,6 +2,28 @@
 
 > This file records implementation decisions, design choices, and strategies per task to avoid re-deriving the same conclusions when picking up work later.
 
+## Typed API test payloads
+
+Updated the odd-cent order override API test to use `OrderRequestDto` with `PostAsJsonAsync` instead of hand-written JSON and `StringContent`. Documented the testing convention so API integration tests default to typed DTOs and typed HTTP helpers.
+
+### Key decisions
+
+- We use raw JSON only when the test is explicitly about malformed payloads, unknown fields, or serializer-boundary behavior; normal endpoint behavior should be tested through the public DTO types.
+
+## Harmonized price handling
+
+Refactored price handling so the backend preserves exact integer cents from API DTOs through domain and persistence, while the frontend presents decimal money inputs to users and submits hidden cent fields. Removed the 5-cent CHF rounding from `Cents`, made order creation accept `totalOverrideInCents`, and introduced a shared money input component backed by centralized string-based parsing.
+
+### ExecPlan
+
+`plans/harmonize-price-handling.md`
+
+### Key decisions
+
+- We kept database column names `Price` and `TotalOverride` because their stored `long` values already represent cents; API names remain explicit with `InCents`.
+- We normalize valid frontend money input on blur to avoid cursor jumps while typing.
+- We reject invalid decimal precision instead of rounding or truncating because amount-in must equal amount-out.
+
 ## Submitted order reprint action
 
 Added a reprint action to the `/orders` frontend table. Each submitted order row now exposes a printer icon button that posts to the existing receipt print endpoint and disables only itself while the request is pending. Successful print requests show an informational confirmation with the order id, and failed print requests surface through the existing frontend error message system.

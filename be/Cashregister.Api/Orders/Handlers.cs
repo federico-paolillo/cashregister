@@ -82,8 +82,8 @@ internal static class Handlers
         var orderRequest = new OrderRequest
         {
             Items = orderItems,
-            TotalOverride = orderRequestDto.TotalOverride is not null
-                ? Cents.From(orderRequestDto.TotalOverride.Value)
+            TotalOverride = orderRequestDto.TotalOverrideInCents is not null
+                ? Cents.From(orderRequestDto.TotalOverrideInCents.Value)
                 : null
         };
 

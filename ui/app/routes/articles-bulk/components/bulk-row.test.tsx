@@ -8,8 +8,8 @@ describe("BulkRow", () => {
   it("renders the description and price inputs", () => {
     render(<BulkRow onRemove={vi.fn()} canRemove={false} />);
 
-    expect(screen.getByRole("textbox")).toBeDefined();
-    expect(screen.getByRole("spinbutton")).toBeDefined();
+    expect(screen.getByLabelText("Description")).toBeDefined();
+    expect(screen.getByLabelText("Price")).toBeDefined();
   });
 
   it("does not show the Remove button when canRemove is false", () => {
@@ -36,7 +36,7 @@ describe("BulkRow", () => {
   it("price input defaults to 0", () => {
     render(<BulkRow onRemove={vi.fn()} canRemove={false} />);
 
-    expect(screen.getByRole("spinbutton")).toHaveProperty("value", "0");
+    expect(screen.getByLabelText("Price")).toHaveProperty("value", "0.00");
   });
 
   it("label is associated with the description input", () => {
@@ -46,6 +46,6 @@ describe("BulkRow", () => {
 
   it("label is associated with the price input", () => {
     render(<BulkRow onRemove={vi.fn()} canRemove={false} />);
-    expect(screen.getByLabelText("Price (cents)")).toBeDefined();
+    expect(screen.getByLabelText("Price")).toBeDefined();
   });
 });

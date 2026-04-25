@@ -45,6 +45,7 @@ Testing conventions:
 - Tests are mandatory for backend code changes. Cover at least the happy path and the main failure path when the change adds behavior.
 - Use integration tests for application/database/API behavior when the real DI graph matters.
 - Use focused unit tests for pure helpers, value objects, builders, encoders, and renderers.
+- In API integration tests, prefer proper request DTO types and typed HTTP helpers such as `PostAsJsonAsync`. Use raw JSON or `StringContent` only for malformed payloads, unknown fields, or explicit serialization-boundary tests.
 - Run backend verification from `be/`:
 
 ```bash
@@ -71,6 +72,7 @@ Conventions:
 - Keep DTO interfaces in `ui/app/model.ts`.
 - Client API calls return `Result<T>`. Handle loader/action errors explicitly and surface user-facing failures through the existing error-message system.
 - Keep money formatting and parsing in `ui/app/money.ts`.
+- Use `ui/app/components/money-input.tsx` for user-entered money amounts. Users see decimal strings, while forms submit hidden integer cent fields such as `priceInCents` and `totalOverrideInCents`.
 
 Styling conventions:
 

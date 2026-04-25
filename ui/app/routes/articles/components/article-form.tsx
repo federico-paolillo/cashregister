@@ -1,6 +1,7 @@
 import { useFetcher } from "react-router";
 import { useModalId } from "@cashregister/components/use-modal";
 import { useEffect, useRef } from "react";
+import { MoneyInput } from "@cashregister/components/money-input";
 import type { Result } from "@cashregister/result";
 
 export interface ArticleFormData {
@@ -54,20 +55,13 @@ export function ArticleForm({ articleId, initialData, intent, onSubmit, onError 
           className="input-field"
         />
       </div>
-      <div className="flex flex-col gap-1">
-        <label htmlFor="priceInCents" className="text-sm font-medium text-gray-700">
-          Price (cents)
-        </label>
-        <input
-          id="priceInCents"
-          name="priceInCents"
-          type="number"
-          defaultValue={initialData?.priceInCents ?? 0}
-          required
-          min={0}
-          className="input-field"
-        />
-      </div>
+      <MoneyInput
+        id="priceInCents"
+        name="priceInCents"
+        label="Price"
+        defaultCents={initialData?.priceInCents ?? 0}
+        required
+      />
       <div className="flex justify-end gap-2">
         <button
           type="button"

@@ -49,7 +49,7 @@ Dependency direction is intentionally simple:
 
 ## Domain and Application
 
-Domain models are plain C# types and value objects. Important value objects include `Identifier`, `Cents`, `OrderNumber`, and `TimeStamp`. Domain collections use immutable arrays where aggregate state must not be mutated by consumers.
+Domain models are plain C# types and value objects. Important value objects include `Identifier`, `Cents`, `OrderNumber`, and `TimeStamp`. `Cents` stores exact non-negative integer cents and does not round. Domain collections use immutable arrays where aggregate state must not be mutated by consumers.
 
 Application behavior is organized by feature area:
 
@@ -69,6 +69,8 @@ Queries and commands are interfaces in Application and implementations in Databa
 Persistence is implemented with EF Core and SQLite in `Cashregister.Database`.
 
 `ApplicationDbContext` implements both `IApplicationDbContext` and `IUnitOfWork`. Starting and rolling back are no-ops for EF because a scoped `DbContext` begins tracking on construction and discards unsaved changes on disposal. `SaveChangesAsync` commits successful transactions.
+
+Money columns such as `ArticleEntity.Price`, `OrderItemEntity.Price`, and `OrderEntity.TotalOverride` are stored as `long` cents. Their database names are intentionally domain-oriented, while API DTO names use explicit `*InCents` suffixes.
 
 The database connection is configured from `DataSource`. At runtime, `be/Cashregister.Api/Program.cs` adds environment variables with the `CASHREGISTER_` prefix, so `CASHREGISTER_DATASOURCE` supplies this value. The development launch profile sets it to `cashregister.db`.
 
@@ -115,6 +117,8 @@ Current backend route groups:
 
 The backend does not map `/api/*`. `/api` is a frontend development and deployment convention.
 
+The API money contract is cents-only. Request and response DTO fields such as `priceInCents`, `totalInCents`, and `totalOverrideInCents` carry integer cents, not decimal currency amounts.
+
 ## Frontend
 
 The frontend lives in `ui/` and uses:
@@ -144,6 +148,8 @@ Routes are registered in `ui/app/routes.ts`:
 `ui/app/settings.ts` defaults `apiBaseUrl` to `/api`. In development, `ui/vite.config.ts` proxies `/api/*` to `http://localhost:5122` and rewrites the prefix away. Therefore browser code calls paths such as `/api/orders`, while the backend receives `/orders`.
 
 Frontend DTOs live in `ui/app/model.ts`. The client-side `Result<T>` mirrors the backend's explicit success/failure style.
+
+Frontend money display and entry are decimal-only for users. `ui/app/money.ts` owns exact conversion between backend cents and decimal strings, and shared money entry uses `ui/app/components/money-input.tsx` so visible decimal inputs submit hidden integer cent fields.
 
 ## Printing
 

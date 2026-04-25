@@ -454,6 +454,35 @@ public sealed class OrdersEndpointTests(
     }
 
     [Fact]
+    public async Task CreateAndGetOrder_WithTotalOverrideInCents_ShouldPreserveOddCents()
+    {
+        await PrepareEnvironmentAsync();
+
+        var articleId = await CreateArticleForOrderAsync("Odd override article", 500L);
+
+        using var httpClient = CreateHttpClient();
+
+        var orderRequest = new OrderRequestDto(
+            [new OrderRequestItemDto(articleId.Value, 3u)],
+            999L
+        );
+
+        var createResponse = await httpClient.PostAsJsonAsync("/orders", orderRequest);
+        Assert.Equal(HttpStatusCode.Created, createResponse.StatusCode);
+
+        var entityPointer = await createResponse.Content.ReadFromJsonAsync<EntityPointerDto>();
+        Assert.NotNull(entityPointer);
+
+        var getResponse = await httpClient.GetAsync($"/orders/{entityPointer.Id}");
+        Assert.True(getResponse.IsSuccessStatusCode);
+
+        var order = await getResponse.Content.ReadFromJsonAsync<OrderDto>();
+        Assert.NotNull(order);
+        Assert.Equal(999L, order.TotalOverrideInCents);
+        Assert.Equal(999L, order.TotalInCents);
+    }
+
+    [Fact]
     public async Task CreateAndGetOrder_WithoutTotalOverride_ReturnsNullOverrideAndComputedTotal()
     {
         await PrepareEnvironmentAsync();

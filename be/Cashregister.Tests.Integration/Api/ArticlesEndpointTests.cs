@@ -265,6 +265,29 @@ public sealed class ArticlesEndpointTests(
     }
 
     [Fact]
+    public async Task RegisterAndGetArticle_ShouldPreserveOddCentPrice()
+    {
+        await PrepareEnvironmentAsync();
+
+        using var httpClient = CreateHttpClient();
+
+        var response = await httpClient.PostAsJsonAsync("/articles",
+            new RegisterArticleRequestDto("Odd cents article", 101));
+
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+
+        var entityPointer = await response.Content.ReadFromJsonAsync<EntityPointerDto>();
+        Assert.NotNull(entityPointer);
+
+        var getResponse = await httpClient.GetAsync($"/articles/{entityPointer.Id}");
+        Assert.True(getResponse.IsSuccessStatusCode);
+
+        var article = await getResponse.Content.ReadFromJsonAsync<ArticleDto>();
+        Assert.NotNull(article);
+        Assert.Equal(101L, article.PriceInCents);
+    }
+
+    [Fact]
     public async Task GetArticle_ReturnsRawIdString_NotRecordToString()
     {
         await PrepareEnvironmentAsync();

@@ -33,10 +33,11 @@ describe("ArticleForm", () => {
       "name",
       "description",
     );
-    expect(screen.getByLabelText("Price (cents)")).toHaveProperty(
-      "name",
-      "priceInCents",
+    const priceField = document.querySelector<HTMLInputElement>(
+      'input[type="hidden"][name="priceInCents"]',
     );
+    expect(screen.getByLabelText("Price")).toBeDefined();
+    expect(priceField).not.toBeNull();
   });
 
   it("sends the intent as a hidden field", () => {
@@ -61,9 +62,9 @@ describe("ArticleForm", () => {
       "value",
       "Latte",
     );
-    expect(screen.getByLabelText("Price (cents)")).toHaveProperty(
+    expect(screen.getByLabelText("Price")).toHaveProperty(
       "value",
-      "450",
+      "4.50",
     );
   });
 

@@ -1,3 +1,4 @@
+import { MoneyInput } from "@cashregister/components/money-input";
 import { formatPrice } from "@cashregister/money";
 import type { CartEntry } from "../order";
 
@@ -64,24 +65,15 @@ export function OrderSummary({
               {formatPrice(displayTotalCents)}
             </span>
           </div>
-          <div className="mt-2">
-            <label
-              htmlFor="totalOverrideInput"
-              className="block text-xs text-gray-500 mb-1"
-            >
-              Custom total
-            </label>
-            <input
-              id="totalOverrideInput"
-              type="number"
-              step="0.01"
-              min="0"
-              placeholder="Override total..."
-              value={totalOverride}
-              onChange={(e) => onTotalOverrideChange(e.target.value)}
-              className="w-full input-field"
-            />
-          </div>
+          <MoneyInput
+            id="totalOverrideInput"
+            name="totalOverrideInCents"
+            label="Custom total"
+            placeholder="Override total..."
+            value={totalOverride}
+            onValueChange={onTotalOverrideChange}
+            className="mt-2 flex flex-col gap-1"
+          />
         </>
       )}
     </div>
