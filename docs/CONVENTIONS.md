@@ -65,6 +65,7 @@ Conventions:
 - Components used by only one route live under that route's `components/` folder.
 - Components shared by multiple routes or by the root layout live under `ui/app/components/`.
 - Keep one React component per `.tsx` file, except route files may also export React Router loaders, actions, and boundaries.
+- In route components, rely on React Router generated `Route.ComponentProps` typing for `loaderData`; do not add local `LoaderData` interfaces or cast `loaderData` to a manually maintained type.
 - Use `<>...</>` fragments, not `<Fragment>`, unless an explicit keyed fragment is required.
 - Use `@cashregister/*` imports for app modules instead of deep relative paths, except for local sibling route components where existing code already uses relative imports.
 - Use `ui/app/deps.ts` as the composition root for root-level dependencies.

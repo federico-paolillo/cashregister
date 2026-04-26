@@ -3,9 +3,11 @@ import { OrderRow } from "@cashregister/routes/order-overview/components/order-r
 
 interface OrdersTableProps {
   orders: OrderListItemDto[];
+  selectedOrderId: string | null;
+  until: string | null;
 }
 
-export function OrdersTable({ orders }: OrdersTableProps) {
+export function OrdersTable({ orders, selectedOrderId, until }: OrdersTableProps) {
   return (
     <table className="w-full border-collapse">
       <thead>
@@ -13,7 +15,6 @@ export function OrdersTable({ orders }: OrdersTableProps) {
           <th className="p-2 font-semibold">Number</th>
           <th className="p-2 font-semibold text-right">Total</th>
           <th className="p-2 font-semibold text-right">Date</th>
-          <th className="p-2 font-semibold text-center">Actions</th>
         </tr>
       </thead>
       <tbody>
@@ -22,12 +23,13 @@ export function OrdersTable({ orders }: OrdersTableProps) {
             key={order.id}
             order={order}
             striped={index % 2 === 1}
-            to={`/order/${order.id}`}
+            selected={selectedOrderId === order.id}
+            until={until}
           />
         ))}
         {orders.length === 0 && (
           <tr>
-            <td colSpan={4} className="p-4 text-center text-gray-500 text-sm italic">
+            <td colSpan={3} className="p-4 text-center text-gray-500 text-sm italic">
               No orders found.
             </td>
           </tr>

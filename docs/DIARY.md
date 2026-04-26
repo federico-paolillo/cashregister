@@ -2,6 +2,29 @@
 
 > This file records implementation decisions, design choices, and strategies per task to avoid re-deriving the same conclusions when picking up work later.
 
+## Order overview route cleanup
+
+Cleaned up the order overview master-detail implementation after review. The route now relies on React Router generated loader-data typing instead of a local duplicate type, and order overview URL construction lives in a route-local helper module so selection and close links share the same query-string policy.
+
+### Key decisions
+
+- We kept URL helpers local to the order overview route because `orderId` and `until` are route-specific state, not an app-wide URL abstraction.
+- We documented that route components should use React Router generated loader-data typing because local loader-data interfaces drift from the actual loader return shape.
+
+## Orders master-detail view
+
+Changed `/orders` from list-to-route navigation into a master-detail screen. Selecting an order now keeps the user on `/orders`, stores the selection in `orderId` query state, and opens a closable right-side detail panel with persisted order metadata, item lines, totals, and the reprint action. Cursor pagination remains form-based and keeps the current selection when loading more rows.
+
+### ExecPlan
+
+`plans/order-master-detail.md`
+
+### Key decisions
+
+- We implemented a new read-only detail panel component instead of adapting the make-order summary because the order list displays persisted orders, not mutable cart state.
+- We moved reprint from the row into the detail panel so the table is a pure selection surface and the action stays attached to the currently inspected order.
+- We distinguished row-selection reloads from pagination reloads through `useNavigation().formData` so the "Load More" button only enters its loading state for actual pagination submissions.
+
 ## Typed API test payloads
 
 Updated the odd-cent order override API test to use `OrderRequestDto` with `PostAsJsonAsync` instead of hand-written JSON and `StringContent`. Documented the testing convention so API integration tests default to typed DTOs and typed HTTP helpers.
