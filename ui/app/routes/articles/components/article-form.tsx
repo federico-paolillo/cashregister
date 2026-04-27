@@ -1,8 +1,7 @@
-import { Link, useFetcher } from "react-router";
-import { useModalId } from "@cashregister/components/use-modal";
-import { useEffect, useId, useRef } from "react";
 import { MoneyInput } from "@cashregister/components/money-input";
 import type { Result } from "@cashregister/result";
+import { useEffect, useId, useRef } from "react";
+import { useFetcher } from "react-router";
 
 export interface ArticleFormData {
   description: string;
@@ -12,35 +11,13 @@ export interface ArticleFormData {
 interface ArticleFormProps {
   articleId?: string;
   initialData?: ArticleFormData;
-  intent: string;
-  cancelTo?: string;
-  showCancel?: boolean;
   onSubmit?: () => void;
   onError?: (message: string) => void;
-}
-
-function ModalCancelButton({ disabled }: { disabled: boolean }) {
-  const modalId = useModalId();
-
-  return (
-    <button
-      type="button"
-      disabled={disabled}
-      command="close"
-      commandfor={modalId}
-      className="btn-secondary"
-    >
-      Cancel
-    </button>
-  );
 }
 
 export function ArticleForm({
   articleId,
   initialData,
-  intent,
-  cancelTo,
-  showCancel = true,
   onSubmit,
   onError,
 }: ArticleFormProps) {
@@ -67,7 +44,6 @@ export function ArticleForm({
 
   return (
     <fetcher.Form method="post" action="/articles" className="flex flex-col gap-6 p-6 min-w-80">
-      <input type="hidden" name="intent" value={intent} />
       {articleId && <input type="hidden" name="articleId" value={articleId} />}
       <div className="flex flex-col gap-1">
         <label htmlFor={descriptionId} className="text-sm font-medium text-gray-700">
@@ -90,17 +66,6 @@ export function ArticleForm({
         required
       />
       <div className="flex justify-end gap-2">
-        {cancelTo ? (
-          <Link
-            to={cancelTo}
-            aria-disabled={pending}
-            className="btn-secondary"
-          >
-            Cancel
-          </Link>
-        ) : showCancel ? (
-          <ModalCancelButton disabled={pending} />
-        ) : null}
         <button
           type="submit"
           disabled={pending}

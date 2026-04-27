@@ -72,10 +72,9 @@ describe("ArticleDetailPanel", () => {
     expect(screen.getByDisplayValue("Espresso")).toBeDefined();
     expect(screen.getByDisplayValue("3.50")).toBeDefined();
 
-    const intent = document.querySelector<HTMLInputElement>('input[name="intent"]');
     const articleId = document.querySelector<HTMLInputElement>('input[name="articleId"]');
 
-    expect(intent?.value).toBe("edit");
+    expect(document.querySelector<HTMLInputElement>('input[name="intent"]')).toBeNull();
     expect(articleId?.value).toBe("art-1");
     expect(screen.getByRole("button", { name: "Delete" })).toBeDefined();
     expect(screen.queryByRole("link", { name: "Cancel" })).toBeNull();

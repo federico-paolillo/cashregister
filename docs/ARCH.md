@@ -137,7 +137,6 @@ Routes are registered in `ui/app/routes.ts`:
 /articles         routes/articles/articles.tsx
 /articles/bulk    routes/articles-bulk/articles-bulk.tsx
 /devices          routes/devices/devices.tsx
-/order/:orderId   routes/order-view/order-view.tsx
 /orders           routes/order-overview/order-overview.tsx
 ```
 

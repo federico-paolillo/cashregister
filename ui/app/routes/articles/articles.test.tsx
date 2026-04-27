@@ -341,11 +341,10 @@ describe("clientAction", () => {
     vi.clearAllMocks();
   });
 
-  it("calls POST /articles/{id} for edit intent", async () => {
+  it("calls POST /articles/{id} for article edits", async () => {
     vi.mocked(deps.apiClient.post).mockResolvedValue({ ok: true, value: undefined });
 
     const args = buildFormRequest({
-      intent: "edit",
       articleId: "art-42",
       description: "Updated name",
       priceInCents: "500",
@@ -359,28 +358,15 @@ describe("clientAction", () => {
     });
   });
 
-  it("calls POST /articles for create intent", async () => {
-    vi.mocked(deps.apiClient.post).mockResolvedValue({ ok: true, value: undefined });
-
+  it("returns failure when articleId is missing", async () => {
     const args = buildFormRequest({
-      intent: "create",
-      description: "New article",
-      priceInCents: "1000",
+      description: "Updated name",
+      priceInCents: "500",
     });
-
-    await clientAction(args);
-
-    expect(deps.apiClient.post).toHaveBeenCalledWith("/articles", {
-      description: "New article",
-      priceInCents: 1000,
-    });
-  });
-
-  it("returns failure for unknown intent", async () => {
-    const args = buildFormRequest({ intent: "delete" });
 
     const result = await clientAction(args);
 
-    expect(result).toEqual({ ok: false, error: { message: "unknown intent", status: 400 } });
+    expect(result).toEqual({ ok: false, error: { message: "missing article id", status: 400 } });
+    expect(deps.apiClient.post).not.toHaveBeenCalled();
   });
 });

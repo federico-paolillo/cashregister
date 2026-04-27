@@ -55,13 +55,11 @@ export function ArticleDetailPanel({ article, closeTo }: ArticleDetailPanelProps
       <main className="flex-1 overflow-auto">
         <ArticleForm
           key={article.id}
-          intent="edit"
           articleId={article.id}
           initialData={{
             description: article.description,
             priceInCents: article.priceInCents,
           }}
-          showCancel={false}
           onError={(message) => addError(message)}
         />
       </main>

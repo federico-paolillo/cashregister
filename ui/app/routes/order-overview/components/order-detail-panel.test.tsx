@@ -92,6 +92,14 @@ describe("OrderDetailPanel", () => {
     expect(screen.getByText("12.00")).toBeDefined();
   });
 
+  it("renders an empty items state", () => {
+    renderPanel({
+      order: { ...order, items: [] },
+    });
+
+    expect(screen.getByText("No items.")).toBeDefined();
+  });
+
   it("renders the close link", () => {
     renderPanel({ closeTo: "/orders?until=cursor-1" });
 

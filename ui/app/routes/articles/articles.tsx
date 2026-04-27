@@ -1,22 +1,16 @@
-import { useState } from "react";
-import { Form, Link, useNavigation } from "react-router";
-import { ArticleForm } from "@cashregister/routes/articles/components/article-form";
-import { ArticleDetailPanel } from "@cashregister/routes/articles/components/article-detail-panel";
-import { ArticlesTable } from "@cashregister/routes/articles/components/articles-table";
 import { Spinner } from "@cashregister/components/spinner";
-import { Modal } from "@cashregister/components/modal";
-import { useModal } from "@cashregister/components/use-modal";
-import { useErrorMessages } from "@cashregister/components/use-error-messages";
 import { useLoaderError } from "@cashregister/components/use-loader-error";
 import { deps } from "@cashregister/deps";
 import type {
   ArticleDto,
   ArticlesPageDto,
   ChangeArticleRequestDto,
-  RegisterArticleRequestDto,
 } from "@cashregister/model";
-import type { Route } from "./+types/articles";
 import { failure } from "@cashregister/result";
+import { ArticleDetailPanel } from "@cashregister/routes/articles/components/article-detail-panel";
+import { ArticlesTable } from "@cashregister/routes/articles/components/articles-table";
+import { Form, Link, useNavigation } from "react-router";
+import type { Route } from "./+types/articles";
 import { buildArticlesCloseLink } from "./url";
 
 export async function clientLoader({ request }: Route.ClientLoaderArgs) {
@@ -44,55 +38,28 @@ export async function clientLoader({ request }: Route.ClientLoaderArgs) {
 
 export async function clientAction({ request }: Route.ClientActionArgs) {
   const formData = await request.formData();
+  const articleId = formData.get("articleId");
 
-  const intent = formData.get("intent");
-
-  if (intent === "create") {
-    const body: RegisterArticleRequestDto = {
-      description: String(formData.get("description")),
-      priceInCents: Number(formData.get("priceInCents")),
-    };
-
-    return await deps.apiClient.post("/articles", body);
+  if (!articleId) {
+    return failure({ message: "missing article id", status: 400 });
   }
 
-  if (intent === "edit") {
-    const articleId = String(formData.get("articleId"));
+  const body: ChangeArticleRequestDto = {
+    description: String(formData.get("description")),
+    priceInCents: Number(formData.get("priceInCents")),
+  };
 
-    const body: ChangeArticleRequestDto = {
-      description: String(formData.get("description")),
-      priceInCents: Number(formData.get("priceInCents")),
-    };
-
-    return await deps.apiClient.post(`/articles/${articleId}`, body);
-  }
-
-  return failure({ message: "unknown intent", status: 400 });
+  return await deps.apiClient.post(`/articles/${articleId}`, body);
 }
 
 export default function Articles({ loaderData }: Route.ComponentProps) {
   const navigation = useNavigation();
-
-  const { addError } = useErrorMessages();
 
   const data = loaderData;
   const page = data.articlesPage.ok ? data.articlesPage.value : null;
   const selectedArticle = data.selectedArticle?.ok ? data.selectedArticle.value : null;
   const isLoadingMore =
     navigation.state !== "idle" && navigation.formData?.get("until") === page?.next;
-
-  const {
-    isOpen: isCreateOpen,
-    open: openCreate,
-    close: closeCreate,
-  } = useModal();
-
-  const [createKey, setCreateKey] = useState(0);
-
-  function openCreateModal() {
-    setCreateKey((k) => k + 1);
-    openCreate();
-  }
 
   useLoaderError(data.articlesPage);
   useLoaderError(data.selectedArticle);
@@ -103,13 +70,6 @@ export default function Articles({ loaderData }: Route.ComponentProps) {
         <h1 className="text-xl font-semibold">Articles</h1>
       </header>
       <nav aria-label="Article actions" className="flex justify-end p-4 gap-2">
-        <button
-          type="button"
-          onClick={openCreateModal}
-          className="btn-primary"
-        >
-          New Article
-        </button>
         <Link
           to="/articles/bulk"
           className="btn-primary inline-block"
@@ -154,9 +114,6 @@ export default function Articles({ loaderData }: Route.ComponentProps) {
           </aside>
         )}
       </main>
-      <Modal open={isCreateOpen} onClose={closeCreate}>
-        <ArticleForm key={createKey} intent="create" onSubmit={() => closeCreate()} onError={(msg) => { closeCreate(); addError(msg); }} />
-      </Modal>
     </>
   );
 }

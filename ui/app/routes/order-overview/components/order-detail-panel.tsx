@@ -2,13 +2,34 @@ import { useState } from "react";
 import { Link } from "react-router";
 import { useErrorMessages } from "@cashregister/components/use-error-messages";
 import { deps } from "@cashregister/deps";
-import type { OrderDto } from "@cashregister/model";
+import type { OrderDto, OrderItemDto } from "@cashregister/model";
 import { formatPrice } from "@cashregister/money";
-import { OrderItemsList } from "@cashregister/routes/order-view/components/order-items-list";
 
 interface OrderDetailPanelProps {
   order: OrderDto;
   closeTo: string;
+}
+
+function OrderItems({ items }: { items: OrderItemDto[] }) {
+  if (items.length === 0) {
+    return <p className="text-sm italic text-gray-500">No items.</p>;
+  }
+
+  return (
+    <>
+      {items.map((item) => (
+        <div
+          key={item.id}
+          className="flex items-center justify-between border-b py-1 text-sm"
+        >
+          <span>
+            {item.description} × {item.quantity}
+          </span>
+          <span>{formatPrice(item.priceInCents * item.quantity)}</span>
+        </div>
+      ))}
+    </>
+  );
 }
 
 export function OrderDetailPanel({ order, closeTo }: OrderDetailPanelProps) {
@@ -57,7 +78,7 @@ export function OrderDetailPanel({ order, closeTo }: OrderDetailPanelProps) {
       </header>
       <main className="flex-1 overflow-auto p-4">
         <h3 className="mb-3 font-semibold">Items</h3>
-        <OrderItemsList items={order.items} />
+        <OrderItems items={order.items} />
         <div className="mt-4 flex justify-between border-t pt-4 font-semibold">
           <span>Total</span>
           <span>{formatPrice(order.totalInCents)}</span>

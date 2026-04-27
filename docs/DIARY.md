@@ -2,6 +2,16 @@
 
 > This file records implementation decisions, design choices, and strategies per task to avoid re-deriving the same conclusions when picking up work later.
 
+## UI route simplification
+
+Removed stale frontend assumptions left after simplifying article and order navigation. Article editing is now the only single-article form path on `/articles`, while article creation remains on `/articles/bulk`. Order details stay embedded in the order overview instead of depending on the removed single-order route.
+
+### Key decisions
+
+- We removed the article form intent mechanism because the form is no longer shared by create and edit flows.
+- We inlined order item rendering into the order overview detail panel because the removed order view route was its only other owner.
+- We kept the modal system and modal tests untouched because future UI flows may still use it.
+
 ## Central frontend API delay
 
 Added a randomized artificial delay to the frontend `ApiClient` so local API calls take at least 50ms and at most 150ms. The delay starts in parallel with `fetch`, making fast local calls perceptible without adding extra latency to calls that are already slower than the selected delay.

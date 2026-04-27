@@ -1,6 +1,5 @@
 import { describe, it, expect, afterEach, vi } from "vitest";
 import { render, screen, cleanup } from "@testing-library/react";
-import { ModalIdProvider } from "@cashregister/components/use-modal";
 import { ArticleForm } from "@cashregister/routes/articles/components/article-form";
 
 const mockFetcher = {
@@ -23,13 +22,9 @@ afterEach(() => {
   mockFetcher.formData = undefined;
 });
 
-function renderInModal(ui: React.ReactNode) {
-  return render(<ModalIdProvider id="dlg-1">{ui}</ModalIdProvider>);
-}
-
 describe("ArticleForm", () => {
   it("renders inputs with correct name attributes for FormData serialization", () => {
-    renderInModal(<ArticleForm intent="create" />);
+    render(<ArticleForm articleId="abc-123" />);
 
     expect(screen.getByLabelText("Description")).toHaveProperty(
       "name",
@@ -42,20 +37,10 @@ describe("ArticleForm", () => {
     expect(priceField).not.toBeNull();
   });
 
-  it("sends the intent as a hidden field", () => {
-    renderInModal(<ArticleForm intent="create" />);
-
-    const hidden = document.querySelector<HTMLInputElement>(
-      'input[name="intent"]',
-    );
-    expect(hidden).not.toBeNull();
-    expect(hidden!.value).toBe("create");
-  });
-
   it("initializes fields from initialData", () => {
-    renderInModal(
+    render(
       <ArticleForm
-        intent="create"
+        articleId="abc-123"
         initialData={{ description: "Latte", priceInCents: 450 }}
       />,
     );
@@ -73,41 +58,23 @@ describe("ArticleForm", () => {
   it("disables both buttons when fetcher is submitting", () => {
     mockFetcher.state = "submitting";
 
-    renderInModal(<ArticleForm intent="create" />);
+    render(<ArticleForm articleId="abc-123" />);
 
-    expect(
-      screen.getByRole("button", { name: "Cancel" }),
-    ).toHaveProperty("disabled", true);
     expect(screen.getByRole("button", { name: "Save" })).toHaveProperty(
       "disabled",
       true,
     );
   });
 
-  it("sets command and commandfor on the cancel button", () => {
-    renderInModal(<ArticleForm intent="create" />);
-
-    const cancel = screen.getByRole("button", { name: "Cancel" });
-    expect(cancel.getAttribute("command")).toBe("close");
-    expect(cancel.getAttribute("commandfor")).toBe("dlg-1");
-  });
-
-  it("renders a cancel link when cancelTo is provided", () => {
-    render(<ArticleForm intent="edit" articleId="abc-123" cancelTo="/articles" />);
-
-    const cancel = screen.getByRole("link", { name: "Cancel" });
-    expect(cancel.getAttribute("href")).toBe("/articles");
-  });
-
-  it("does not render cancel controls when showCancel is false", () => {
-    render(<ArticleForm intent="edit" articleId="abc-123" showCancel={false} />);
+  it("does not render cancel controls", () => {
+    render(<ArticleForm articleId="abc-123" />);
 
     expect(screen.queryByRole("button", { name: "Cancel" })).toBeNull();
     expect(screen.queryByRole("link", { name: "Cancel" })).toBeNull();
   });
 
   it("posts to /articles", () => {
-    renderInModal(<ArticleForm intent="create" />);
+    render(<ArticleForm articleId="abc-123" />);
 
     const form = screen.getByRole("button", { name: "Save" }).closest("form");
     expect(form).not.toBeNull();
@@ -115,7 +82,7 @@ describe("ArticleForm", () => {
   });
 
   it("includes articleId as a hidden field when provided", () => {
-    renderInModal(<ArticleForm intent="edit" articleId="abc-123" />);
+    render(<ArticleForm articleId="abc-123" />);
 
     const hidden = document.querySelector<HTMLInputElement>(
       'input[name="articleId"]',
@@ -125,7 +92,7 @@ describe("ArticleForm", () => {
   });
 
   it("does not include articleId hidden field when not provided", () => {
-    renderInModal(<ArticleForm intent="create" />);
+    render(<ArticleForm />);
 
     const hidden = document.querySelector<HTMLInputElement>(
       'input[name="articleId"]',
@@ -139,17 +106,15 @@ describe("ArticleForm", () => {
 
     mockFetcher.state = "submitting";
 
-    const { rerender } = renderInModal(
-      <ArticleForm intent="create" onSubmit={onSubmit} onError={onError} />,
+    const { rerender } = render(
+      <ArticleForm articleId="abc-123" onSubmit={onSubmit} onError={onError} />,
     );
 
     mockFetcher.state = "idle";
     mockFetcher.data = { ok: false, error: { message: "Server error", status: 500 } };
 
     rerender(
-      <ModalIdProvider id="dlg-1">
-        <ArticleForm intent="create" onSubmit={onSubmit} onError={onError} />
-      </ModalIdProvider>,
+      <ArticleForm articleId="abc-123" onSubmit={onSubmit} onError={onError} />,
     );
 
     expect(onError).toHaveBeenCalledWith("Server error");
@@ -167,8 +132,8 @@ describe("ArticleForm", () => {
     mockFetcher.state = "submitting";
     mockFetcher.formData = formData;
 
-    const { rerender } = renderInModal(
-      <ArticleForm intent="edit" articleId="abc" onSubmit={onSubmit} />,
+    const { rerender } = render(
+      <ArticleForm articleId="abc" onSubmit={onSubmit} />,
     );
 
     // Phase 2: Idle with result — formData cleared
@@ -177,9 +142,7 @@ describe("ArticleForm", () => {
     mockFetcher.formData = undefined;
 
     rerender(
-      <ModalIdProvider id="dlg-1">
-        <ArticleForm intent="edit" articleId="abc" onSubmit={onSubmit} />
-      </ModalIdProvider>,
+      <ArticleForm articleId="abc" onSubmit={onSubmit} />,
     );
 
     expect(onSubmit).toHaveBeenCalled();
