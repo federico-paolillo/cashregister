@@ -2,6 +2,10 @@
 
 > The most simplestest cash register application. It _does not_ track money, just orders.
 
+## Above all else
+
+If something is not clear, ambiguous or dubious ASK ME. Use the ask user tool. Ask me !
+
 ## Mindset
 
 ### 1. Think Before Coding
@@ -80,6 +84,7 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 - docs/ARCH.md - Main architecture and design choices. Read this to get your bearings.
 - docs/ESCPOS.md - Architecture and design choices for the ESC/POS implementation. Read this to understand how printing works.
 - docs/CONVENTIONS.md - How to work on the project. This is fundamental
+- docs/DOCKER.md - DevOps conventions for Dockerfiles, container images, and shell scripts.
 
 ### Optional reads
 

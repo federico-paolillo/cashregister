@@ -109,6 +109,10 @@ Keep generic backend conventions here. Keep Printmon-specific rules in `docs/ESC
 
 When changing `Cashregister.Printmon.*`, update `docs/ESCPOS.md` in the same task.
 
+## DevOps
+
+Docker, container-image, and shell-script conventions live in `docs/DOCKER.md`.
+
 ## Documentation-Only Changes
 
 For documentation-only tasks:

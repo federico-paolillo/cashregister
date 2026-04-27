@@ -8,5 +8,6 @@
         <AnalysisMode>All</AnalysisMode>
         <LangVersion>14</LangVersion>
         <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+        <InvariantGlobalization>true</InvariantGlobalization>
     </PropertyGroup>
 </Project>

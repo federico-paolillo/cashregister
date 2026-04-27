@@ -1,4 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
+    <PropertyGroup>
+        <PublishSelfContained>true</PublishSelfContained>
+    </PropertyGroup>
     <ItemGroup>
         <ProjectReference Include="..\Cashregister.Activities\Cashregister.Activities.csproj"/>
         <ProjectReference Include="..\Cashregister.Application\Cashregister.Application.csproj"/>

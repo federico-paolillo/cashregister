@@ -162,3 +162,22 @@ Added a development-only `MarkdownDevice` in `Cashregister.Printmon.Emulator` an
 - We placed `MarkdownDevice` in `Cashregister.Printmon.Emulator/Device` because it is defined by the emulator pipeline, not by raw printer file output.
 - We kept `BinaryEncoder` in the flow and ran the full emulator decode/execute path so development output exercises the same ESC/POS bytes that production printing emits.
 - We switched the API composition root on `builder.Environment.IsDevelopment()` instead of adding a runtime toggle because the requirement is environment-specific, not operator-selectable.
+
+## Backend API Docker image
+
+Added a buildx-oriented Dockerfile for publishing `Cashregister.Api` as a self-contained linux-x64 single-file executable without Native AOT. The runtime image uses the official .NET 10 Ubuntu chiseled `runtime-deps` base because the backend now opts into invariant globalization, and the application files are copied as root-owned read-only files under `/app` while SQLite state lives under `/var/lib/cashregister`.
+
+### Key decisions
+
+- We use `runtime-deps` instead of `aspnet` because the published API is self-contained and carries the .NET runtime with the app.
+- We keep `/app` read-only for the non-root runtime user and reserve `/var/lib/cashregister` as the writable application state directory.
+- We put the build command in `build-be-dockerfile.sh` so local and CI invocations use the same buildx arguments.
+
+## DevOps conventions document
+
+Added `docs/DOCKER.md` as the home for Docker, container-image, and shell-script conventions. The document records hardened container defaults and minimal shell-script defaults so deployment-related work does not have to rediscover the same baseline.
+
+### Key decisions
+
+- We keep DevOps conventions separate from backend and frontend conventions because container hardening and shell-script behavior apply across project areas.
+- We mention `docs/DOCKER.md` from `AGENTS.md` and `docs/CONVENTIONS.md` so future work can find the new convention surface.
