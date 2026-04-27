@@ -103,7 +103,7 @@ When you finish a task always run verification steps. Verification steps are des
 
 When writing complex features or significant refactors, use an "ExecPlan" (as described in `docs/PLANS.md`) from design to implementation. Emit the "ExecPlan" in `docs/plans/` folder.
 
-When you complete a task you have to document in docs/DIARY.md implementation decisions, design choices, and strategies. The goal is to avoid re-deriving the same conclusions when picking up work later and keep you consistent. There is no need to list changed files.
+When you complete a task, append one entry to docs/DIARY.md documenting implementation decisions, design choices, and strategies. The goal is to avoid re-deriving the same conclusions when picking up work later and keep you consistent. There is no need to list changed files.
 
 Follow this format for an entry of the diary:
 
@@ -126,3 +126,59 @@ Include an `ExecPlan` section with `path_to_exec_plan` relative to `docs/` folde
 If you make changes that alter what is referenced in `ARCH.md` or `ESCPOS.md` you have to update those files as well. `ARCH.md` and `ESCPOS.md` must not get out of sync. There is no need to document every tiny little detail in `ARCH.md` or `ESCPOS.md` as they document the high-level architecture of Cashregister.
 
 `CONVENTIONS.md` must be updated if you introduce new development conventions or techniques.
+
+## Parallel Worktree Mode
+
+> This applies only when you know you are working in parallel with some other agent and you have a dedicated git worktree
+
+When working in a dedicated git worktree for a parallel task:
+
+- Assume other agents may be working on independent branches at the same time.
+- Keep changes limited to the assigned feature.
+- Do not edit files only to reformat, reorder, rename, or tidy them.
+- Prefer additive changes over broad rewrites when touching shared files.
+- Avoid changing public interfaces unless the task requires it.
+
+### Shared documentation files
+
+The following files are integration-sensitive:
+
+- docs/DIARY.md
+- docs/ARCH.md
+- docs/ESCPOS.md
+- docs/CONVENTIONS.md
+- docs/plans/*
+
+When updating these files:
+
+- Append only. Do not reorder or rewrite existing entries.
+- Use a unique heading that includes the task name.
+- Keep entries concise.
+- Do not modify another task diary entry or plan.
+- If the task does not require architectural or convention changes, do not edit ARCH.md, ESCPOS.md, or CONVENTIONS.md.
+
+### ExecPlans in parallel work
+
+For complex features or significant refactors, create an ExecPlan at:
+
+`docs/plans/<task-slug>.md`
+
+The filename must be unique to the task. Do not use generic names like:
+
+- plan.md
+- implementation.md
+- feature.md
+
+### End-of-task handoff
+
+At the end of the task, provide a handoff summary:
+
+- Branch name
+- Worktree path
+- Feature implemented
+- Files changed
+- Tests run
+- Docs updated
+- Known risks
+- Likely conflict areas
+- Whether ARCH.md, ESCPOS.md, CONVENTIONS.md, or DIARY.md were changed
