@@ -11,6 +11,8 @@ const mockFetcher = {
 };
 
 vi.mock("react-router", () => ({
+  Link: ({ children, to, ...props }: { children: React.ReactNode; to: string } & React.AnchorHTMLAttributes<HTMLAnchorElement>) =>
+    <a href={String(to)} {...props}>{children}</a>,
   useFetcher: () => mockFetcher,
 }));
 
@@ -88,6 +90,20 @@ describe("ArticleForm", () => {
     const cancel = screen.getByRole("button", { name: "Cancel" });
     expect(cancel.getAttribute("command")).toBe("close");
     expect(cancel.getAttribute("commandfor")).toBe("dlg-1");
+  });
+
+  it("renders a cancel link when cancelTo is provided", () => {
+    render(<ArticleForm intent="edit" articleId="abc-123" cancelTo="/articles" />);
+
+    const cancel = screen.getByRole("link", { name: "Cancel" });
+    expect(cancel.getAttribute("href")).toBe("/articles");
+  });
+
+  it("does not render cancel controls when showCancel is false", () => {
+    render(<ArticleForm intent="edit" articleId="abc-123" showCancel={false} />);
+
+    expect(screen.queryByRole("button", { name: "Cancel" })).toBeNull();
+    expect(screen.queryByRole("link", { name: "Cancel" })).toBeNull();
   });
 
   it("posts to /articles", () => {

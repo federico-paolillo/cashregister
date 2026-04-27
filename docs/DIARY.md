@@ -2,6 +2,30 @@
 
 > This file records implementation decisions, design choices, and strategies per task to avoid re-deriving the same conclusions when picking up work later.
 
+## Central frontend API delay
+
+Added a randomized artificial delay to the frontend `ApiClient` so local API calls take at least 50ms and at most 150ms. The delay starts in parallel with `fetch`, making fast local calls perceptible without adding extra latency to calls that are already slower than the selected delay.
+
+### Key decisions
+
+- We kept the delay frontend-only and centralized in `ApiClient` because all route loaders, actions, and components already call the backend through `deps.apiClient`.
+- We delay successful responses, HTTP error responses, and network failures consistently so UI loading and disabled states do not flicker for local calls.
+
+## Article master-detail editor
+
+Changed `/articles` from edit-button modal editing into a master-detail screen symmetric with `/orders`. Selecting an article now stores `articleId` in the URL, highlights the selected row, and opens a right-side detail panel that reuses the existing article form for edits. Cursor pagination keeps the selected article id while loading more rows, and article creation remains in the existing modal flow.
+
+### ExecPlan
+
+`plans/article-master-detail.md`
+
+### Key decisions
+
+- We fetch the selected article through `GET /articles/{id}` as `ArticleDto` instead of deriving it from the current list page so the route matches the orders implementation and the backend API signature.
+- We removed the article table actions column because row selection now owns editing and delete belongs to the selected detail panel.
+- We made the article form support panel usage through a cancel link while preserving modal cancel behavior for article creation.
+- We restored article deletion in the detail panel instead of the table row; delete uses a panel-local API call to `DELETE /articles/{id}` and closes the panel only after success so the route does not revalidate a deleted `articleId`.
+
 ## Order overview route cleanup
 
 Cleaned up the order overview master-detail implementation after review. The route now relies on React Router generated loader-data typing instead of a local duplicate type, and order overview URL construction lives in a route-local helper module so selection and close links share the same query-string policy.

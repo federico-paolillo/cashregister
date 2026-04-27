@@ -1,11 +1,11 @@
 import React from "react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { render, screen, cleanup } from "@testing-library/react";
-import Articles, { clientAction } from "@cashregister/routes/articles/articles";
+import { render, screen, cleanup, waitFor } from "@testing-library/react";
+import Articles, { clientAction, clientLoader } from "@cashregister/routes/articles/articles";
 import * as reactRouter from "react-router";
 import * as errorMessages from "@cashregister/components/use-error-messages";
 import { deps } from "@cashregister/deps";
-import type { ArticlesPageDto } from "@cashregister/model";
+import type { ArticleDto, ArticlesPageDto } from "@cashregister/model";
 import type { Result } from "@cashregister/result";
 import type { Route } from "./+types/articles";
 
@@ -14,6 +14,7 @@ vi.mock("react-router", async (importOriginal) => {
   return {
     ...actual,
     useNavigation: vi.fn(),
+    useNavigate: vi.fn(),
     useFetcher: vi.fn(),
     Form: ({ children, ...props }: React.FormHTMLAttributes<HTMLFormElement>) =>
       <form {...props}>{children}</form>,
@@ -36,7 +37,7 @@ vi.mock("@cashregister/deps", () => ({
   },
 }));
 
-const mockInitialData: ArticlesPageDto = {
+const pageData: ArticlesPageDto = {
   items: [
     { id: "1", description: "Article 1", priceInCents: 1000 },
     { id: "2", description: "Article 2", priceInCents: 2000 },
@@ -45,29 +46,61 @@ const mockInitialData: ArticlesPageDto = {
   hasNext: true,
 };
 
-const mockInitialResult: Result<ArticlesPageDto> = {
+const pageResult: Result<ArticlesPageDto> = {
   ok: true,
-  value: mockInitialData,
+  value: pageData,
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function renderArticles(props: any = {}) {
+const article: ArticleDto = {
+  id: "1",
+  description: "Article 1",
+  priceInCents: 1000,
+};
+
+const articleResult: Result<ArticleDto> = {
+  ok: true,
+  value: article,
+};
+
+function createLoaderData(overrides?: Partial<{
+  articlesPage: Result<ArticlesPageDto>;
+  selectedArticle: Result<ArticleDto> | null;
+  selectedArticleId: string | null;
+  until: string | null;
+}>) {
+  return {
+    articlesPage: pageResult,
+    selectedArticle: null,
+    selectedArticleId: null,
+    until: null,
+    ...overrides,
+  };
+}
+
+function renderArticles(props: Partial<Route.ComponentProps> = {}) {
   return render(
-    <Articles loaderData={mockInitialResult} {...props} />,
+    <Articles loaderData={createLoaderData()} {...props} />,
   );
 }
 
-describe("Articles Page", () => {
+function buildLoaderArgs(url: string): Route.ClientLoaderArgs {
+  return {
+    request: new Request(url),
+    params: {},
+  } as Route.ClientLoaderArgs;
+}
 
+describe("Articles Page", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(reactRouter.useNavigation).mockReturnValue({
       state: "idle",
+      formData: undefined,
     } as reactRouter.Navigation);
     vi.mocked(reactRouter.useFetcher).mockReturnValue({
       state: "idle",
       data: undefined,
-      Form: ({ children }: { children: React.ReactNode }) => <form>{children}</form>,
+      Form: ({ children, ...props }: React.FormHTMLAttributes<HTMLFormElement>) => <form {...props}>{children}</form>,
     } as unknown as reactRouter.FetcherWithComponents<unknown>);
     vi.mocked(errorMessages.useErrorMessages).mockReturnValue({
       errors: [],
@@ -90,6 +123,25 @@ describe("Articles Page", () => {
     expect(screen.getByText("Article 2")).toBeDefined();
   });
 
+  it("does not render the detail panel when no article is selected", () => {
+    renderArticles();
+
+    expect(screen.queryByRole("link", { name: "Close article details" })).toBeNull();
+  });
+
+  it("renders the detail panel when a selected article is present", () => {
+    renderArticles({
+      loaderData: createLoaderData({
+        selectedArticle: articleResult,
+        selectedArticleId: article.id,
+      }),
+    });
+
+    expect(screen.getByText("Article ID")).toBeDefined();
+    expect(screen.getByDisplayValue("Article 1")).toBeDefined();
+    expect(screen.getByRole("link", { name: "Close article details" })).toBeDefined();
+  });
+
   it("shows Load More button when page.next is set", () => {
     renderArticles();
 
@@ -97,14 +149,81 @@ describe("Articles Page", () => {
   });
 
   it("hides Load More button when page.next is null", () => {
-    const data: Result<ArticlesPageDto> = {
-      ok: true,
-      value: { ...mockInitialData, next: null, hasNext: false },
-    };
-
-    renderArticles({ loaderData: data });
+    renderArticles({
+      loaderData: createLoaderData({
+        articlesPage: {
+          ok: true,
+          value: { ...pageData, next: null, hasNext: false },
+        },
+      }),
+    });
 
     expect(screen.queryByRole("button", { name: "Load More" })).toBeNull();
+  });
+
+  it("preserves the selected article when submitting load more", () => {
+    renderArticles({
+      loaderData: createLoaderData({
+        selectedArticle: articleResult,
+        selectedArticleId: article.id,
+      }),
+    });
+
+    const preservedSelection = Array
+      .from(document.querySelectorAll<HTMLInputElement>('input[name="articleId"]'))
+      .find((input) => input.closest("form")?.querySelector('input[name="until"]'));
+
+    expect(preservedSelection).toBeDefined();
+    expect(preservedSelection!.value).toBe(article.id);
+    expect(preservedSelection!.getAttribute("type")).toBe("hidden");
+  });
+
+  it("preserves URL selection state when selected article loading fails", () => {
+    renderArticles({
+      loaderData: createLoaderData({
+        selectedArticleId: "1",
+        selectedArticle: {
+          ok: false,
+          error: { message: "Article not found", status: 404 },
+        },
+      }),
+    });
+
+    const selectedRow = screen.getByText("Article 1").closest("tr");
+    const preservedSelection = screen.getByDisplayValue("1");
+
+    expect(selectedRow?.className).toContain("bg-blue-100");
+    expect(preservedSelection.getAttribute("name")).toBe("articleId");
+    expect(preservedSelection.getAttribute("type")).toBe("hidden");
+    expect(screen.queryByRole("link", { name: "Close article details" })).toBeNull();
+  });
+
+  it("shows loading state only for the load more submission", () => {
+    const formData = new FormData();
+    formData.set("until", "cursor-1");
+
+    vi.mocked(reactRouter.useNavigation).mockReturnValue({
+      state: "loading",
+      formData,
+    } as reactRouter.Navigation);
+
+    renderArticles();
+
+    expect(screen.getByRole("button", { name: "Loading..." })).toHaveProperty("disabled", true);
+  });
+
+  it("keeps the load more button label when loading a selection change", () => {
+    const formData = new FormData();
+    formData.set("articleId", "1");
+
+    vi.mocked(reactRouter.useNavigation).mockReturnValue({
+      state: "loading",
+      formData,
+    } as reactRouter.Navigation);
+
+    renderArticles();
+
+    expect(screen.getByRole("button", { name: "Load More" })).toHaveProperty("disabled", false);
   });
 
   it("'New Articles' link navigates without opening the create modal", () => {
@@ -117,15 +236,51 @@ describe("Articles Page", () => {
     expect(HTMLDialogElement.prototype.showModal).not.toHaveBeenCalled();
   });
 
-  it("shows loading state when navigation is loading", () => {
-    vi.mocked(reactRouter.useNavigation).mockReturnValue({
-      state: "loading",
-    } as reactRouter.Navigation);
+  it("calls addError when the articles page loader returns an error", async () => {
+    const addError = vi.fn();
 
-    renderArticles();
+    vi.mocked(errorMessages.useErrorMessages).mockReturnValue({
+      errors: [],
+      addError,
+      dismissError: vi.fn(),
+    });
 
-    expect(screen.getByText("Loading...")).toBeDefined();
-    expect(screen.getByRole("button", { name: "Loading..." })).toHaveProperty("disabled", true);
+    renderArticles({
+      loaderData: createLoaderData({
+        articlesPage: {
+          ok: false,
+          error: { message: "Something went wrong", status: 500 },
+        },
+      }),
+    });
+
+    await waitFor(() => {
+      expect(addError).toHaveBeenCalledWith("Something went wrong");
+    });
+  });
+
+  it("calls addError when the selected article loader returns an error", async () => {
+    const addError = vi.fn();
+
+    vi.mocked(errorMessages.useErrorMessages).mockReturnValue({
+      errors: [],
+      addError,
+      dismissError: vi.fn(),
+    });
+
+    renderArticles({
+      loaderData: createLoaderData({
+        selectedArticleId: "missing-article",
+        selectedArticle: {
+          ok: false,
+          error: { message: "Article not found", status: 404 },
+        },
+      }),
+    });
+
+    await waitFor(() => {
+      expect(addError).toHaveBeenCalledWith("Article not found");
+    });
   });
 });
 
@@ -142,6 +297,44 @@ function buildFormRequest(fields: Record<string, string>): Route.ClientActionArg
     params: {},
   } as Route.ClientActionArgs;
 }
+
+describe("clientLoader", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("fetches only the articles page when no article is selected", async () => {
+    vi.mocked(deps.apiClient.get).mockResolvedValue(pageResult);
+
+    const result = await clientLoader(buildLoaderArgs("http://localhost/articles?until=cursor-1"));
+
+    expect(result).toEqual({
+      articlesPage: pageResult,
+      selectedArticle: null,
+      selectedArticleId: null,
+      until: "cursor-1",
+    });
+    expect(deps.apiClient.get).toHaveBeenCalledTimes(1);
+    expect(deps.apiClient.get).toHaveBeenCalledWith("/articles", { until: "cursor-1" });
+  });
+
+  it("fetches the articles page and the selected article when articleId is present", async () => {
+    vi.mocked(deps.apiClient.get)
+      .mockResolvedValueOnce(pageResult)
+      .mockResolvedValueOnce(articleResult);
+
+    const result = await clientLoader(buildLoaderArgs("http://localhost/articles?until=cursor-1&articleId=1"));
+
+    expect(result).toEqual({
+      articlesPage: pageResult,
+      selectedArticle: articleResult,
+      selectedArticleId: "1",
+      until: "cursor-1",
+    });
+    expect(deps.apiClient.get).toHaveBeenNthCalledWith(1, "/articles", { until: "cursor-1" });
+    expect(deps.apiClient.get).toHaveBeenNthCalledWith(2, "/articles/1");
+  });
+});
 
 describe("clientAction", () => {
   beforeEach(() => {

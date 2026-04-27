@@ -1,7 +1,18 @@
+import React from "react";
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { render, screen, cleanup, fireEvent } from "@testing-library/react";
+import { render, screen, cleanup } from "@testing-library/react";
 import { ArticlesTable } from "@cashregister/routes/articles/components/articles-table";
+import * as reactRouter from "react-router";
 import type { ArticleListItemDto } from "@cashregister/model";
+
+vi.mock("react-router", async (importOriginal) => {
+  const actual = await importOriginal<typeof reactRouter>();
+  return {
+    ...actual,
+    Link: ({ children, to, ...props }: { children: React.ReactNode; to: string } & React.AnchorHTMLAttributes<HTMLAnchorElement>) =>
+      <a href={String(to)} {...props}>{children}</a>,
+  };
+});
 
 afterEach(cleanup);
 
@@ -12,38 +23,37 @@ const articles: ArticleListItemDto[] = [
 
 describe("ArticlesTable", () => {
   it("renders all articles", () => {
-    render(<ArticlesTable articles={articles} onEdit={vi.fn()} />);
+    render(<ArticlesTable articles={articles} selectedArticleId={null} until={null} />);
 
     expect(screen.getByText("Espresso")).toBeDefined();
     expect(screen.getByText("Latte")).toBeDefined();
   });
 
   it("shows the empty message when there are no articles", () => {
-    render(<ArticlesTable articles={[]} onEdit={vi.fn()} />);
+    render(<ArticlesTable articles={[]} selectedArticleId={null} until={null} />);
 
     expect(screen.getByText("No articles found.")).toBeDefined();
   });
 
-  it("does not show the empty message when there are articles", () => {
-    render(<ArticlesTable articles={articles} onEdit={vi.fn()} />);
+  it("does not render the actions column", () => {
+    render(<ArticlesTable articles={articles} selectedArticleId={null} until={null} />);
 
-    expect(screen.queryByText("No articles found.")).toBeNull();
-  });
-
-  it("calls onEdit with the article when the edit button is clicked", () => {
-    const onEdit = vi.fn();
-    render(<ArticlesTable articles={articles} onEdit={onEdit} />);
-
-    fireEvent.click(screen.getByRole("button", { name: "Edit Espresso" }));
-
-    expect(onEdit).toHaveBeenCalledWith(articles[0]);
+    expect(screen.queryByRole("columnheader", { name: "Actions" })).toBeNull();
   });
 
   it("renders alternating striped rows", () => {
-    render(<ArticlesTable articles={articles} onEdit={vi.fn()} />);
+    render(<ArticlesTable articles={articles} selectedArticleId={null} until={null} />);
 
-    const rows = screen.getAllByRole("row").slice(1); // skip header
+    const rows = screen.getAllByRole("row").slice(1);
     expect(rows[0].className).not.toContain("bg-gray-50");
     expect(rows[1].className).toContain("bg-gray-50");
+  });
+
+  it("marks the selected row", () => {
+    render(<ArticlesTable articles={articles} selectedArticleId="2" until={null} />);
+
+    const selectedRow = screen.getByText("Latte").closest("tr");
+
+    expect(selectedRow?.className).toContain("bg-blue-100");
   });
 });

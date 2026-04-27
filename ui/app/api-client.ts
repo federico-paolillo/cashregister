@@ -1,6 +1,9 @@
 import { type Result, success, failure } from "@cashregister/result";
 
 export class ApiClient {
+  private static readonly minimumApiDelayMs = 50;
+  private static readonly maximumApiDelayMs = 150;
+
   private readonly baseUrl: string;
 
   constructor(baseUrl: string) {
@@ -46,7 +49,19 @@ export class ApiClient {
     init: RequestInit,
   ): Promise<Result<T>> {
     try {
-      const response = await fetch(url, init);
+      const [responseResult] = await Promise.all([
+        fetch(url, init).then(
+          (response) => ({ ok: true as const, response }),
+          (error: unknown) => ({ ok: false as const, error }),
+        ),
+        this.delay(),
+      ]);
+
+      if (!responseResult.ok) {
+        throw responseResult.error;
+      }
+
+      const { response } = responseResult;
 
       if (!response.ok) {
         return failure({ status: response.status, message: url });
@@ -66,5 +81,19 @@ export class ApiClient {
       });
     }
   }
-}
 
+  private delay(): Promise<void> {
+    return new Promise((resolve) => {
+      setTimeout(resolve, this.randomDelayInMilliseconds());
+    });
+  }
+
+  private randomDelayInMilliseconds(): number {
+    const delayRange =
+      ApiClient.maximumApiDelayMs - ApiClient.minimumApiDelayMs + 1;
+
+    return (
+      ApiClient.minimumApiDelayMs + Math.floor(Math.random() * delayRange)
+    );
+  }
+}

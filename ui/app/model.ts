@@ -10,6 +10,12 @@ export interface ArticleListItemDto {
   priceInCents: number;
 }
 
+export interface ArticleDto {
+  id: string;
+  description: string;
+  priceInCents: number;
+}
+
 export interface RegisterArticleRequestDto {
   description: string;
   priceInCents: number;

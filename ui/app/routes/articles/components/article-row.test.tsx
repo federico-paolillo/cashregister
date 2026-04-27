@@ -1,5 +1,6 @@
-import { describe, it, expect, vi, afterEach } from "vitest";
-import { render, screen, cleanup, fireEvent } from "@testing-library/react";
+import { describe, it, expect, afterEach } from "vitest";
+import { render, screen, cleanup } from "@testing-library/react";
+import { MemoryRouter } from "react-router";
 import { ArticleRow } from "@cashregister/routes/articles/components/article-row";
 import type { ArticleListItemDto } from "@cashregister/model";
 
@@ -13,60 +14,76 @@ const article: ArticleListItemDto = {
   priceInCents: 350,
 };
 
-function renderRow(props?: { striped?: boolean; onEdit?: (a: ArticleListItemDto) => void }) {
+function renderRow(props?: {
+  striped?: boolean;
+  selected?: boolean;
+  until?: string | null;
+}) {
   return render(
-    <table>
-      <tbody>
-        <ArticleRow
-          article={article}
-          striped={props?.striped ?? false}
-          onEdit={props?.onEdit ?? vi.fn()}
-        />
-      </tbody>
-    </table>,
+    <MemoryRouter>
+      <table>
+        <tbody>
+          <ArticleRow
+            article={article}
+            striped={props?.striped ?? false}
+            selected={props?.selected ?? false}
+            until={props?.until ?? null}
+          />
+        </tbody>
+      </table>
+    </MemoryRouter>,
   );
 }
 
 describe("ArticleRow", () => {
   it("renders the article description", () => {
     renderRow();
+
     expect(screen.getByText("Espresso")).toBeDefined();
   });
 
   it("renders the formatted price", () => {
     renderRow();
+
     expect(screen.getByText("3.50")).toBeDefined();
   });
 
-  it("renders edit and delete buttons", () => {
+  it("links to the selected article on the articles route", () => {
     renderRow();
-    expect(screen.getByRole("button", { name: "Edit Espresso" })).toBeDefined();
-    expect(screen.getByRole("button", { name: "Delete Espresso" })).toBeDefined();
+
+    const links = screen.getAllByRole("link");
+
+    expect(links.length).toBeGreaterThan(0);
+
+    for (const link of links) {
+      expect(link.getAttribute("href")).toBe("/articles?articleId=1");
+    }
   });
 
-  it("calls onEdit with the article when clicking edit", () => {
-    const onEdit = vi.fn();
-    renderRow({ onEdit });
+  it("preserves the pagination cursor in selection links", () => {
+    renderRow({ until: "cursor-1" });
 
-    fireEvent.click(screen.getByRole("button", { name: "Edit Espresso" }));
+    const links = screen.getAllByRole("link");
 
-    expect(onEdit).toHaveBeenCalledWith(article);
-  });
-
-  it("has delete button disabled", () => {
-    renderRow();
-    expect(screen.getByRole("button", { name: "Delete Espresso" })).toHaveProperty("disabled", true);
+    for (const link of links) {
+      expect(link.getAttribute("href")).toBe("/articles?until=cursor-1&articleId=1");
+    }
   });
 
   it("applies striped background when striped is true", () => {
     renderRow({ striped: true });
+
     const row = screen.getByText("Espresso").closest("tr");
+
     expect(row?.className).toContain("bg-gray-50");
   });
 
-  it("does not apply striped background when striped is false", () => {
-    renderRow({ striped: false });
+  it("applies selected background when selected is true", () => {
+    renderRow({ striped: true, selected: true });
+
     const row = screen.getByText("Espresso").closest("tr");
+
+    expect(row?.className).toContain("bg-blue-100");
     expect(row?.className).not.toContain("bg-gray-50");
   });
 });

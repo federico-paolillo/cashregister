@@ -1,38 +1,26 @@
+import { Link } from "react-router";
 import type { ArticleListItemDto } from "@cashregister/model";
 import { formatPrice } from "@cashregister/money";
+import { buildArticlesSelectionLink } from "../url";
 
 interface ArticleRowProps {
   article: ArticleListItemDto;
   striped: boolean;
-  onEdit: (article: ArticleListItemDto) => void;
+  selected: boolean;
+  until: string | null;
 }
 
-export function ArticleRow({ article, striped, onEdit }: ArticleRowProps) {
+export function ArticleRow({ article, striped, selected, until }: ArticleRowProps) {
+  const to = buildArticlesSelectionLink(article.id, until);
+  const backgroundClass = selected ? "bg-blue-100" : striped ? "bg-gray-50" : "";
+
   return (
-    <tr
-      className={`border-b hover:bg-blue-50 ${striped ? "bg-gray-50" : ""}`}
-    >
-      <td className="p-2">{article.description}</td>
-      <td className="p-2 text-right">
-        {formatPrice(article.priceInCents)}
+    <tr className={`border-b hover:bg-blue-50 ${backgroundClass}`}>
+      <td className="p-2">
+        <Link to={to} className="block">{article.description}</Link>
       </td>
       <td className="p-2 text-right">
-        <button
-          type="button"
-          aria-label={`Edit ${article.description}`}
-          className="mr-2 cursor-pointer text-gray-500 hover:text-blue-600"
-          onClick={() => onEdit(article)}
-        >
-          ✎
-        </button>
-        <button
-          type="button"
-          aria-label={`Delete ${article.description}`}
-          className="cursor-pointer text-gray-500 hover:text-red-600"
-          disabled
-        >
-          ✕
-        </button>
+        <Link to={to} className="block">{formatPrice(article.priceInCents)}</Link>
       </td>
     </tr>
   );

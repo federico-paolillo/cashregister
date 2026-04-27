@@ -1,6 +1,6 @@
-import { useFetcher } from "react-router";
+import { Link, useFetcher } from "react-router";
 import { useModalId } from "@cashregister/components/use-modal";
-import { useEffect, useRef } from "react";
+import { useEffect, useId, useRef } from "react";
 import { MoneyInput } from "@cashregister/components/money-input";
 import type { Result } from "@cashregister/result";
 
@@ -13,13 +13,40 @@ interface ArticleFormProps {
   articleId?: string;
   initialData?: ArticleFormData;
   intent: string;
+  cancelTo?: string;
+  showCancel?: boolean;
   onSubmit?: () => void;
   onError?: (message: string) => void;
 }
 
-export function ArticleForm({ articleId, initialData, intent, onSubmit, onError }: ArticleFormProps) {
+function ModalCancelButton({ disabled }: { disabled: boolean }) {
   const modalId = useModalId();
+
+  return (
+    <button
+      type="button"
+      disabled={disabled}
+      command="close"
+      commandfor={modalId}
+      className="btn-secondary"
+    >
+      Cancel
+    </button>
+  );
+}
+
+export function ArticleForm({
+  articleId,
+  initialData,
+  intent,
+  cancelTo,
+  showCancel = true,
+  onSubmit,
+  onError,
+}: ArticleFormProps) {
   const fetcher = useFetcher<Result<unknown>>();
+  const descriptionId = useId();
+  const priceId = useId();
 
   const pending = fetcher.state !== "idle";
   const idling = fetcher.state === "idle";
@@ -43,11 +70,11 @@ export function ArticleForm({ articleId, initialData, intent, onSubmit, onError 
       <input type="hidden" name="intent" value={intent} />
       {articleId && <input type="hidden" name="articleId" value={articleId} />}
       <div className="flex flex-col gap-1">
-        <label htmlFor="description" className="text-sm font-medium text-gray-700">
+        <label htmlFor={descriptionId} className="text-sm font-medium text-gray-700">
           Description
         </label>
         <input
-          id="description"
+          id={descriptionId}
           name="description"
           type="text"
           defaultValue={initialData?.description ?? ""}
@@ -56,22 +83,24 @@ export function ArticleForm({ articleId, initialData, intent, onSubmit, onError 
         />
       </div>
       <MoneyInput
-        id="priceInCents"
+        id={priceId}
         name="priceInCents"
         label="Price"
         defaultCents={initialData?.priceInCents ?? 0}
         required
       />
       <div className="flex justify-end gap-2">
-        <button
-          type="button"
-          disabled={pending}
-          command="close"
-          commandfor={modalId}
-          className="btn-secondary"
-        >
-          Cancel
-        </button>
+        {cancelTo ? (
+          <Link
+            to={cancelTo}
+            aria-disabled={pending}
+            className="btn-secondary"
+          >
+            Cancel
+          </Link>
+        ) : showCancel ? (
+          <ModalCancelButton disabled={pending} />
+        ) : null}
         <button
           type="submit"
           disabled={pending}
