@@ -5,3 +5,5 @@
 **/bin/
 **/obj/
 ui/node_modules/
+ui/.react-router/
+ui/build/

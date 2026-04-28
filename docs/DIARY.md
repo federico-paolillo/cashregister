@@ -2,6 +2,17 @@
 
 > This file records implementation decisions, design choices, and strategies per task to avoid re-deriving the same conclusions when picking up work later.
 
+## UI Docker image
+
+Added a buildx-oriented Dockerfile for publishing the React frontend as static files served by Caddy on port 65000. The image builds the UI with Node, builds a static Caddy binary with the official Caddy builder, and runs from a distroless nonroot runtime image. The root `Caddyfile` owns the server configuration. The build accepts `API_BASE_URL` and bakes it into Vite through `VITE_API_BASE_URL`.
+
+### Key decisions
+
+- We build Caddy from source with `CGO_ENABLED=0` instead of using the official Caddy runtime image because the final stage must be distroless.
+- We keep API routing outside this image because the frontend artifact is a static bundle and deployment should decide how the API is exposed.
+- We put Caddy runtime state under `/var/lib/caddy` so application files and configuration stay read-only while Caddy still has an explicit writable state volume.
+- We document `VITE_API_BASE_URL` in the runtime environment, but rely on the build argument because Vite replaces that value at build time.
+
 ## UI route simplification
 
 Removed stale frontend assumptions left after simplifying article and order navigation. Article editing is now the only single-article form path on `/articles`, while article creation remains on `/articles/bulk`. Order details stay embedded in the order overview instead of depending on the removed single-order route.

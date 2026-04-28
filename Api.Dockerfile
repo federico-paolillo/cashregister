@@ -4,7 +4,7 @@ FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 
 WORKDIR /src
 
-COPY be/global.json be/Directory.Build.props be/Cashregister.slnx ./be/
+COPY be/global.json be/Directory.Build.props be/Cashregister.slnx .editorconfig ./be/
 COPY be/Cashregister.Activities/Cashregister.Activities.csproj ./be/Cashregister.Activities/
 COPY be/Cashregister.Api/Cashregister.Api.csproj ./be/Cashregister.Api/
 COPY be/Cashregister.Application/Cashregister.Application.csproj ./be/Cashregister.Application/
