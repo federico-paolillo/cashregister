@@ -111,14 +111,13 @@ public sealed class ReceiptPrintProgramService(
     private static PrintProgram BuildItemReceipt(OrderPrintData order, OrderPrintDataItem item)
     {
         return new PrintProgramBuilder()
-            .Align(Alignment.Center)
-            .BoldOn()
-            .PrintLine($"ORDER {order.Number.Value}")
-            .BoldOff()
             .Align(Alignment.Left)
             .LineFeed()
+            .FontSize(3)
             .PrintLine(item.Description)
             .LineFeed()
+            .FontSize(1)
+            .PrintLine($"Order: {order.Number.Value}")
             .PrintLine($"Order ID: {order.Id.Value}")
             .PrintLine($"Date: {FormatDate(order.Date)}")
             .Build();
