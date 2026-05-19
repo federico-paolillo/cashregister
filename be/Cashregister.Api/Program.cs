@@ -3,10 +3,12 @@ using Cashregister.Api.Articles;
 using Cashregister.Api.Devices;
 using Cashregister.Api.Orders;
 using Cashregister.Api.ReceiptModes;
+using Cashregister.Api.Statistics;
 using Cashregister.Application.Articles.Extensions;
 using Cashregister.Application.Devices.Extensions;
 using Cashregister.Application.Orders.Extensions;
 using Cashregister.Application.Receipts.Extensions;
+using Cashregister.Application.Statistics.Extensions;
 using Cashregister.Database;
 using Cashregister.Database.Extensions;
 
@@ -33,6 +35,7 @@ builder.Services
     .AddCashregisterArticles()
     .AddCashregisterOrders()
     .AddCashregisterReceipts()
+    .AddCashregisterStatistics()
     .AddCashregisterDevices()
     .AddCashregisterActivities();
 
@@ -51,6 +54,7 @@ app.MapArticles();
 app.MapOrders();
 app.MapDevices();
 app.MapReceiptModes();
+app.MapStatistics();
 
 await ApplyMigrationsAsync(app);
 

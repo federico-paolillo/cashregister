@@ -82,3 +82,35 @@ export interface DeviceDto {
 export interface ReceiptModeDto {
   mode: "normal" | "detail";
 }
+
+export interface StatisticsDto {
+  articles: ArticleStatisticsDto;
+  orders: OrderStatisticsDto;
+  ordersTotals: OrderStatisticsDto;
+}
+
+export interface ArticleStatisticsDto {
+  items: ArticleStatisticsItemDto[];
+  totals: ArticleStatisticsTotalsDto;
+}
+
+export interface ArticleStatisticsItemDto {
+  articleId: string;
+  description: string;
+  soldUnits: number;
+  ordersIncluded: number;
+  volumeInCents: number;
+}
+
+export interface ArticleStatisticsTotalsDto {
+  soldUnits: number;
+  ordersIncluded: number;
+  volumeInCents: number;
+}
+
+export interface OrderStatisticsDto {
+  orderCount: number;
+  nominalVolumeInCents: number;
+  realVolumeInCents: number;
+  deltaInCents: number;
+}

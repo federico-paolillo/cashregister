@@ -43,6 +43,7 @@ export default function NavigationMenu() {
         <li><NavLink className={({ isActive }) => isActive ? "active-nav-link" : "inactive-nav-link"} to="/">Place</NavLink></li>
         <li><NavLink className={({ isActive }) => isActive ? "active-nav-link" : "inactive-nav-link"} to="/articles">Articles</NavLink></li>
         <li><NavLink className={({ isActive }) => isActive ? "active-nav-link" : "inactive-nav-link"} to="/orders">Orders</NavLink></li>
+        <li><NavLink className={({ isActive }) => isActive ? "active-nav-link" : "inactive-nav-link"} to="/statistics">Statistics</NavLink></li>
       </ul>
       <div ref={menuRef} className="justify-self-end relative">
         <button type="button" onClick={() => setMenuOpen(o => !o)} className="text-white hover:text-gray-200 text-2xl leading-none cursor-pointer" aria-label="Open menu" aria-expanded={menuOpen}>

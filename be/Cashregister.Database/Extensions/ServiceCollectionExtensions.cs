@@ -4,6 +4,7 @@ using Cashregister.Application.Orders.Data;
 using Cashregister.Application.Orders.Models.Output;
 using Cashregister.Application.Pagination;
 using Cashregister.Application.Receipts.Data;
+using Cashregister.Application.Statistics.Data;
 using Cashregister.Database.Commands;
 using Cashregister.Database.Interceptors;
 using Cashregister.Database.Mappers;
@@ -80,6 +81,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ISaveArticleCommand, SaveArticleCommand>();
         services.AddScoped<IPaginationQuery<ArticleListItem>, FetchArticlesListQuery>();
         services.AddScoped<IPaginationQuery<OrderListItem>, FetchOrdersListQuery>();
+        services.AddScoped<IFetchStatisticsQuery, FetchStatisticsQuery>();
     }
 
     private static void AddMappers(IServiceCollection services)

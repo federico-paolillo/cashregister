@@ -6,4 +6,5 @@ export default [
   route("articles/bulk", "routes/articles-bulk/articles-bulk.tsx"),
   route("devices", "routes/devices/devices.tsx"),
   route("orders", "routes/order-overview/order-overview.tsx"),
+  route("statistics", "routes/statistics/statistics.tsx"),
 ] satisfies RouteConfig;

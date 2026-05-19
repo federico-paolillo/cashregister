@@ -101,6 +101,15 @@ describe("ApiClient", () => {
       error: { status: 404, message: "/api/articles/missing" },
     });
   });
+
+  it("builds public API URLs for non-JSON links", () => {
+    const url = new ApiClient("/api/").buildUrl(
+      "statistics/articles.csv",
+      { scope: "all" },
+    );
+
+    expect(url).toBe("/api/statistics/articles.csv?scope=all");
+  });
 });
 
 function jsonResponse(body: unknown): Response {

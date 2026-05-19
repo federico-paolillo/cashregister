@@ -225,3 +225,46 @@ Fixed review findings from the receipt-mode and Compose changes. Docker build re
 
 - We kept the existing uppercase Dockerfile names because they are already tracked that way and changing case-only filenames is unnecessary for the finding.
 - We used the project formatter for the final-newline cleanup so the result matches `.editorconfig` exactly.
+
+## Statistics navigation tab
+
+Added an all-time Statistics tab with backend aggregate statistics, JSON and CSV endpoints, and frontend tables for active-article sales and order-volume totals. The article table excludes retired articles and includes active articles with zero sales, while order-volume totals include all historical orders and order items. CSV export is split into one file per table.
+
+### ExecPlan
+
+`plans/statistics-tab.md`
+
+### Key decisions
+
+- We aggregate per-article volume from historical order-item prices because article edits must not rewrite past sales statistics.
+- We keep retired article sales out of the article table but inside order-level totals because historical order value must remain complete.
+- We expose two CSV downloads instead of one mixed CSV because each file stays rectangular and mirrors one visible table.
+
+## Statistics CSV price formatting
+
+Changed statistics CSV exports so money columns use decimal price strings with two fractional digits instead of raw integer cents. The JSON API still returns cents because the frontend money contract is cents-only; only human-facing CSV files changed.
+
+### Key decisions
+
+- We renamed CSV headers from `*InCents` to price-oriented names so the exported values are not mislabeled.
+- We format with invariant culture and `0.00` because CSV files should be stable regardless of server locale.
+
+## Statistics CSV application handlers
+
+Moved statistics CSV generation out of the API route handlers into Application-layer handlers. The API now allocates the response stream, asks the Application handler to write the CSV content, and returns the populated bytes with HTTP content type and filename metadata.
+
+### Key decisions
+
+- We keep CsvHelper in `Cashregister.Application` because CSV row projection and serialization are application behavior for this export use case, not HTTP behavior.
+- We keep filenames and `text/csv` content type in `Cashregister.Api` because those are response transport concerns.
+- We convert the API-owned `MemoryStream` to bytes before returning so the stream can be disposed immediately without handing ASP.NET a dead stream.
+
+## Statistics CSV class maps
+
+Refactored statistics CSV exports to map Application output models directly with CsvHelper `ClassMap<T>`. CSV files no longer include total rows because they are intended for Excel, where users can compute totals from the exported data rows.
+
+### Key decisions
+
+- We removed CSV-specific record types because the exports now map cleanly from `ArticleStatisticsItem` and `OrderStatisticsSummary`.
+- We keep the UI and JSON totals unchanged; only CSV output omits totals.
+- We made the map types public because CsvHelper instantiates them through map registration and the analyzer does not treat that as direct internal usage.

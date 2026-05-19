@@ -57,6 +57,7 @@ Application behavior is organized by feature area:
 Application/Articles
 Application/Orders
 Application/Receipts
+Application/Statistics
 Application/Pagination
 ```
 
@@ -114,6 +115,7 @@ Current backend route groups:
 /orders
 /devices
 /receipt-mode
+/statistics
 ```
 
 The backend does not map `/api/*`. `/api` is a frontend development and deployment convention.
@@ -139,6 +141,7 @@ Routes are registered in `ui/app/routes.ts`:
 /articles/bulk    routes/articles-bulk/articles-bulk.tsx
 /devices          routes/devices/devices.tsx
 /orders           routes/order-overview/order-overview.tsx
+/statistics       routes/statistics/statistics.tsx
 ```
 
 `ui/app/root.tsx` provides the shared layout, navigation menu, error message provider, error list, hydrate fallback, and route error boundary.

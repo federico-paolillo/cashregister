@@ -32,7 +32,7 @@ export class ApiClient {
     return this.request<void>(url, { method: "DELETE" });
   }
 
-  private buildUrl(path: string, params?: Record<string, string>): string {
+  buildUrl(path: string, params?: Record<string, string>): string {
     const normalizedPath = path.startsWith("/") ? path : `/${path}`;
     const fullPath = `${this.baseUrl}${normalizedPath}`;
 
