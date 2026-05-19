@@ -2,6 +2,7 @@ using Cashregister.Activities.Extensions;
 using Cashregister.Api.Articles;
 using Cashregister.Api.Devices;
 using Cashregister.Api.Orders;
+using Cashregister.Api.ReceiptModes;
 using Cashregister.Application.Articles.Extensions;
 using Cashregister.Application.Devices.Extensions;
 using Cashregister.Application.Orders.Extensions;
@@ -49,6 +50,7 @@ var app = builder.Build();
 app.MapArticles();
 app.MapOrders();
 app.MapDevices();
+app.MapReceiptModes();
 
 await ApplyMigrationsAsync(app);
 

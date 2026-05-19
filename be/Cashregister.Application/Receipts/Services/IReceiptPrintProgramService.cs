@@ -1,3 +1,5 @@
+using System.Collections.Immutable;
+
 using Cashregister.Domain;
 using Cashregister.Factories;
 using Cashregister.Printmon;
@@ -9,5 +11,5 @@ namespace Cashregister.Application.Receipts.Services;
 /// </summary>
 public interface IReceiptPrintProgramService
 {
-    Task<Result<PrintProgram>> BuildAsync(Identifier orderId);
+    Task<Result<ImmutableArray<PrintProgram>>> BuildAsync(Identifier orderId);
 }

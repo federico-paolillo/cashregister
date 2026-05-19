@@ -1,3 +1,5 @@
+using System.Collections.Immutable;
+
 using Cashregister.Application.Receipts.Data;
 using Cashregister.Application.Receipts.Models.Output;
 using Cashregister.Domain;
@@ -27,12 +29,14 @@ public sealed class FetchOrderPrintDataQuery(
                 o.Date,
                 Items = o.Items
                     .OrderBy(i => i.Id)
-                    .Select(i => new OrderPrintDataItem
+                    .Select(i => new
                     {
-                        Description = i.Description,
-                        Quantity = i.Quantity
+                        i.Description,
+                        i.Price,
+                        i.Quantity
                     })
-                    .ToList()
+                    .ToList(),
+                o.TotalOverride
             })
             .SingleOrDefaultAsync();
 
@@ -41,12 +45,23 @@ public sealed class FetchOrderPrintDataQuery(
             return null;
         }
 
+        ImmutableArray<OrderPrintDataItem> items =
+        [
+            .. projection.Items.Select(i => new OrderPrintDataItem
+            {
+                Description = i.Description,
+                Price = Cents.From(i.Price),
+                Quantity = i.Quantity
+            })
+        ];
+
         return new OrderPrintData
         {
             Id = Identifier.From(projection.Id),
             Number = OrderNumber.From(projection.RowId),
             Date = TimeStamp.From(projection.Date),
-            Items = [.. projection.Items]
+            Total = Cents.From(projection.TotalOverride ?? projection.Items.Sum(i => i.Price * i.Quantity)),
+            Items = items
         };
     }
 }

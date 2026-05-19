@@ -1,0 +1,49 @@
+services:
+  gateway:
+    image: caddy:2.11.2
+    depends_on:
+      - api
+      - ui
+    ports:
+      - "65000:65000"
+    volumes:
+      - ./rp.Caddyfile:/etc/caddy/Caddyfile:ro
+      - gateway-data:/data
+      - gateway-config:/config
+    networks:
+      - cashregister
+
+  api:
+    build:
+      context: .
+      dockerfile: Api.Dockerfile
+    image: cashregister-api:local
+    expose:
+      - "65000"
+    volumes:
+      - api-data:/var/lib/cashregister
+    networks:
+      - cashregister
+
+  ui:
+    build:
+      context: .
+      dockerfile: Ui.Dockerfile
+      args:
+        API_BASE_URL: /api
+    image: cashregister-ui:local
+    expose:
+      - "65000"
+    volumes:
+      - ui-caddy-data:/var/lib/caddy
+    networks:
+      - cashregister
+
+networks:
+  cashregister:
+
+volumes:
+  api-data:
+  gateway-config:
+  gateway-data:
+  ui-caddy-data:

@@ -17,13 +17,23 @@ public sealed class PrintReceiptHandler(
     {
         ArgumentNullException.ThrowIfNull(orderId);
 
-        var printProgramResult = await receiptPrintProgramService.BuildAsync(orderId);
+        var printProgramsResult = await receiptPrintProgramService.BuildAsync(orderId);
 
-        if (printProgramResult.NotOk)
+        if (printProgramsResult.NotOk)
         {
-            return Result.Error(printProgramResult.Error);
+            return Result.Error(printProgramsResult.Error);
         }
 
-        return await device.PrintAsync(printProgramResult.Value);
+        foreach (var printProgram in printProgramsResult.Value)
+        {
+            var printResult = await device.PrintAsync(printProgram);
+
+            if (printResult.NotOk)
+            {
+                return printResult;
+            }
+        }
+
+        return Result.Void();
     }
 }

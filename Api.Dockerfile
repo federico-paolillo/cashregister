@@ -2,6 +2,8 @@
 
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 
+ARG TARGETARCH
+
 WORKDIR /src
 
 COPY be/global.json be/Directory.Build.props be/Cashregister.slnx .editorconfig ./be/
@@ -15,14 +17,25 @@ COPY be/Cashregister.Printmon/Cashregister.Printmon.csproj ./be/Cashregister.Pri
 COPY be/Cashregister.Printmon.Emulator/Cashregister.Printmon.Emulator.csproj ./be/Cashregister.Printmon.Emulator/
 
 RUN --mount=type=cache,target=/root/.nuget/packages \
-    dotnet restore be/Cashregister.Api/Cashregister.Api.csproj --runtime linux-x64
+    case "${TARGETARCH}" in \
+        amd64) dotnet_runtime=linux-x64 ;; \
+        arm64) dotnet_runtime=linux-arm64 ;; \
+        *) echo "Unsupported target architecture: ${TARGETARCH}" >&2; exit 1 ;; \
+    esac \
+    && dotnet restore be/Cashregister.Api/Cashregister.Api.csproj --runtime "${dotnet_runtime}"
 
 COPY be/ ./be/
 
 RUN --mount=type=cache,target=/root/.nuget/packages \
+    case "${TARGETARCH}" in \
+        amd64) dotnet_runtime=linux-x64 ;; \
+        arm64) dotnet_runtime=linux-arm64 ;; \
+        *) echo "Unsupported target architecture: ${TARGETARCH}" >&2; exit 1 ;; \
+    esac \
+    && \
     dotnet publish be/Cashregister.Api/Cashregister.Api.csproj \
         --configuration Release \
-        --runtime linux-x64 \
+        --runtime "${dotnet_runtime}" \
         --self-contained true \
         --no-restore \
         -p:PublishSingleFile=true \

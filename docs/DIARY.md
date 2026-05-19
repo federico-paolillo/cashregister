@@ -192,3 +192,36 @@ Added `docs/DOCKER.md` as the home for Docker, container-image, and shell-script
 
 - We keep DevOps conventions separate from backend and frontend conventions because container hardening and shell-script behavior apply across project areas.
 - We mention `docs/DOCKER.md` from `AGENTS.md` and `docs/CONVENTIONS.md` so future work can find the new convention surface.
+
+## Docker Compose gateway entry point
+
+Completed the Docker Compose deployment entry point with `gateway`, `api`, and `ui` services. The gateway uses the official Caddy image and mounts `rp.Caddyfile`; the UI image now consumes `ui.Caddyfile` for its internal static-file server. External `/api/*` traffic is stripped before reaching the backend so API route groups remain unprefixed.
+
+### Key decisions
+
+- We split gateway and UI Caddy configuration into `rp.Caddyfile` and `ui.Caddyfile` to keep reverse-proxy routing separate from static SPA serving.
+- We removed the legacy root `Caddyfile` after moving its only live consumer to `ui.Caddyfile`.
+- We derive Docker build artifacts from BuildKit target architecture because Compose should produce runnable local images instead of mixing native base images with hardcoded amd64 binaries.
+
+## Runtime receipt mode detail printing
+
+Added a non-persistent receipt mode runtime setting, exposed through `/receipt-mode` and surfaced on the Devices page beside printer selection. Normal mode preserves the existing one-receipt summary output. Detail mode prints one priced overview receipt followed by one item receipt per ordered unit, so an order for three coffees prints four receipts.
+
+### ExecPlan
+
+`plans/receipt-mode-detail-printing.md`
+
+### Key decisions
+
+- We store receipt mode in a singleton runtime store because it should behave like the current printer selection and reset on backend restart.
+- We return multiple `PrintProgram` instances from the receipt service so each receipt keeps the existing builder lifecycle, feed, and cut behavior.
+- We put the toggle on the Devices page because printer selection and receipt mode are both runtime print configuration.
+
+## Review finding cleanup for receipt mode and Docker Compose
+
+Fixed review findings from the receipt-mode and Compose changes. Docker build references now match the tracked `Api.Dockerfile` and `Ui.Dockerfile` casing, and the edited receipt C# files conform to the repository final-newline formatter rule.
+
+### Key decisions
+
+- We kept the existing uppercase Dockerfile names because they are already tracked that way and changing case-only filenames is unnecessary for the finding.
+- We used the project formatter for the final-newline cleanup so the result matches `.editorconfig` exactly.

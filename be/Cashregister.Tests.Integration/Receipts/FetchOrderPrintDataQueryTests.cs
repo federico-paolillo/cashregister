@@ -42,11 +42,30 @@ public sealed class FetchOrderPrintDataQueryTests(
         Assert.Equal(orderId.Value, result.Id.Value);
         Assert.NotNull(result.Number);
         Assert.True(result.Date.Value > 0);
+        Assert.Equal(Cents.From(228360), result.Total);
         Assert.Equal(2, result.Items.Length);
         Assert.Equal("Coffee", result.Items[0].Description);
+        Assert.Equal(Cents.From(12345), result.Items[0].Price);
         Assert.Equal(2u, result.Items[0].Quantity);
         Assert.Equal("Tea", result.Items[1].Description);
+        Assert.Equal(Cents.From(67890), result.Items[1].Price);
         Assert.Equal(3u, result.Items[1].Quantity);
+    }
+
+    [Fact]
+    public async Task FetchAsync_UsesTotalOverride_WhenOrderHasOverride()
+    {
+        await PrepareEnvironmentAsync();
+
+        var coffeeId = await CreateArticleAsync("Coffee", 12345);
+        var teaId = await CreateArticleAsync("Tea", 67890);
+        var orderId = await CreateOrderAsync(coffeeId, 2, teaId, 3, Cents.From(999));
+
+        var result = await RunScoped<IFetchOrderPrintDataQuery, OrderPrintData?>(q =>
+            q.FetchAsync(orderId));
+
+        Assert.NotNull(result);
+        Assert.Equal(Cents.From(999), result.Total);
     }
 
     private async Task<Identifier> CreateArticleAsync(string description, long priceInCents)
@@ -66,7 +85,8 @@ public sealed class FetchOrderPrintDataQueryTests(
         Identifier firstArticleId,
         uint firstQuantity,
         Identifier secondArticleId,
-        uint secondQuantity)
+        uint secondQuantity,
+        Cents? totalOverride = null)
     {
         var result = await RunScoped<IPlaceOrderTransaction, Result<Identifier>>(tx =>
             tx.ExecuteAsync(new OrderRequest
@@ -83,7 +103,8 @@ public sealed class FetchOrderPrintDataQueryTests(
                         Article = secondArticleId,
                         Quantity = secondQuantity
                     }
-                ]
+                ],
+                TotalOverride = totalOverride
             }));
 
         Assert.True(result.Ok);

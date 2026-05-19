@@ -5,7 +5,7 @@ import Devices, { clientAction, clientLoader } from "@cashregister/routes/device
 import * as reactRouter from "react-router";
 import * as errorMessages from "@cashregister/components/use-error-messages";
 import { deps } from "@cashregister/deps";
-import type { DeviceDto } from "@cashregister/model";
+import type { DeviceDto, ReceiptModeDto } from "@cashregister/model";
 import type { Result } from "@cashregister/result";
 
 vi.mock("react-router", async (importOriginal) => {
@@ -46,6 +46,16 @@ const loaderData: Result<DeviceDto[]> = {
   value: devices,
 };
 
+const receiptModeData: Result<ReceiptModeDto> = {
+  ok: true,
+  value: { mode: "normal" },
+};
+
+const routeLoaderData = {
+  devices: loaderData,
+  receiptMode: receiptModeData,
+};
+
 describe("Devices", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -64,9 +74,26 @@ describe("Devices", () => {
   });
 
   it("renders devices from loader data", () => {
-    render(<Devices loaderData={loaderData} />);
+    render(<Devices loaderData={routeLoaderData} />);
 
     expect(screen.getByText("Receipt Printer A")).toBeDefined();
+  });
+
+  it("renders detail receipt mode as unchecked when mode is normal", () => {
+    render(<Devices loaderData={routeLoaderData} />);
+
+    expect(screen.getByRole("checkbox", { name: "Detail receipt mode" })).toHaveProperty("checked", false);
+  });
+
+  it("renders detail receipt mode as checked when mode is detail", () => {
+    render(<Devices
+      loaderData={{
+        devices: loaderData,
+        receiptMode: { ok: true, value: { mode: "detail" } },
+      }}
+    />);
+
+    expect(screen.getByRole("checkbox", { name: "Detail receipt mode" })).toHaveProperty("checked", true);
   });
 
   it("shows action errors", async () => {
@@ -78,7 +105,7 @@ describe("Devices", () => {
     });
 
     render(<Devices
-      loaderData={loaderData}
+      loaderData={routeLoaderData}
       actionData={{ ok: false, error: { message: "device vanished", status: 404 } }}
     />);
 
@@ -88,12 +115,15 @@ describe("Devices", () => {
   });
 
   it("loads devices from the API", async () => {
-    vi.mocked(deps.apiClient.get).mockResolvedValue(loaderData);
+    vi.mocked(deps.apiClient.get)
+      .mockResolvedValueOnce(loaderData)
+      .mockResolvedValueOnce(receiptModeData);
 
     const result = await clientLoader();
 
-    expect(result).toBe(loaderData);
+    expect(result).toEqual(routeLoaderData);
     expect(deps.apiClient.get).toHaveBeenCalledWith("/devices");
+    expect(deps.apiClient.get).toHaveBeenCalledWith("/receipt-mode");
   });
 
   it("posts selected device id to the API", async () => {
@@ -113,6 +143,23 @@ describe("Devices", () => {
     expect(deps.apiClient.post).toHaveBeenCalledWith("/devices/printer-1");
   });
 
+  it("posts selected receipt mode to the API", async () => {
+    vi.mocked(deps.apiClient.post).mockResolvedValue({ ok: true, value: undefined });
+
+    const formData = new FormData();
+    formData.set("receiptMode", "detail");
+
+    const result = await clientAction({
+      request: new Request("http://localhost/devices", {
+        method: "POST",
+        body: formData,
+      }),
+    });
+
+    expect(result).toEqual({ ok: true, value: undefined });
+    expect(deps.apiClient.post).toHaveBeenCalledWith("/receipt-mode/detail");
+  });
+
   it("returns a failure when the device id is missing", async () => {
     const result = await clientAction({
       request: new Request("http://localhost/devices", {
@@ -123,7 +170,7 @@ describe("Devices", () => {
 
     expect(result).toEqual({
       ok: false,
-      error: { message: "missing device id", status: 400 },
+      error: { message: "missing device id or receipt mode", status: 400 },
     });
   });
 });

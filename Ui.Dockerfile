@@ -23,16 +23,23 @@ RUN cp -a build/client /out \
 
 FROM --platform=$BUILDPLATFORM caddy:2.11.2-builder AS caddy-build
 
+ARG TARGETARCH
+
 RUN --mount=type=cache,target=/go/pkg/mod \
     --mount=type=cache,target=/root/.cache/go-build \
-    CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
-    xcaddy build v2.11.2 --output /out/caddy
+    case "${TARGETARCH}" in \
+        amd64) go_arch=amd64 ;; \
+        arm64) go_arch=arm64 ;; \
+        *) echo "Unsupported target architecture: ${TARGETARCH}" >&2; exit 1 ;; \
+    esac \
+    && CGO_ENABLED=0 GOOS=linux GOARCH="${go_arch}" \
+        xcaddy build v2.11.2 --output /out/caddy
 
 RUN mkdir -p /out/etc/caddy /out/var/lib/caddy \
     && chmod 0555 /out/etc/caddy \
     && chmod 0755 /out/var/lib/caddy
 
-COPY Caddyfile /out/etc/caddy/Caddyfile
+COPY ui.Caddyfile /out/etc/caddy/Caddyfile
 
 RUN chmod 0444 /out/etc/caddy/Caddyfile
 

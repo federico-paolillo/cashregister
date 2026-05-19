@@ -78,3 +78,7 @@ export interface DeviceDto {
   description: string | null;
   selected: boolean;
 }
+
+export interface ReceiptModeDto {
+  mode: "normal" | "detail";
+}

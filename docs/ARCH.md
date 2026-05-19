@@ -113,6 +113,7 @@ Current backend route groups:
 /articles
 /orders
 /devices
+/receipt-mode
 ```
 
 The backend does not map `/api/*`. `/api` is a frontend development and deployment convention.
@@ -159,6 +160,8 @@ Application receipt code builds a `PrintProgram` through `IReceiptPrintProgramSe
 The API always wires `FileDeviceTargetStore`, the file-printer catalog, and `BinaryEncoder` for device selection and ESC/POS encoding. Outside development it registers `FileDevice`, which writes encoded bytes to the selected filesystem target. In development it registers `MarkdownDevice`, which runs the emulator pipeline and writes rendered markdown receipts to files under the configured root folder.
 
 `IPrintReceiptHandler` orchestrates receipt printing by asking `IReceiptPrintProgramService` to build a `PrintProgram` for an order id and then sending that program to the configured `IDevice`. `PlaceOrderActivity` uses independent scoped operations to place an order, print its receipt, and fetch the saved order for the API response. Receipt reprinting remains exposed as an explicit order action at `POST /orders/{id}/print`.
+
+Receipt mode is process-local runtime state, similar to the current printer target. The default mode is normal, which prints one summary receipt without prices. Detail mode prints one priced overview receipt and then one item receipt per ordered unit. The mode is exposed through `/receipt-mode`, is configurable from the frontend Devices page, and is not persisted across backend restarts.
 
 ## Testing
 

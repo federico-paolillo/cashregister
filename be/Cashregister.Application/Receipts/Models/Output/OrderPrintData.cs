@@ -15,5 +15,7 @@ public sealed class OrderPrintData
 
     public required TimeStamp Date { get; init; }
 
+    public required Cents Total { get; init; }
+
     public required ImmutableArray<OrderPrintDataItem> Items { get; init; }
 }
