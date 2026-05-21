@@ -23,35 +23,19 @@ internal static class Handlers
         return TypedResults.Ok(StatisticsDto.From(statistics));
     }
 
-    public static async Task<FileContentHttpResult> GetArticleStatisticsCsv(
-        IWriteArticleStatisticsCsvHandler writeArticleStatisticsCsvHandler,
+    public static async Task<FileContentHttpResult> GetSalesStatisticsCsv(
+        IWriteSalesStatisticsCsvHandler writeSalesStatisticsCsvHandler,
         CancellationToken cancellationToken
     )
     {
         using MemoryStream stream = new();
 
-        await writeArticleStatisticsCsvHandler.ExecuteAsync(stream, cancellationToken);
+        await writeSalesStatisticsCsvHandler.ExecuteAsync(stream, cancellationToken);
 
         return TypedResults.File(
             stream.ToArray(),
             CsvContentType,
-            "statistics-articles.csv"
-        );
-    }
-
-    public static async Task<FileContentHttpResult> GetOrderStatisticsCsv(
-        IWriteOrderStatisticsCsvHandler writeOrderStatisticsCsvHandler,
-        CancellationToken cancellationToken
-    )
-    {
-        using MemoryStream stream = new();
-
-        await writeOrderStatisticsCsvHandler.ExecuteAsync(stream, cancellationToken);
-
-        return TypedResults.File(
-            stream.ToArray(),
-            CsvContentType,
-            "statistics-orders.csv"
+            "statistics-sales.csv"
         );
     }
 }

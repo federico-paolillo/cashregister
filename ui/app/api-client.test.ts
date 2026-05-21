@@ -104,11 +104,11 @@ describe("ApiClient", () => {
 
   it("builds public API URLs for non-JSON links", () => {
     const url = new ApiClient("/api/").buildUrl(
-      "statistics/articles.csv",
+      "statistics/sales.csv",
       { scope: "all" },
     );
 
-    expect(url).toBe("/api/statistics/articles.csv?scope=all");
+    expect(url).toBe("/api/statistics/sales.csv?scope=all");
   });
 });
 

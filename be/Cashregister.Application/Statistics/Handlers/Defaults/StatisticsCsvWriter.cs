@@ -29,9 +29,4 @@ internal static class StatisticsCsvWriter
         await csvWriter.WriteRecordsAsync(records, cancellationToken);
         await streamWriter.FlushAsync(cancellationToken);
     }
-
-    public static string FormatPrice(long cents)
-    {
-        return (cents / 100m).ToString("0.00", CultureInfo.InvariantCulture);
-    }
 }

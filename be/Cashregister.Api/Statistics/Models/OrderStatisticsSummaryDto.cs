@@ -7,7 +7,8 @@ namespace Cashregister.Api.Statistics.Models;
 /// </summary>
 public sealed record OrderStatisticsSummaryDto(
     long OrderCount,
-    long NominalVolumeInCents,
+    long ProducedArticles,
+    long ExpectedVolumeInCents,
     long RealVolumeInCents,
     long DeltaInCents
 )
@@ -18,7 +19,8 @@ public sealed record OrderStatisticsSummaryDto(
 
         return new OrderStatisticsSummaryDto(
             summary.OrderCount,
-            summary.NominalVolumeInCents,
+            summary.ProducedArticles,
+            summary.ExpectedVolumeInCents,
             summary.RealVolumeInCents,
             summary.DeltaInCents
         );

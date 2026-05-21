@@ -1,62 +1,59 @@
-import type { OrderStatisticsDto } from "@cashregister/model";
+import type { OrderStatisticsItemDto } from "@cashregister/model";
 import { formatPrice } from "@cashregister/money";
+import { formatSignedPrice } from "@cashregister/routes/statistics/format";
 
 interface OrderStatisticsTableProps {
-  orders: OrderStatisticsDto;
-  totals: OrderStatisticsDto;
+  orders: OrderStatisticsItemDto[];
 }
 
-export function OrderStatisticsTable({
-  orders,
-  totals,
-}: OrderStatisticsTableProps) {
+export function OrderStatisticsTable({ orders }: OrderStatisticsTableProps) {
   return (
     <table className="w-full border-collapse">
       <thead>
         <tr className="border-b bg-gray-100 text-left">
-          <th className="p-2 font-semibold">Scope</th>
-          <th className="p-2 font-semibold text-right">Orders</th>
-          <th className="p-2 font-semibold text-right">Nominal Volume</th>
+          <th className="p-2 font-semibold">Order</th>
+          <th className="p-2 font-semibold">Date</th>
+          <th className="p-2 font-semibold text-right">Produced</th>
+          <th className="p-2 font-semibold text-right">Expected Volume</th>
           <th className="p-2 font-semibold text-right">Real Volume</th>
           <th className="p-2 font-semibold text-right">Delta</th>
+          <th className="p-2 font-semibold">Override</th>
         </tr>
       </thead>
       <tbody>
-        <tr>
-          <td className="p-2">All orders</td>
-          <td className="p-2 text-right">{orders.orderCount}</td>
-          <td className="p-2 text-right">
-            {formatPrice(orders.nominalVolumeInCents)}
-          </td>
-          <td className="p-2 text-right">
-            {formatPrice(orders.realVolumeInCents)}
-          </td>
-          <td className="p-2 text-right">{formatSignedPrice(orders.deltaInCents)}</td>
-        </tr>
+        {orders.map((order, index) => (
+          <tr
+            key={order.orderId}
+            className={index % 2 === 1 ? "bg-gray-50" : undefined}
+          >
+            <td className="p-2 font-mono text-xs">{order.orderNumber}</td>
+            <td className="p-2">
+              {new Date(order.date * 1000).toLocaleString()}
+            </td>
+            <td className="p-2 text-right">{order.producedArticles}</td>
+            <td className="p-2 text-right">
+              {formatPrice(order.expectedVolumeInCents)}
+            </td>
+            <td className="p-2 text-right">
+              {formatPrice(order.realVolumeInCents)}
+            </td>
+            <td className="p-2 text-right">
+              {formatSignedPrice(order.deltaInCents)}
+            </td>
+            <td className="p-2">{order.hasOverride ? "Yes" : "No"}</td>
+          </tr>
+        ))}
+        {orders.length === 0 && (
+          <tr>
+            <td
+              colSpan={7}
+              className="p-4 text-center text-gray-500 text-sm italic"
+            >
+              No order statistics found.
+            </td>
+          </tr>
+        )}
       </tbody>
-      <tfoot>
-        <tr className="border-t bg-gray-100 font-semibold">
-          <th scope="row" className="p-2 text-left">Total</th>
-          <td className="p-2 text-right">{totals.orderCount}</td>
-          <td className="p-2 text-right">
-            {formatPrice(totals.nominalVolumeInCents)}
-          </td>
-          <td className="p-2 text-right">
-            {formatPrice(totals.realVolumeInCents)}
-          </td>
-          <td className="p-2 text-right">
-            {formatSignedPrice(totals.deltaInCents)}
-          </td>
-        </tr>
-      </tfoot>
     </table>
   );
-}
-
-function formatSignedPrice(cents: number): string {
-  if (cents < 0) {
-    return `-${formatPrice(Math.abs(cents))}`;
-  }
-
-  return formatPrice(cents);
 }

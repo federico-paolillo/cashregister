@@ -12,11 +12,8 @@ internal static class Endpoints
         routeGroup.MapGet("/", Handlers.GetStatistics)
             .WithName("GetStatistics");
 
-        routeGroup.MapGet("/articles.csv", Handlers.GetArticleStatisticsCsv)
-            .WithName("GetArticleStatisticsCsv");
-
-        routeGroup.MapGet("/orders.csv", Handlers.GetOrderStatisticsCsv)
-            .WithName("GetOrderStatisticsCsv");
+        routeGroup.MapGet("/sales.csv", Handlers.GetSalesStatisticsCsv)
+            .WithName("GetSalesStatisticsCsv");
 
         return routeGroup;
     }

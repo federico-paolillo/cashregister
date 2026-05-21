@@ -9,6 +9,8 @@ using Cashregister.Factories;
 
 using Xunit.Abstractions;
 
+using StatisticsOutput = Cashregister.Application.Statistics.Models.Output.StatisticsReport;
+
 namespace Cashregister.Tests.Integration.Statistics;
 
 public sealed class FetchStatisticsQueryTests(
@@ -20,45 +22,36 @@ public sealed class FetchStatisticsQueryTests(
     {
         await PrepareEnvironmentAsync();
 
-        var statistics = await RunScoped<IFetchStatisticsQuery, OrderStatistics>(query =>
+        var statistics = await RunScoped<IFetchStatisticsQuery, StatisticsOutput>(query =>
             query.FetchAsync()
         );
 
-        Assert.Empty(statistics.Articles.Items);
-        Assert.Equal(0, statistics.Articles.Totals.SoldUnits);
-        Assert.Equal(0, statistics.Articles.Totals.OrdersIncluded);
-        Assert.Equal(0, statistics.Articles.Totals.VolumeInCents);
-        Assert.Equal(0, statistics.Orders.OrderCount);
-        Assert.Equal(0, statistics.Orders.NominalVolumeInCents);
-        Assert.Equal(0, statistics.Orders.RealVolumeInCents);
-        Assert.Equal(0, statistics.Orders.DeltaInCents);
-        Assert.Equal(statistics.Orders, statistics.OrdersTotals);
+        Assert.Empty(statistics.Articles);
+        Assert.Empty(statistics.Orders);
+        Assert.Empty(statistics.SalesRows);
+        Assert.Equal(0, statistics.Summary.OrderCount);
+        Assert.Equal(0, statistics.Summary.ProducedArticles);
+        Assert.Equal(0, statistics.Summary.ExpectedVolumeInCents);
+        Assert.Equal(0, statistics.Summary.RealVolumeInCents);
+        Assert.Equal(0, statistics.Summary.DeltaInCents);
     }
 
     [Fact]
-    public async Task FetchAsync_ReturnsActiveArticlesWithZeroSales()
+    public async Task FetchAsync_ExcludesUnsoldArticles()
     {
         await PrepareEnvironmentAsync();
 
-        var articleId = await CreateArticleAsync("Unsold article", 100L);
+        await CreateArticleAsync("Unsold article", 100L);
 
-        var statistics = await RunScoped<IFetchStatisticsQuery, OrderStatistics>(query =>
+        var statistics = await RunScoped<IFetchStatisticsQuery, StatisticsOutput>(query =>
             query.FetchAsync()
         );
 
-        var articleStatistics = Assert.Single(statistics.Articles.Items);
-        Assert.Equal(articleId, articleStatistics.ArticleId);
-        Assert.Equal("Unsold article", articleStatistics.Description);
-        Assert.Equal(0, articleStatistics.SoldUnits);
-        Assert.Equal(0, articleStatistics.OrdersIncluded);
-        Assert.Equal(0, articleStatistics.VolumeInCents);
-        Assert.Equal(0, statistics.Articles.Totals.SoldUnits);
-        Assert.Equal(0, statistics.Articles.Totals.OrdersIncluded);
-        Assert.Equal(0, statistics.Articles.Totals.VolumeInCents);
+        Assert.Empty(statistics.Articles);
     }
 
     [Fact]
-    public async Task FetchAsync_ReturnsActiveArticleRowsAndAllHistoricalOrderTotals()
+    public async Task FetchAsync_ReturnsSoldArticleInventoryAndOrderRows()
     {
         await PrepareEnvironmentAsync();
 
@@ -105,38 +98,67 @@ public sealed class FetchStatisticsQueryTests(
 
         await RetireArticleAsync(retiredArticle);
 
-        var statistics = await RunScoped<IFetchStatisticsQuery, OrderStatistics>(query =>
+        var statistics = await RunScoped<IFetchStatisticsQuery, StatisticsOutput>(query =>
             query.FetchAsync()
         );
 
-        Assert.Equal(2, statistics.Articles.Items.Length);
+        Assert.Equal(3, statistics.Articles.Length);
 
-        var articleAStatistics = statistics.Articles.Items.Single(x => x.ArticleId == articleA);
+        var articleAStatistics = statistics.Articles.Single(x => x.ArticleId == articleA);
         Assert.Equal("Article A", articleAStatistics.Description);
+        Assert.False(articleAStatistics.Retired);
         Assert.Equal(5, articleAStatistics.SoldUnits);
-        Assert.Equal(2, articleAStatistics.OrdersIncluded);
-        Assert.Equal(500L, articleAStatistics.VolumeInCents);
 
-        var articleBStatistics = statistics.Articles.Items.Single(x => x.ArticleId == articleB);
+        var articleBStatistics = statistics.Articles.Single(x => x.ArticleId == articleB);
         Assert.Equal("Article B", articleBStatistics.Description);
+        Assert.False(articleBStatistics.Retired);
         Assert.Equal(1, articleBStatistics.SoldUnits);
-        Assert.Equal(1, articleBStatistics.OrdersIncluded);
-        Assert.Equal(250L, articleBStatistics.VolumeInCents);
 
-        Assert.DoesNotContain(statistics.Articles.Items, x => x.ArticleId == retiredArticle);
-        Assert.Equal(6, statistics.Articles.Totals.SoldUnits);
-        Assert.Equal(3, statistics.Articles.Totals.OrdersIncluded);
-        Assert.Equal(750L, statistics.Articles.Totals.VolumeInCents);
+        var retiredArticleStatistics = statistics.Articles.Single(x => x.ArticleId == retiredArticle);
+        Assert.Equal("Retired article", retiredArticleStatistics.Description);
+        Assert.True(retiredArticleStatistics.Retired);
+        Assert.Equal(2, retiredArticleStatistics.SoldUnits);
 
-        Assert.Equal(3, statistics.Orders.OrderCount);
-        Assert.Equal(2750L, statistics.Orders.NominalVolumeInCents);
-        Assert.Equal(3200L, statistics.Orders.RealVolumeInCents);
-        Assert.Equal(450L, statistics.Orders.DeltaInCents);
-        Assert.Equal(statistics.Orders, statistics.OrdersTotals);
+        Assert.Equal(3, statistics.Orders.Length);
+
+        Assert.Collection(
+            statistics.Orders,
+            first =>
+            {
+                Assert.Equal(3, first.ProducedArticles);
+                Assert.Equal(450L, first.ExpectedVolumeInCents);
+                Assert.Equal(450L, first.RealVolumeInCents);
+                Assert.Equal(0L, first.DeltaInCents);
+                Assert.False(first.HasOverride);
+            },
+            second =>
+            {
+                Assert.Equal(3, second.ProducedArticles);
+                Assert.Equal(300L, second.ExpectedVolumeInCents);
+                Assert.Equal(250L, second.RealVolumeInCents);
+                Assert.Equal(-50L, second.DeltaInCents);
+                Assert.True(second.HasOverride);
+            },
+            third =>
+            {
+                Assert.Equal(2, third.ProducedArticles);
+                Assert.Equal(2000L, third.ExpectedVolumeInCents);
+                Assert.Equal(2500L, third.RealVolumeInCents);
+                Assert.Equal(500L, third.DeltaInCents);
+                Assert.True(third.HasOverride);
+            }
+        );
+
+        Assert.Equal(3, statistics.Summary.OrderCount);
+        Assert.Equal(8, statistics.Summary.ProducedArticles);
+        Assert.Equal(2750L, statistics.Summary.ExpectedVolumeInCents);
+        Assert.Equal(3200L, statistics.Summary.RealVolumeInCents);
+        Assert.Equal(450L, statistics.Summary.DeltaInCents);
+        Assert.Equal(4, statistics.SalesRows.Length);
     }
 
     [Fact]
-    public async Task FetchAsync_UsesHistoricalOrderItemPrice_WhenArticlePriceChanges()
+    public async Task FetchAsync_UsesHistoricalOrderItemPriceAndCurrentArticleDescription()
     {
         await PrepareEnvironmentAsync();
 
@@ -152,18 +174,26 @@ public sealed class FetchStatisticsQueryTests(
             ]
         );
 
-        await ChangeArticleAsync(articleId, "Changing article", 500L);
+        await ChangeArticleAsync(articleId, "Renamed article", 500L);
 
-        var statistics = await RunScoped<IFetchStatisticsQuery, OrderStatistics>(query =>
+        var statistics = await RunScoped<IFetchStatisticsQuery, StatisticsOutput>(query =>
             query.FetchAsync()
         );
 
-        var articleStatistics = Assert.Single(statistics.Articles.Items);
+        var articleStatistics = Assert.Single(statistics.Articles);
+        Assert.Equal("Renamed article", articleStatistics.Description);
         Assert.Equal(2, articleStatistics.SoldUnits);
-        Assert.Equal(1, articleStatistics.OrdersIncluded);
-        Assert.Equal(200L, articleStatistics.VolumeInCents);
-        Assert.Equal(200L, statistics.Articles.Totals.VolumeInCents);
-        Assert.Equal(200L, statistics.Orders.NominalVolumeInCents);
+
+        var orderStatistics = Assert.Single(statistics.Orders);
+        Assert.Equal(200L, orderStatistics.ExpectedVolumeInCents);
+        Assert.Equal(200L, orderStatistics.RealVolumeInCents);
+
+        var salesRow = Assert.Single(statistics.SalesRows);
+        Assert.Equal("Renamed article", salesRow.CurrentArticleDescription);
+        Assert.Equal("Changing article", salesRow.SoldDescription);
+        Assert.Equal(100L, salesRow.UnitPriceInCents);
+        Assert.Equal(2, salesRow.Quantity);
+        Assert.Null(salesRow.OrderTotalOverrideInCents);
     }
 
     private async Task<Identifier> CreateArticleAsync(string description, long priceInCents)

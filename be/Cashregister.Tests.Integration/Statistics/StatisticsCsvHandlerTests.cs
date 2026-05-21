@@ -17,38 +17,7 @@ public sealed class StatisticsCsvHandlerTests(
 ) : IntegrationTest(testOutputHelper)
 {
     [Fact]
-    public async Task WriteArticleStatisticsCsvHandler_WritesArticleStatisticsCsv()
-    {
-        await PrepareEnvironmentAsync();
-        var articleId = await CreateArticleAsync("Article A", 100L);
-
-        await CreateOrderAsync(
-            [
-                new OrderRequestItem
-                {
-                    Article = articleId,
-                    Quantity = 2
-                }
-            ]
-        );
-
-        using MemoryStream stream = new();
-
-        await RunScoped<IWriteArticleStatisticsCsvHandler, Unit>(async handler =>
-        {
-            await handler.ExecuteAsync(stream);
-            return default;
-        });
-
-        var csv = Encoding.UTF8.GetString(stream.ToArray());
-
-        Assert.Contains("ArticleId,Description,SoldUnits,OrdersIncluded,Volume", csv);
-        Assert.Contains($"{articleId.Value},Article A,2,1,2.00", csv);
-        Assert.DoesNotContain("Total", csv);
-    }
-
-    [Fact]
-    public async Task WriteOrderStatisticsCsvHandler_WritesOrderStatisticsCsv()
+    public async Task WriteSalesStatisticsCsvHandler_WritesRawSalesStatisticsCsv()
     {
         await PrepareEnvironmentAsync();
         var articleId = await CreateArticleAsync("Article A", 100L);
@@ -66,7 +35,7 @@ public sealed class StatisticsCsvHandlerTests(
 
         using MemoryStream stream = new();
 
-        await RunScoped<IWriteOrderStatisticsCsvHandler, Unit>(async handler =>
+        await RunScoped<IWriteSalesStatisticsCsvHandler, Unit>(async handler =>
         {
             await handler.ExecuteAsync(stream);
             return default;
@@ -74,11 +43,15 @@ public sealed class StatisticsCsvHandlerTests(
 
         var csv = Encoding.UTF8.GetString(stream.ToArray());
 
-        Assert.Contains("OrderCount,NominalVolume,RealVolume,Delta", csv);
-        Assert.Contains("1,2.00,1.50,-0.50", csv);
-        Assert.DoesNotContain("Row", csv);
-        Assert.DoesNotContain("Orders", csv);
-        Assert.DoesNotContain("Total", csv);
+        Assert.Contains(
+            "OrderId,OrderNumber,OrderDateUnixSeconds,OrderDateUtc,OrderItemId,ArticleId,CurrentArticleDescription,SoldDescription,ArticleRetired,UnitPriceInCents,Quantity,OrderTotalOverrideInCents",
+            csv
+        );
+        Assert.Contains($",{articleId.Value},Article A,Article A,False,100,2,150", csv);
+        Assert.DoesNotContain("ExpectedVolume", csv);
+        Assert.DoesNotContain("RealVolume", csv);
+        Assert.DoesNotContain("ProducedArticles", csv);
+        Assert.DoesNotContain("OrderCount", csv);
     }
 
     private async Task<Identifier> CreateArticleAsync(string description, long priceInCents)

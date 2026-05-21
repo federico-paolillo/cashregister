@@ -5,7 +5,8 @@ namespace Cashregister.Application.Statistics.Models.Output;
 /// </summary>
 public sealed record OrderStatisticsSummary(
     long OrderCount,
-    long NominalVolumeInCents,
+    long ProducedArticles,
+    long ExpectedVolumeInCents,
     long RealVolumeInCents,
     long DeltaInCents
 );

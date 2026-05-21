@@ -1,9 +1,9 @@
 namespace Cashregister.Application.Statistics.Handlers;
 
 /// <summary>
-/// Writes all-time order-volume statistics as CSV.
+/// Writes raw all-time sales statistics as CSV.
 /// </summary>
-public interface IWriteOrderStatisticsCsvHandler
+public interface IWriteSalesStatisticsCsvHandler
 {
     Task ExecuteAsync(Stream stream, CancellationToken cancellationToken = default);
 }

@@ -15,78 +15,140 @@ public sealed class FetchStatisticsQuery(
     IApplicationDbContext applicationDbContext
 ) : IFetchStatisticsQuery
 {
-    public async Task<OrderStatistics> FetchAsync(CancellationToken cancellationToken = default)
+    public async Task<StatisticsReport> FetchAsync(CancellationToken cancellationToken = default)
     {
-        var articleItems = await FetchArticleStatisticsItemsAsync(cancellationToken);
-        var articleTotals = new ArticleStatisticsTotals(
-            articleItems.Sum(x => x.SoldUnits),
-            articleItems.Sum(x => x.OrdersIncluded),
-            articleItems.Sum(x => x.VolumeInCents)
+        var articles = await FetchArticleInventoryAsync(cancellationToken);
+        var orders = await FetchOrderStatisticsItemsAsync(cancellationToken);
+        var salesRows = await FetchSalesStatisticsCsvRowsAsync(cancellationToken);
+        var summary = new OrderStatisticsSummary(
+            orders.Length,
+            orders.Sum(x => x.ProducedArticles),
+            orders.Sum(x => x.ExpectedVolumeInCents),
+            orders.Sum(x => x.RealVolumeInCents),
+            orders.Sum(x => x.DeltaInCents)
         );
 
-        var orderStatistics = await FetchOrderStatisticsAsync(cancellationToken);
-
-        return new OrderStatistics(
-            new ArticleStatistics(articleItems, articleTotals),
-            orderStatistics,
-            orderStatistics
-        );
+        return new StatisticsReport(articles, orders, summary, salesRows);
     }
 
-    private async Task<ImmutableArray<ArticleStatisticsItem>> FetchArticleStatisticsItemsAsync(
+    private async Task<ImmutableArray<ArticleInventoryItem>> FetchArticleInventoryAsync(
         CancellationToken cancellationToken
     )
     {
-        var rows = await applicationDbContext.Articles
+        var sales = await applicationDbContext.OrderItems
             .AsNoTracking()
-            .GroupJoin(
-                applicationDbContext.OrderItems.AsNoTracking(),
-                article => article.Id,
-                item => item.ArticleId,
-                (article, items) => new
-                {
-                    ArticleId = article.Id,
-                    article.Description,
-                    SoldUnits = items.Sum(item => (long?)item.Quantity) ?? 0L,
-                    OrdersIncluded = items.Select(item => item.OrderId).Distinct().Count(),
-                    VolumeInCents = items.Sum(item => (long?)item.Quantity * item.Price) ?? 0L
-                }
-            )
-            .OrderBy(x => x.ArticleId)
+            .GroupBy(item => item.ArticleId)
+            .Select(group => new
+            {
+                ArticleId = group.Key,
+                SoldUnits = group.Sum(item => (long)item.Quantity)
+            })
             .ToListAsync(cancellationToken);
 
-        return rows
-            .Select(x => new ArticleStatisticsItem(
+        var articleIds = sales.Select(x => x.ArticleId).ToArray();
+
+        var articles = await applicationDbContext.Articles
+            .IgnoreQueryFilters()
+            .AsNoTracking()
+            .Where(article => articleIds.Contains(article.Id))
+            .ToDictionaryAsync(article => article.Id, cancellationToken);
+
+        return sales
+            .OrderByDescending(x => x.SoldUnits)
+            .ThenBy(x => articles[x.ArticleId].Description)
+            .ThenBy(x => x.ArticleId)
+            .Select(x => new ArticleInventoryItem(
                 Identifier.From(x.ArticleId),
-                x.Description,
-                x.SoldUnits,
-                x.OrdersIncluded,
-                x.VolumeInCents
+                articles[x.ArticleId].Description,
+                articles[x.ArticleId].Retired,
+                x.SoldUnits
             ))
             .ToImmutableArray();
     }
 
-    private async Task<OrderStatisticsSummary> FetchOrderStatisticsAsync(CancellationToken cancellationToken)
+    private async Task<ImmutableArray<OrderStatisticsItem>> FetchOrderStatisticsItemsAsync(
+        CancellationToken cancellationToken
+    )
     {
         var rows = await applicationDbContext.Orders
             .AsNoTracking()
             .Select(order => new
             {
-                NominalVolumeInCents = applicationDbContext.OrderItems
+                order.Id,
+                order.RowId,
+                order.Date,
+                ProducedArticles = applicationDbContext.OrderItems
+                    .Where(item => item.OrderId == order.Id)
+                    .Sum(item => (long?)item.Quantity) ?? 0L,
+                ExpectedVolumeInCents = applicationDbContext.OrderItems
                     .Where(item => item.OrderId == order.Id)
                     .Sum(item => (long?)item.Quantity * item.Price) ?? 0L,
                 order.TotalOverride
             })
+            .OrderBy(x => x.RowId)
             .ToListAsync(cancellationToken);
 
-        var nominalVolumeInCents = rows.Sum(x => x.NominalVolumeInCents);
-        var realVolumeInCents = rows.Sum(x => x.TotalOverride ?? x.NominalVolumeInCents);
+        return rows
+            .Select(x =>
+            {
+                var realVolumeInCents = x.TotalOverride ?? x.ExpectedVolumeInCents;
 
-        return new OrderStatisticsSummary(
-            rows.Count,
-            nominalVolumeInCents,
-            realVolumeInCents,
-            realVolumeInCents - nominalVolumeInCents
-        );
+                return new OrderStatisticsItem(
+                    Identifier.From(x.Id),
+                    OrderNumber.From(x.RowId),
+                    TimeStamp.From(x.Date),
+                    x.ProducedArticles,
+                    x.ExpectedVolumeInCents,
+                    realVolumeInCents,
+                    realVolumeInCents - x.ExpectedVolumeInCents,
+                    x.TotalOverride is not null
+                );
+            })
+            .ToImmutableArray();
+    }
+
+    private async Task<ImmutableArray<SalesStatisticsCsvRow>> FetchSalesStatisticsCsvRowsAsync(
+        CancellationToken cancellationToken
+    )
+    {
+        var rows = await (
+                from item in applicationDbContext.OrderItems.AsNoTracking()
+                join order in applicationDbContext.Orders.AsNoTracking()
+                    on item.OrderId equals order.Id
+                join article in applicationDbContext.Articles.IgnoreQueryFilters().AsNoTracking()
+                    on item.ArticleId equals article.Id
+                orderby order.RowId, item.Id
+                select new
+                {
+                    OrderId = order.Id,
+                    order.RowId,
+                    order.Date,
+                    OrderItemId = item.Id,
+                    item.ArticleId,
+                    CurrentArticleDescription = article.Description,
+                    SoldDescription = item.Description,
+                    ArticleRetired = article.Retired,
+                    UnitPriceInCents = item.Price,
+                    Quantity = (long)item.Quantity,
+                    OrderTotalOverrideInCents = order.TotalOverride
+                }
+            )
+            .ToListAsync(cancellationToken);
+
+        return rows
+            .Select(x => new SalesStatisticsCsvRow(
+                Identifier.From(x.OrderId),
+                OrderNumber.From(x.RowId),
+                TimeStamp.From(x.Date),
+                Identifier.From(x.OrderItemId),
+                Identifier.From(x.ArticleId),
+                x.CurrentArticleDescription,
+                x.SoldDescription,
+                x.ArticleRetired,
+                x.UnitPriceInCents,
+                x.Quantity,
+                x.OrderTotalOverrideInCents
+            ))
+            .ToImmutableArray();
     }
 }

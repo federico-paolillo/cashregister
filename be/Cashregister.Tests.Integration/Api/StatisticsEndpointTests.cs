@@ -42,55 +42,28 @@ public sealed class StatisticsEndpointTests(
         var statistics = await response.Content.ReadFromJsonAsync<StatisticsDto>();
 
         Assert.NotNull(statistics);
-        var articleStatistics = Assert.Single(statistics.Articles.Items);
+        var articleStatistics = Assert.Single(statistics.Articles);
         Assert.Equal(articleId.Value, articleStatistics.ArticleId);
         Assert.Equal("Article A", articleStatistics.Description);
+        Assert.False(articleStatistics.Retired);
         Assert.Equal(2, articleStatistics.SoldUnits);
-        Assert.Equal(1, articleStatistics.OrdersIncluded);
-        Assert.Equal(200L, articleStatistics.VolumeInCents);
-        Assert.Equal(2, statistics.Articles.Totals.SoldUnits);
-        Assert.Equal(1, statistics.Articles.Totals.OrdersIncluded);
-        Assert.Equal(200L, statistics.Articles.Totals.VolumeInCents);
-        Assert.Equal(1, statistics.Orders.OrderCount);
-        Assert.Equal(200L, statistics.Orders.NominalVolumeInCents);
-        Assert.Equal(150L, statistics.Orders.RealVolumeInCents);
-        Assert.Equal(-50L, statistics.Orders.DeltaInCents);
-        Assert.Equal(statistics.Orders, statistics.OrdersTotals);
+
+        var orderStatistics = Assert.Single(statistics.Orders);
+        Assert.Equal(2, orderStatistics.ProducedArticles);
+        Assert.Equal(200L, orderStatistics.ExpectedVolumeInCents);
+        Assert.Equal(150L, orderStatistics.RealVolumeInCents);
+        Assert.Equal(-50L, orderStatistics.DeltaInCents);
+        Assert.True(orderStatistics.HasOverride);
+
+        Assert.Equal(1, statistics.Summary.OrderCount);
+        Assert.Equal(2, statistics.Summary.ProducedArticles);
+        Assert.Equal(200L, statistics.Summary.ExpectedVolumeInCents);
+        Assert.Equal(150L, statistics.Summary.RealVolumeInCents);
+        Assert.Equal(-50L, statistics.Summary.DeltaInCents);
     }
 
     [Fact]
-    public async Task GetArticleStatisticsCsv_ReturnsCsvAttachment()
-    {
-        await PrepareEnvironmentAsync();
-        var articleId = await CreateArticleAsync("Article A", 100L);
-
-        await CreateOrderAsync(
-            [
-                new OrderRequestItem
-                {
-                    Article = articleId,
-                    Quantity = 2
-                }
-            ]
-        );
-
-        using var httpClient = CreateHttpClient();
-
-        var response = await httpClient.GetAsync("/statistics/articles.csv");
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Equal("text/csv", response.Content.Headers.ContentType?.MediaType);
-        Assert.Equal("statistics-articles.csv", response.Content.Headers.ContentDisposition?.FileName);
-
-        var csv = await response.Content.ReadAsStringAsync();
-
-        Assert.Contains("ArticleId,Description,SoldUnits,OrdersIncluded,Volume", csv);
-        Assert.Contains($"{articleId.Value},Article A,2,1,2.00", csv);
-        Assert.DoesNotContain("Total", csv);
-    }
-
-    [Fact]
-    public async Task GetOrderStatisticsCsv_ReturnsCsvAttachment()
+    public async Task GetSalesStatisticsCsv_ReturnsCsvAttachment()
     {
         await PrepareEnvironmentAsync();
         var articleId = await CreateArticleAsync("Article A", 100L);
@@ -108,19 +81,23 @@ public sealed class StatisticsEndpointTests(
 
         using var httpClient = CreateHttpClient();
 
-        var response = await httpClient.GetAsync("/statistics/orders.csv");
+        var response = await httpClient.GetAsync("/statistics/sales.csv");
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Equal("text/csv", response.Content.Headers.ContentType?.MediaType);
-        Assert.Equal("statistics-orders.csv", response.Content.Headers.ContentDisposition?.FileName);
+        Assert.Equal("statistics-sales.csv", response.Content.Headers.ContentDisposition?.FileName);
 
         var csv = await response.Content.ReadAsStringAsync();
 
-        Assert.Contains("OrderCount,NominalVolume,RealVolume,Delta", csv);
-        Assert.Contains("1,2.00,1.50,-0.50", csv);
-        Assert.DoesNotContain("Row", csv);
-        Assert.DoesNotContain("Orders", csv);
-        Assert.DoesNotContain("Total", csv);
+        Assert.Contains(
+            "OrderId,OrderNumber,OrderDateUnixSeconds,OrderDateUtc,OrderItemId,ArticleId,CurrentArticleDescription,SoldDescription,ArticleRetired,UnitPriceInCents,Quantity,OrderTotalOverrideInCents",
+            csv
+        );
+        Assert.Contains($",{articleId.Value},Article A,Article A,False,100,2,150", csv);
+        Assert.DoesNotContain("ExpectedVolume", csv);
+        Assert.DoesNotContain("RealVolume", csv);
+        Assert.DoesNotContain("ProducedArticles", csv);
+        Assert.DoesNotContain("OrderCount", csv);
     }
 
     private async Task<Identifier> CreateArticleAsync(string description, long priceInCents)

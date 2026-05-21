@@ -24,4 +24,24 @@
   .inactive-nav-link {
     @apply text-white hover:text-gray-200;
   }
+
+  .tabber {
+    @apply grid gap-4;
+  }
+
+  .tab-list {
+    @apply flex border-b;
+  }
+
+  .tab {
+    @apply border-b-2 px-4 py-2 text-sm font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500;
+  }
+
+  .active-tab {
+    @apply border-blue-600 text-blue-700;
+  }
+
+  .inactive-tab {
+    @apply border-transparent text-gray-600 hover:border-gray-300 hover:text-gray-900;
+  }
 }

@@ -84,33 +84,33 @@ export interface ReceiptModeDto {
 }
 
 export interface StatisticsDto {
-  articles: ArticleStatisticsDto;
-  orders: OrderStatisticsDto;
-  ordersTotals: OrderStatisticsDto;
+  articles: ArticleInventoryItemDto[];
+  orders: OrderStatisticsItemDto[];
+  summary: OrderStatisticsSummaryDto;
 }
 
-export interface ArticleStatisticsDto {
-  items: ArticleStatisticsItemDto[];
-  totals: ArticleStatisticsTotalsDto;
-}
-
-export interface ArticleStatisticsItemDto {
+export interface ArticleInventoryItemDto {
   articleId: string;
   description: string;
+  retired: boolean;
   soldUnits: number;
-  ordersIncluded: number;
-  volumeInCents: number;
 }
 
-export interface ArticleStatisticsTotalsDto {
-  soldUnits: number;
-  ordersIncluded: number;
-  volumeInCents: number;
+export interface OrderStatisticsItemDto {
+  orderId: string;
+  orderNumber: string;
+  date: number;
+  producedArticles: number;
+  expectedVolumeInCents: number;
+  realVolumeInCents: number;
+  deltaInCents: number;
+  hasOverride: boolean;
 }
 
-export interface OrderStatisticsDto {
+export interface OrderStatisticsSummaryDto {
   orderCount: number;
-  nominalVolumeInCents: number;
+  producedArticles: number;
+  expectedVolumeInCents: number;
   realVolumeInCents: number;
   deltaInCents: number;
 }

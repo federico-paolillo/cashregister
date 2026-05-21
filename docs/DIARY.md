@@ -268,3 +268,27 @@ Refactored statistics CSV exports to map Application output models directly with
 - We removed CSV-specific record types because the exports now map cleanly from `ArticleStatisticsItem` and `OrderStatisticsSummary`.
 - We keep the UI and JSON totals unchanged; only CSV output omits totals.
 - We made the map types public because CsvHelper instantiates them through map registration and the analyzer does not treat that as direct internal usage.
+
+## Statistics inventory and raw sales export
+
+Refactored statistics around persisted order items as the historical source of truth. The statistics page now shows summary metrics, sold-article inventory, and per-order expected versus real volume. The old aggregate CSV downloads were replaced with one raw `sales.csv` export containing one order-item row per sale, integer cents, sale-time descriptions, current article descriptions, and optional order overrides. No totals are emitted in CSV.
+
+### ExecPlan
+
+`plans/statistics-inventory-and-raw-export.md`
+
+### Key decisions
+
+- We use order-item price snapshots for expected volume so later article price edits do not change history.
+- We show current article descriptions in the UI, but keep sale-time descriptions in the CSV for auditability.
+- We do not allocate order overrides to article rows because overrides are stored at order level only.
+- We use a flattened CSV record in the writer so CsvHelper emits stable raw columns for Excel.
+
+## Statistics reusable tabber
+
+Added a small shared tabber for frontend views and refactored the Statistics page into article and order panels. Article inventory stays the first view, order summary metrics move beside order-volume rows, and the raw sales CSV export remains visible outside the tab selection.
+
+### Key decisions
+
+- We use an uncontrolled compound tabber API because the statistics page needs composable triggers and panels without route-level tab state.
+- We include ARIA tab semantics and keyboard tab selection in the shared component so its first consumer does not set a weak accessibility baseline.

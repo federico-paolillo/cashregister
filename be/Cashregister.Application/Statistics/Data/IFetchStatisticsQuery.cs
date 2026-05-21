@@ -7,5 +7,5 @@ namespace Cashregister.Application.Statistics.Data;
 /// </summary>
 public interface IFetchStatisticsQuery
 {
-    Task<OrderStatistics> FetchAsync(CancellationToken cancellationToken = default);
+    Task<StatisticsReport> FetchAsync(CancellationToken cancellationToken = default);
 }

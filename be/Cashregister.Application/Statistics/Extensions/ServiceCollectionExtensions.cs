@@ -12,8 +12,7 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddCashregisterStatistics(this IServiceCollection serviceCollection)
     {
-        serviceCollection.AddScoped<IWriteArticleStatisticsCsvHandler, WriteArticleStatisticsCsvHandler>();
-        serviceCollection.AddScoped<IWriteOrderStatisticsCsvHandler, WriteOrderStatisticsCsvHandler>();
+        serviceCollection.AddScoped<IWriteSalesStatisticsCsvHandler, WriteSalesStatisticsCsvHandler>();
 
         return serviceCollection;
     }
