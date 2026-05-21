@@ -86,22 +86,26 @@ public sealed class ReceiptPrintProgramService(
     private static PrintProgram BuildDetailOverview(OrderPrintData order)
     {
         var builder = new PrintProgramBuilder()
-            .Align(Alignment.Center)
-            .BoldOn()
-            .PrintLine($"ORDER {order.Number.Value}")
-            .BoldOff()
+            .FontSize(1)
             .Align(Alignment.Left)
+            .PrintLine($"ORDER {order.Number.Value}")
+            .LineFeed()
+            .PrintLine("---")
             .LineFeed();
 
         foreach (var item in order.Items)
         {
             builder.PrintLine(
-                $"{item.Quantity}x {item.Description} @ {FormatPrice(item.Price)} = {FormatPrice(item.Total())}");
+                $"{item.Quantity} {item.Description} x {FormatPrice(item.Price)} = {FormatPrice(item.Total())}");
         }
 
         return builder
             .LineFeed()
+            .FontSize(2)
             .PrintLine($"Total: {FormatPrice(order.Total)}")
+            .FontSize(1)
+            .LineFeed()
+            .PrintLine("---")
             .LineFeed()
             .PrintLine($"Order ID: {order.Id.Value}")
             .PrintLine($"Date: {FormatDate(order.Date)}")
@@ -112,7 +116,6 @@ public sealed class ReceiptPrintProgramService(
     {
         return new PrintProgramBuilder()
             .Align(Alignment.Left)
-            .LineFeed()
             .FontSize(3)
             .PrintLine(item.Description)
             .LineFeed()
