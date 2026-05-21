@@ -11,6 +11,7 @@ import {
   type PlaceOrderRequestDto,
 } from "@cashregister/model";
 import { ArticleSelector } from "./components/article-selector";
+import { OrderMultiplier } from "./components/order-multiplier";
 import { OrderSummary } from "./components/order-summary";
 import type { Route } from "./+types/order";
 
@@ -42,7 +43,7 @@ export interface CartEntry {
 }
 
 export type CartAction =
-  | { type: "add"; article: ArticleListItemDto }
+  | { type: "add"; article: ArticleListItemDto; quantity: number }
   | { type: "decrease"; articleId: string }
   | { type: "remove"; articleId: string }
   | { type: "clear" };
@@ -53,9 +54,9 @@ export function cartReducer(state: Map<string, CartEntry>, action: CartAction): 
     case "add": {
       const existing = next.get(action.article.id);
       if (existing) {
-        next.set(action.article.id, { ...existing, quantity: existing.quantity + 1 });
+        next.set(action.article.id, { ...existing, quantity: existing.quantity + action.quantity });
       } else {
-        next.set(action.article.id, { article: action.article, quantity: 1 });
+        next.set(action.article.id, { article: action.article, quantity: action.quantity });
       }
       return next;
     }
@@ -83,6 +84,7 @@ export default function Order({ loaderData, actionData }: Route.ComponentProps) 
   const { addError } = useErrorMessages();
 
   const [cart, dispatch] = useReducer(cartReducer, new Map<string, CartEntry>());
+  const [multiplier, setMultiplier] = useState("");
   const [totalOverride, setTotalOverride] = useState<string>("");
 
   const articles = loaderData.ok ? loaderData.value.items : [];
@@ -101,12 +103,35 @@ export default function Order({ loaderData, actionData }: Route.ComponentProps) 
   useEffect(() => {
     if (actionData?.ok === true) {
       dispatch({ type: "clear" });
+      setMultiplier("");
       setTotalOverride("");
       addError(`Order '${actionData.value.id}' created`, "info");
     } else if (actionData?.ok === false) {
       addError(actionData.error.message);
     }
   }, [actionData, addError]);
+
+  function addMultiplierDigit(digit: string) {
+    setMultiplier((current) => {
+      if (current.length === 2 || (current === "" && digit === "0")) {
+        return current;
+      }
+
+      return `${current}${digit}`;
+    });
+  }
+
+  function selectArticle(article: ArticleListItemDto) {
+    dispatch({
+      type: "add",
+      article,
+      quantity: multiplier === "" ? 1 : Number(multiplier),
+    });
+
+    if (multiplier !== "") {
+      setMultiplier("");
+    }
+  }
 
   return (
     <>
@@ -115,7 +140,16 @@ export default function Order({ loaderData, actionData }: Route.ComponentProps) 
       </header>
       <main className="flex flex-1 overflow-hidden">
         <div className="flex-7 overflow-auto p-4 border-r">
-          <ArticleSelector articles={articles} onSelect={(article) => dispatch({ type: "add", article })} />
+          <div className="flex gap-4">
+            <div className="min-w-0 flex-1">
+              <ArticleSelector articles={articles} onSelect={selectArticle} />
+            </div>
+            <OrderMultiplier
+              value={multiplier}
+              onDigit={addMultiplierDigit}
+              onClear={() => setMultiplier("")}
+            />
+          </div>
         </div>
         <div className="flex-3 flex flex-col">
           <Form method="post" className="flex h-full flex-col">

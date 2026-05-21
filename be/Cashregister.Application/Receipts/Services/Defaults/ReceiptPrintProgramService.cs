@@ -96,7 +96,7 @@ public sealed class ReceiptPrintProgramService(
         foreach (var item in order.Items)
         {
             builder.PrintLine(
-                $"{item.Quantity} {item.Description} x {FormatPrice(item.Price)} = {FormatPrice(item.Total())}");
+                $"{item.Quantity}x {item.Description} @ {FormatPrice(item.Price)} = {FormatPrice(item.Total())}");
         }
 
         return builder

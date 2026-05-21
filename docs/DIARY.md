@@ -292,3 +292,12 @@ Added a small shared tabber for frontend views and refactored the Statistics pag
 
 - We use an uncontrolled compound tabber API because the statistics page needs composable triggers and panels without route-level tab state.
 - We include ARIA tab semantics and keyboard tab selection in the shared component so its first consumer does not set a weak accessibility baseline.
+
+## Order multiplier keypad
+
+Added an always-visible Multiplier keypad to New Order so cashiers can enter a one-use article quantity before selecting an article. The keypad is frontend-only: it accumulates a two-digit optional multiplier, clears leading zero entry, resets after the next article selection, and reuses the order form's existing per-article quantity fields.
+
+### Key decisions
+
+- We changed cart insertion to accept a quantity increment because multiplier entry should add to an existing article quantity instead of creating a separate order path.
+- We kept the backend and order request contract unchanged because placed orders already carry article quantities.

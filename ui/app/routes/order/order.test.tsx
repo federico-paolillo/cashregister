@@ -89,6 +89,57 @@ describe("Order", () => {
     expect(screen.getByText(/Espresso × 2/)).toBeDefined();
   });
 
+  it("adds an article using the multiplier and resets it", () => {
+    renderOrder();
+    fireEvent.click(screen.getByRole("button", { name: "5" }));
+    fireEvent.click(screen.getByRole("button", { name: /^Espresso/i }));
+
+    expect(screen.getByText(/Espresso × 5/)).toBeDefined();
+    expect(screen.getByText("No multiplier")).toBeDefined();
+  });
+
+  it("adds the multiplier to an existing article quantity", () => {
+    renderOrder();
+    fireEvent.click(screen.getByRole("button", { name: /^Espresso/i }));
+    fireEvent.click(screen.getByRole("button", { name: "2" }));
+    fireEvent.click(screen.getByRole("button", { name: /^Espresso/i }));
+
+    expect(screen.getByText(/Espresso × 3/)).toBeDefined();
+  });
+
+  it("ignores a leading zero and keeps zeros after the first multiplier digit", () => {
+    renderOrder();
+    fireEvent.click(screen.getByRole("button", { name: "0" }));
+
+    expect(screen.getByText("No multiplier")).toBeDefined();
+
+    fireEvent.click(screen.getByRole("button", { name: "1" }));
+    fireEvent.click(screen.getByRole("button", { name: "0" }));
+
+    expect(screen.getByText("10x")).toBeDefined();
+  });
+
+  it("keeps the multiplier to two digits", () => {
+    renderOrder();
+    fireEvent.click(screen.getByRole("button", { name: "1" }));
+    fireEvent.click(screen.getByRole("button", { name: "2" }));
+    fireEvent.click(screen.getByRole("button", { name: "3" }));
+
+    expect(screen.getByText("12x")).toBeDefined();
+    expect(screen.queryByText("123x")).toBeNull();
+  });
+
+  it("clears the multiplier without changing the cart", () => {
+    renderOrder();
+    fireEvent.click(screen.getByRole("button", { name: /^Espresso/i }));
+    fireEvent.click(screen.getByRole("button", { name: "2" }));
+
+    fireEvent.click(screen.getByRole("button", { name: "Clear multiplier" }));
+
+    expect(screen.getByText(/Espresso × 1/)).toBeDefined();
+    expect(screen.getByText("No multiplier")).toBeDefined();
+  });
+
   it("shows multiple articles in cart", () => {
     renderOrder();
     fireEvent.click(screen.getByRole("button", { name: /^Espresso/i }));
@@ -324,25 +375,30 @@ const latte = { id: "art2", description: "Latte", priceInCents: 450 };
 
 describe("cartReducer", () => {
   it("adds an article with quantity 1", () => {
-    const state = cartReducer(new Map(), { type: "add", article: espresso });
+    const state = cartReducer(new Map(), { type: "add", article: espresso, quantity: 1 });
     expect(state.get("art1")).toEqual({ article: espresso, quantity: 1 });
   });
 
-  it("increments quantity when the same article is added again", () => {
-    let state = cartReducer(new Map(), { type: "add", article: espresso });
-    state = cartReducer(state, { type: "add", article: espresso });
-    expect(state.get("art1")?.quantity).toBe(2);
+  it("adds a batched quantity", () => {
+    const state = cartReducer(new Map(), { type: "add", article: espresso, quantity: 5 });
+    expect(state.get("art1")?.quantity).toBe(5);
+  });
+
+  it("adds quantity when the same article is added again", () => {
+    let state = cartReducer(new Map(), { type: "add", article: espresso, quantity: 1 });
+    state = cartReducer(state, { type: "add", article: espresso, quantity: 2 });
+    expect(state.get("art1")?.quantity).toBe(3);
   });
 
   it("decreases quantity by one", () => {
-    let state = cartReducer(new Map(), { type: "add", article: espresso });
-    state = cartReducer(state, { type: "add", article: espresso });
+    let state = cartReducer(new Map(), { type: "add", article: espresso, quantity: 1 });
+    state = cartReducer(state, { type: "add", article: espresso, quantity: 1 });
     state = cartReducer(state, { type: "decrease", articleId: "art1" });
     expect(state.get("art1")?.quantity).toBe(1);
   });
 
   it("removes the article when quantity reaches zero via decrease", () => {
-    let state = cartReducer(new Map(), { type: "add", article: espresso });
+    let state = cartReducer(new Map(), { type: "add", article: espresso, quantity: 1 });
     state = cartReducer(state, { type: "decrease", articleId: "art1" });
     expect(state.has("art1")).toBe(false);
   });
@@ -354,16 +410,16 @@ describe("cartReducer", () => {
   });
 
   it("removes an article", () => {
-    let state = cartReducer(new Map(), { type: "add", article: espresso });
-    state = cartReducer(state, { type: "add", article: latte });
+    let state = cartReducer(new Map(), { type: "add", article: espresso, quantity: 1 });
+    state = cartReducer(state, { type: "add", article: latte, quantity: 1 });
     state = cartReducer(state, { type: "remove", articleId: "art1" });
     expect(state.has("art1")).toBe(false);
     expect(state.has("art2")).toBe(true);
   });
 
   it("clears all articles", () => {
-    let state = cartReducer(new Map(), { type: "add", article: espresso });
-    state = cartReducer(state, { type: "add", article: latte });
+    let state = cartReducer(new Map(), { type: "add", article: espresso, quantity: 1 });
+    state = cartReducer(state, { type: "add", article: latte, quantity: 1 });
     state = cartReducer(state, { type: "clear" });
     expect(state.size).toBe(0);
   });
