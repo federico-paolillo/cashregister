@@ -2,7 +2,6 @@ using System.Collections.Immutable;
 using System.Globalization;
 
 using Cashregister.Application.Receipts.Data;
-using Cashregister.Application.Receipts.Models;
 using Cashregister.Application.Receipts.Models.Output;
 using Cashregister.Application.Receipts.Problems;
 using Cashregister.Domain;
@@ -16,8 +15,7 @@ namespace Cashregister.Application.Receipts.Services.Defaults;
 ///     Default receipt print program service that builds the order receipt template.
 /// </summary>
 public sealed class ReceiptPrintProgramService(
-    IFetchOrderPrintDataQuery fetchOrderPrintDataQuery,
-    ReceiptModeStore receiptModeStore
+    IFetchOrderPrintDataQuery fetchOrderPrintDataQuery
 ) : IReceiptPrintProgramService
 {
     public async Task<Result<ImmutableArray<PrintProgram>>> BuildAsync(Identifier orderId)
@@ -31,24 +29,14 @@ public sealed class ReceiptPrintProgramService(
             return Result.Error<ImmutableArray<PrintProgram>>(new NoSuchOrderPrintDataProblem(orderId));
         }
 
-        return Result.Ok(Build(orderPrintData, receiptModeStore.Current));
+        return Result.Ok(Build(orderPrintData));
     }
 
-    private static ImmutableArray<PrintProgram> Build(OrderPrintData order, ReceiptMode receiptMode)
-    {
-        return receiptMode switch
-        {
-            ReceiptMode.Normal => [BuildNormal(order)],
-            ReceiptMode.Detail => BuildDetail(order),
-            _ => throw new ArgumentOutOfRangeException(nameof(receiptMode), receiptMode, null)
-        };
-    }
-
-    private static ImmutableArray<PrintProgram> BuildDetail(OrderPrintData order)
+    private static ImmutableArray<PrintProgram> Build(OrderPrintData order)
     {
         var programs = ImmutableArray.CreateBuilder<PrintProgram>();
 
-        programs.Add(BuildDetailOverview(order));
+        programs.Add(BuildOverview(order));
 
         foreach (var item in order.Items)
         {
@@ -61,29 +49,7 @@ public sealed class ReceiptPrintProgramService(
         return programs.ToImmutable();
     }
 
-    private static PrintProgram BuildNormal(OrderPrintData order)
-    {
-        var builder = new PrintProgramBuilder()
-            .Align(Alignment.Center)
-            .BoldOn()
-            .PrintLine($"ORDER {order.Number.Value}")
-            .BoldOff()
-            .Align(Alignment.Left)
-            .LineFeed();
-
-        foreach (var item in order.Items)
-        {
-            builder.PrintLine($"{item.Quantity}x {item.Description}");
-        }
-
-        return builder
-            .LineFeed()
-            .PrintLine($"Order ID: {order.Id.Value}")
-            .PrintLine($"Date: {FormatDate(order.Date)}")
-            .Build();
-    }
-
-    private static PrintProgram BuildDetailOverview(OrderPrintData order)
+    private static PrintProgram BuildOverview(OrderPrintData order)
     {
         var builder = new PrintProgramBuilder()
             .FontSize(1)

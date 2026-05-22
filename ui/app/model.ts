@@ -80,10 +80,6 @@ export interface DeviceDto {
   selected: boolean;
 }
 
-export interface ReceiptModeDto {
-  mode: "normal" | "detail";
-}
-
 export interface StatisticsDto {
   articles: ArticleInventoryItemDto[];
   orders: OrderStatisticsItemDto[];

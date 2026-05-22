@@ -108,7 +108,7 @@ public sealed class OrdersEndpointTests(
         var response = await httpClient.PostAsJsonAsync("/orders", orderRequest);
 
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
-        Assert.Equal(1, device.PrintCount);
+        Assert.Equal(3, device.PrintCount);
         Assert.NotNull(device.PrintedProgram);
     }
 

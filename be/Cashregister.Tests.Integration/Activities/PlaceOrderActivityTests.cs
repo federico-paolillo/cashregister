@@ -41,7 +41,7 @@ public sealed class PlaceOrderActivityTests(
             }));
 
         Assert.True(result.Ok);
-        Assert.Equal(1, device.PrintCount);
+        Assert.Equal(3, device.PrintCount);
         Assert.NotNull(device.PrintedProgram);
         Assert.Equal(articleId.Value, result.Value.Items.Single().Article.Value);
     }

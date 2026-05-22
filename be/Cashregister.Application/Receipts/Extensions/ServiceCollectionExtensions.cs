@@ -11,7 +11,6 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddCashregisterReceipts(this IServiceCollection serviceCollection)
     {
-        serviceCollection.AddSingleton<ReceiptModeStore>();
         serviceCollection.AddScoped<IReceiptPrintProgramService, ReceiptPrintProgramService>();
         serviceCollection.AddScoped<IPrintReceiptHandler, PrintReceiptHandler>();
 

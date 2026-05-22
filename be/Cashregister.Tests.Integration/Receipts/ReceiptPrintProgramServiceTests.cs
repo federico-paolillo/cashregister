@@ -6,7 +6,6 @@ using Cashregister.Application.Articles.Transactions;
 using Cashregister.Application.Orders.Models.Input;
 using Cashregister.Application.Orders.Transactions;
 using Cashregister.Application.Receipts.Data;
-using Cashregister.Application.Receipts.Models;
 using Cashregister.Application.Receipts.Models.Output;
 using Cashregister.Application.Receipts.Problems;
 using Cashregister.Application.Receipts.Services;
@@ -39,39 +38,9 @@ public sealed class ReceiptPrintProgramServiceTests(
     }
 
     [Fact]
-    public async Task BuildAsync_ReturnsReceiptPrintProgram_WhenOrderExists()
+    public async Task BuildAsync_ReturnsReceiptPrograms_WhenOrderExists()
     {
         await PrepareEnvironmentAsync();
-
-        var coffeeId = await CreateArticleAsync("Coffee", 12345);
-        var teaId = await CreateArticleAsync("Tea", 67890);
-        var orderId = await CreateOrderAsync(coffeeId, 2, teaId, 3);
-        var orderPrintData = await FetchOrderPrintDataAsync(orderId);
-
-        var result = await RunScoped<IReceiptPrintProgramService, Result<ImmutableArray<PrintProgram>>>(svc =>
-            svc.BuildAsync(orderId));
-
-        Assert.True(result.Ok);
-        Assert.Single(result.Value);
-
-        var markdown = Render(result.Value[0]);
-
-        Assert.Contains($"ORDER {orderPrintData.Number.Value}", markdown, StringComparison.Ordinal);
-        Assert.Contains("2x Coffee", markdown, StringComparison.Ordinal);
-        Assert.Contains("3x Tea", markdown, StringComparison.Ordinal);
-        Assert.Contains($"Order ID: {orderId.Value}", markdown, StringComparison.Ordinal);
-        Assert.Contains($"Date: {FormatDate(orderPrintData.Date)}", markdown, StringComparison.Ordinal);
-        Assert.DoesNotContain("12345", markdown, StringComparison.Ordinal);
-        Assert.DoesNotContain("67890", markdown, StringComparison.Ordinal);
-        Assert.DoesNotContain("Total", markdown, StringComparison.OrdinalIgnoreCase);
-        Assert.DoesNotContain("Price", markdown, StringComparison.OrdinalIgnoreCase);
-    }
-
-    [Fact]
-    public async Task BuildAsync_ReturnsDetailReceiptPrograms_WhenReceiptModeIsDetail()
-    {
-        await PrepareEnvironmentAsync();
-        SelectReceiptMode(ReceiptMode.Detail);
 
         var coffeeId = await CreateArticleAsync("Coffee", 123);
         var teaId = await CreateArticleAsync("Tea", 456);
@@ -112,13 +81,6 @@ public sealed class ReceiptPrintProgramServiceTests(
 
         Assert.NotNull(orderPrintData);
         return orderPrintData;
-    }
-
-    private void SelectReceiptMode(ReceiptMode receiptMode)
-    {
-        using var scope = NewServiceScope();
-
-        scope.ServiceProvider.GetRequiredService<ReceiptModeStore>().Select(receiptMode);
     }
 
     private static string Render(PrintProgram program)

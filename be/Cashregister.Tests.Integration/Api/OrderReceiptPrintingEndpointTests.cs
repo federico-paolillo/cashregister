@@ -31,7 +31,7 @@ public sealed class OrderReceiptPrintingEndpointTests(
         var response = await httpClient.PostAsync($"/orders/{orderId.Value}/print", null);
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        Assert.Equal(1, device.PrintCount);
+        Assert.Equal(3, device.PrintCount);
         Assert.NotNull(device.PrintedProgram);
     }
 

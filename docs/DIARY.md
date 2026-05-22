@@ -310,3 +310,16 @@ Fixed order detail and overview totals so the displayed total is the stored orde
 
 - We kept override-aware domain totals unchanged because this bug concerns order-display contracts, while other workflows use the effective total intentionally.
 - We compute displayed item totals from order-item price snapshots and quantities so later article edits do not rewrite order history.
+
+## Detail-only receipt printing refactor
+
+Removed the runtime receipt mode selection path. Receipt printing now always emits the existing detail workflow: one priced order overview followed by one item receipt per ordered unit. The backend no longer exposes `/receipt-mode`, and the Devices page now handles printer selection only.
+
+### ExecPlan
+
+`plans/remove-receipt-modes-detail-only.md`
+
+### Key decisions
+
+- We kept the overview and item-slip builders separate because the next article configuration task should gate only per-unit slips.
+- We did not add article print configuration or filtering yet because this refactor removes modes only.
