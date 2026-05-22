@@ -47,9 +47,11 @@ public sealed class FetchOrderPrintDataQueryTests(
         Assert.Equal("Coffee", result.Items[0].Description);
         Assert.Equal(Cents.From(12345), result.Items[0].Price);
         Assert.Equal(2u, result.Items[0].Quantity);
+        Assert.True(result.Items[0].PrintDetailReceipt);
         Assert.Equal("Tea", result.Items[1].Description);
         Assert.Equal(Cents.From(67890), result.Items[1].Price);
         Assert.Equal(3u, result.Items[1].Quantity);
+        Assert.True(result.Items[1].PrintDetailReceipt);
     }
 
     [Fact]

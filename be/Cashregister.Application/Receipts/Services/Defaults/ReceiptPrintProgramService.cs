@@ -40,6 +40,11 @@ public sealed class ReceiptPrintProgramService(
 
         foreach (var item in order.Items)
         {
+            if (!item.PrintDetailReceipt)
+            {
+                continue;
+            }
+
             for (var i = 0U; i < item.Quantity; i++)
             {
                 programs.Add(BuildItemReceipt(order, item));

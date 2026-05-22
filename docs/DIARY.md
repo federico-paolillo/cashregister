@@ -337,3 +337,17 @@ Changed printer target startup state to come from discovered runtime devices ins
 - We removed the configured startup target so the normal one-printer path follows device discovery directly.
 - We keep missing printer selection as a print failure because silently skipping or discarding a receipt would hide an operational problem.
 - We keep CLI printing explicit by loading its existing `--device` value into the runtime target store before it prints.
+
+## Per-article detail receipt selection
+
+Added an article checkbox that controls whether that article emits per-unit detail receipts. Bulk article creation and the selected article editor both write the setting, existing articles migrate to the previous detail-printing behavior, and order printing still always emits the priced overview even when every ordered article has detail receipts disabled.
+
+### ExecPlan
+
+`plans/article-detail-receipt-selection.md`
+
+### Key decisions
+
+- We read the article setting from current article state during printing so later edits affect reprints without copying receipt configuration into historical order items.
+- We require the article write API to receive the boolean explicitly while the frontend creation checkbox starts checked to preserve the operator default.
+- We keep receipt price and description content on order-item snapshots while filtering only the per-unit detail programs from current article configuration.

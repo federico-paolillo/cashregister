@@ -9,4 +9,6 @@ public sealed class ArticleChange
     public required string Description { get; init; }
 
     public required Cents Price { get; init; }
+
+    public bool PrintDetailReceipt { get; init; } = true;
 }

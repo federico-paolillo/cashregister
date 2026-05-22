@@ -23,7 +23,8 @@ public sealed class RegisterArticleTransaction(
         {
             Id = newArticleId,
             Description = articleDefinition.Description,
-            Price = articleDefinition.Price
+            Price = articleDefinition.Price,
+            PrintDetailReceipt = articleDefinition.PrintDetailReceipt
         };
 
         await saveArticleCommand.SaveAsync(article);

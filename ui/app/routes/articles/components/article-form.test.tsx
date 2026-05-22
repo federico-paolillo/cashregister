@@ -35,13 +35,17 @@ describe("ArticleForm", () => {
     );
     expect(screen.getByLabelText("Price")).toBeDefined();
     expect(priceField).not.toBeNull();
+    expect(screen.getByLabelText("Detail receipt")).toHaveProperty(
+      "name",
+      "printDetailReceipt",
+    );
   });
 
   it("initializes fields from initialData", () => {
     render(
       <ArticleForm
         articleId="abc-123"
-        initialData={{ description: "Latte", priceInCents: 450 }}
+        initialData={{ description: "Latte", priceInCents: 450, printDetailReceipt: false }}
       />,
     );
 
@@ -52,6 +56,19 @@ describe("ArticleForm", () => {
     expect(screen.getByLabelText("Price")).toHaveProperty(
       "value",
       "4.50",
+    );
+    expect(screen.getByLabelText("Detail receipt")).toHaveProperty(
+      "checked",
+      false,
+    );
+  });
+
+  it("defaults detail receipts to enabled", () => {
+    render(<ArticleForm articleId="abc-123" />);
+
+    expect(screen.getByLabelText("Detail receipt")).toHaveProperty(
+      "checked",
+      true,
     );
   });
 

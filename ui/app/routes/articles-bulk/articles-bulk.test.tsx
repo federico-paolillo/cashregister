@@ -109,12 +109,17 @@ describe("ArticlesBulk", () => {
 });
 
 function buildBulkFormRequest(
-  articles: Array<{ description: string; priceInCents: string }>,
+  articles: Array<{ description: string; priceInCents: string; printDetailReceipt?: boolean }>,
 ): Route.ClientActionArgs {
   const formData = new FormData();
-  for (const article of articles) {
+  for (const [index, article] of articles.entries()) {
+    const rowId = String(index + 1);
+    formData.append("rowId", rowId);
     formData.append("description", article.description);
     formData.append("priceInCents", article.priceInCents);
+    if (article.printDetailReceipt !== false) {
+      formData.append("printDetailReceipt", rowId);
+    }
   }
   return {
     request: new Request("http://localhost/articles/bulk", {
@@ -136,7 +141,7 @@ describe("clientAction", () => {
     await clientAction(
       buildBulkFormRequest([
         { description: "Espresso", priceInCents: "300" },
-        { description: "Latte", priceInCents: "450" },
+        { description: "Latte", priceInCents: "450", printDetailReceipt: false },
       ]),
     );
 
@@ -144,10 +149,12 @@ describe("clientAction", () => {
     expect(deps.apiClient.post).toHaveBeenCalledWith("/articles", {
       description: "Espresso",
       priceInCents: 300,
+      printDetailReceipt: true,
     });
     expect(deps.apiClient.post).toHaveBeenCalledWith("/articles", {
       description: "Latte",
       priceInCents: 450,
+      printDetailReceipt: false,
     });
   });
 

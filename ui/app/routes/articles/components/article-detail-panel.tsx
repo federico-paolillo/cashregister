@@ -59,6 +59,7 @@ export function ArticleDetailPanel({ article, closeTo }: ArticleDetailPanelProps
           initialData={{
             description: article.description,
             priceInCents: article.priceInCents,
+            printDetailReceipt: article.printDetailReceipt,
           }}
           onError={(message) => addError(message)}
         />

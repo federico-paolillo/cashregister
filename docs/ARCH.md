@@ -71,7 +71,7 @@ Persistence is implemented with EF Core and SQLite in `Cashregister.Database`.
 
 `ApplicationDbContext` implements both `IApplicationDbContext` and `IUnitOfWork`. Starting and rolling back are no-ops for EF because a scoped `DbContext` begins tracking on construction and discards unsaved changes on disposal. `SaveChangesAsync` commits successful transactions.
 
-Money columns such as `ArticleEntity.Price`, `OrderItemEntity.Price`, and `OrderEntity.TotalOverride` are stored as `long` cents. Their database names are intentionally domain-oriented, while API DTO names use explicit `*InCents` suffixes.
+Money columns such as `ArticleEntity.Price`, `OrderItemEntity.Price`, and `OrderEntity.TotalOverride` are stored as `long` cents. Their database names are intentionally domain-oriented, while API DTO names use explicit `*InCents` suffixes. Articles also persist `PrintDetailReceipt`, the current article-level selection for whether order printing emits per-unit detail receipts.
 
 The database connection is configured from `DataSource`. At runtime, `be/Cashregister.Api/Program.cs` adds environment variables with the `CASHREGISTER_` prefix, so `CASHREGISTER_DATASOURCE` supplies this value. The development launch profile sets it to `cashregister.db`.
 
@@ -164,7 +164,7 @@ The API always wires `FileDeviceTargetStore`, the file-printer catalog, and `Bin
 
 `IPrintReceiptHandler` orchestrates receipt printing by asking `IReceiptPrintProgramService` to build print programs for an order id and then sending each program to the configured `IDevice`. `PlaceOrderActivity` uses independent scoped operations to place an order, print its receipt, and fetch the saved order for the API response. Receipt reprinting remains exposed as an explicit order action at `POST /orders/{id}/print`.
 
-Order receipt printing emits one priced overview receipt and then one item receipt per ordered unit.
+Order receipt printing always emits one priced overview receipt. Per-unit item detail receipts are emitted only for ordered articles whose current `PrintDetailReceipt` selection is enabled, so article edits affect later prints and reprints without changing the overview.
 
 ## Testing
 

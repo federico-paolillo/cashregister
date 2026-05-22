@@ -21,6 +21,7 @@ public sealed class ArticleEntityTests(
             Id = "some-id",
             Description = "Test Article",
             Price = 1200,
+            PrintDetailReceipt = false,
             Retired = false
         };
 
@@ -42,6 +43,7 @@ public sealed class ArticleEntityTests(
 
         Assert.Equal("Test Article", rArticleEntity.Description);
         Assert.Equal(1200, rArticleEntity.Price);
+        Assert.False(rArticleEntity.PrintDetailReceipt);
         Assert.Equal("some-id", rArticleEntity.Id);
     }
 }

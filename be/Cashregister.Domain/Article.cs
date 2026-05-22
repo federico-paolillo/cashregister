@@ -8,6 +8,8 @@ public sealed class Article
 
     public required Cents Price { get; init; }
 
+    public bool PrintDetailReceipt { get; init; } = true;
+
     public RetiredArticle Retire()
     {
         return new RetiredArticle

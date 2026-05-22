@@ -18,7 +18,8 @@ public sealed class ArticleEntityMapper
         {
             Id = Identifier.From(entity.Id),
             Description = entity.Description,
-            Price = Cents.From(entity.Price)
+            Price = Cents.From(entity.Price),
+            PrintDetailReceipt = entity.PrintDetailReceipt
         };
     }
 
@@ -31,6 +32,7 @@ public sealed class ArticleEntityMapper
             Id = article.Id.Value,
             Description = article.Description,
             Price = article.Price.Value,
+            PrintDetailReceipt = article.PrintDetailReceipt,
             Retired = false
         };
     }

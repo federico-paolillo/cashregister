@@ -11,12 +11,15 @@ export async function clientAction({ request }: Route.ClientActionArgs) {
 
   const descriptions = formData.getAll("description") as string[];
   const prices = formData.getAll("priceInCents") as string[];
+  const rowIds = formData.getAll("rowId") as string[];
+  const detailReceiptRowIds = new Set(formData.getAll("printDetailReceipt") as string[]);
 
   const results = await Promise.all(
     descriptions.map((description, i) => {
       const body: RegisterArticleRequestDto = {
         description,
         priceInCents: Number(prices[i]),
+        printDetailReceipt: detailReceiptRowIds.has(rowIds[i]),
       };
 
       return deps.apiClient.post("/articles", body);
@@ -74,6 +77,7 @@ export default function ArticlesBulk({ actionData }: Route.ComponentProps) {
           {rows.map((row) => (
             <BulkRow
               key={row.id}
+              rowId={row.id}
               onRemove={() => removeRow(row.id)}
               canRemove={rows.length > 1}
             />

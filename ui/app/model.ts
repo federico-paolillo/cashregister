@@ -14,16 +14,19 @@ export interface ArticleDto {
   id: string;
   description: string;
   priceInCents: number;
+  printDetailReceipt: boolean;
 }
 
 export interface RegisterArticleRequestDto {
   description: string;
   priceInCents: number;
+  printDetailReceipt: boolean;
 }
 
 export interface ChangeArticleRequestDto {
   description: string;
   priceInCents: number;
+  printDetailReceipt: boolean;
 }
 
 export interface OrdersPageDto {

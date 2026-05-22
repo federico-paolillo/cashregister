@@ -74,6 +74,71 @@ public sealed class ReceiptPrintProgramServiceTests(
         Assert.DoesNotContain("@", firstItemReceipt, StringComparison.Ordinal);
     }
 
+    [Fact]
+    public async Task BuildAsync_SkipsDetailReceiptPrograms_WhenArticleDetailReceiptIsDisabled()
+    {
+        await PrepareEnvironmentAsync();
+
+        var coffeeId = await CreateArticleAsync("Coffee", 123, true);
+        var teaId = await CreateArticleAsync("Tea", 456, false);
+        var orderId = await CreateOrderAsync(coffeeId, 2, teaId, 1);
+
+        var result = await RunScoped<IReceiptPrintProgramService, Result<ImmutableArray<PrintProgram>>>(svc =>
+            svc.BuildAsync(orderId));
+
+        Assert.True(result.Ok);
+        Assert.Equal(3, result.Value.Length);
+
+        var overview = Render(result.Value[0]);
+        var firstItemReceipt = Render(result.Value[1]);
+        var secondItemReceipt = Render(result.Value[2]);
+
+        Assert.Contains("2x Coffee", overview, StringComparison.Ordinal);
+        Assert.Contains("1x Tea", overview, StringComparison.Ordinal);
+        Assert.Contains("Coffee", firstItemReceipt, StringComparison.Ordinal);
+        Assert.Contains("Coffee", secondItemReceipt, StringComparison.Ordinal);
+        Assert.DoesNotContain("Tea", firstItemReceipt, StringComparison.Ordinal);
+        Assert.DoesNotContain("Tea", secondItemReceipt, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task BuildAsync_ReturnsOverview_WhenAllDetailReceiptsAreDisabled()
+    {
+        await PrepareEnvironmentAsync();
+
+        var coffeeId = await CreateArticleAsync("Coffee", 123, false);
+        var teaId = await CreateArticleAsync("Tea", 456, false);
+        var orderId = await CreateOrderAsync(coffeeId, 2, teaId, 1);
+
+        var result = await RunScoped<IReceiptPrintProgramService, Result<ImmutableArray<PrintProgram>>>(svc =>
+            svc.BuildAsync(orderId));
+
+        Assert.True(result.Ok);
+        Assert.Single(result.Value);
+        Assert.Contains("2x Coffee", Render(result.Value[0]), StringComparison.Ordinal);
+        Assert.Contains("1x Tea", Render(result.Value[0]), StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task BuildAsync_UsesCurrentArticleDetailReceiptSetting_ForReprints()
+    {
+        await PrepareEnvironmentAsync();
+
+        var coffeeId = await CreateArticleAsync("Coffee", 123);
+        var teaId = await CreateArticleAsync("Tea", 456);
+        var orderId = await CreateOrderAsync(coffeeId, 2, teaId, 1);
+
+        await ChangeArticleAsync(coffeeId, "Coffee", 123, false);
+
+        var result = await RunScoped<IReceiptPrintProgramService, Result<ImmutableArray<PrintProgram>>>(svc =>
+            svc.BuildAsync(orderId));
+
+        Assert.True(result.Ok);
+        Assert.Equal(2, result.Value.Length);
+        Assert.Contains("Tea", Render(result.Value[1]), StringComparison.Ordinal);
+        Assert.DoesNotContain("Coffee", Render(result.Value[1]), StringComparison.Ordinal);
+    }
+
     private async Task<OrderPrintData> FetchOrderPrintDataAsync(Identifier orderId)
     {
         var orderPrintData = await RunScoped<IFetchOrderPrintDataQuery, OrderPrintData?>(q =>
@@ -105,17 +170,39 @@ public sealed class ReceiptPrintProgramServiceTests(
             .ToString("yyyy-MM-dd HH:mm:ss 'UTC'", CultureInfo.InvariantCulture);
     }
 
-    private async Task<Identifier> CreateArticleAsync(string description, long priceInCents)
+    private async Task<Identifier> CreateArticleAsync(
+        string description,
+        long priceInCents,
+        bool printDetailReceipt = true)
     {
         var result = await RunScoped<IRegisterArticleTransaction, Result<Identifier>>(tx =>
             tx.ExecuteAsync(new ArticleDefinition
             {
                 Description = description,
-                Price = Cents.From(priceInCents)
+                Price = Cents.From(priceInCents),
+                PrintDetailReceipt = printDetailReceipt
             }));
 
         Assert.True(result.Ok);
         return result.Value;
+    }
+
+    private async Task ChangeArticleAsync(
+        Identifier articleId,
+        string description,
+        long priceInCents,
+        bool printDetailReceipt)
+    {
+        var result = await RunScoped<IChangeArticleTransaction, Result<Unit>>(tx =>
+            tx.ExecuteAsync(new ArticleChange
+            {
+                Id = articleId,
+                Description = description,
+                Price = Cents.From(priceInCents),
+                PrintDetailReceipt = printDetailReceipt
+            }));
+
+        Assert.True(result.Ok);
     }
 
     private async Task<Identifier> CreateOrderAsync(

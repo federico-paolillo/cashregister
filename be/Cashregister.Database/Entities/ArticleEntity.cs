@@ -9,6 +9,8 @@ public sealed class ArticleEntity : IIdentifiableEntity
 
     public required long Price { get; set; }
 
+    public required bool PrintDetailReceipt { get; set; }
+
     public required bool Retired { get; set; }
 
     public required string Id { get; init; }
@@ -31,6 +33,10 @@ public sealed class ArticleEntity : IIdentifiableEntity
 
             builder.Property(p => p.Description)
                 .IsRequired();
+
+            builder.Property(p => p.PrintDetailReceipt)
+                .IsRequired()
+                .HasDefaultValue(true);
 
             builder.Property(p => p.Retired)
                 .IsRequired();

@@ -6,27 +6,28 @@ afterEach(cleanup);
 
 describe("BulkRow", () => {
   it("renders the description and price inputs", () => {
-    render(<BulkRow onRemove={vi.fn()} canRemove={false} />);
+    render(<BulkRow rowId={1} onRemove={vi.fn()} canRemove={false} />);
 
     expect(screen.getByLabelText("Description")).toBeDefined();
     expect(screen.getByLabelText("Price")).toBeDefined();
+    expect(screen.getByLabelText("Detail receipt")).toBeDefined();
   });
 
   it("does not show the Remove button when canRemove is false", () => {
-    render(<BulkRow onRemove={vi.fn()} canRemove={false} />);
+    render(<BulkRow rowId={1} onRemove={vi.fn()} canRemove={false} />);
 
     expect(screen.queryByRole("button", { name: "Remove" })).toBeNull();
   });
 
   it("shows the Remove button when canRemove is true", () => {
-    render(<BulkRow onRemove={vi.fn()} canRemove={true} />);
+    render(<BulkRow rowId={1} onRemove={vi.fn()} canRemove={true} />);
 
     expect(screen.getByRole("button", { name: "Remove" })).toBeDefined();
   });
 
   it("calls onRemove when the Remove button is clicked", () => {
     const onRemove = vi.fn();
-    render(<BulkRow onRemove={onRemove} canRemove={true} />);
+    render(<BulkRow rowId={1} onRemove={onRemove} canRemove={true} />);
 
     fireEvent.click(screen.getByRole("button", { name: "Remove" }));
 
@@ -34,18 +35,26 @@ describe("BulkRow", () => {
   });
 
   it("price input defaults to 0", () => {
-    render(<BulkRow onRemove={vi.fn()} canRemove={false} />);
+    render(<BulkRow rowId={1} onRemove={vi.fn()} canRemove={false} />);
 
     expect(screen.getByLabelText("Price")).toHaveProperty("value", "0.00");
   });
 
   it("label is associated with the description input", () => {
-    render(<BulkRow onRemove={vi.fn()} canRemove={false} />);
+    render(<BulkRow rowId={1} onRemove={vi.fn()} canRemove={false} />);
     expect(screen.getByLabelText("Description")).toBeDefined();
   });
 
   it("label is associated with the price input", () => {
-    render(<BulkRow onRemove={vi.fn()} canRemove={false} />);
+    render(<BulkRow rowId={1} onRemove={vi.fn()} canRemove={false} />);
     expect(screen.getByLabelText("Price")).toBeDefined();
+  });
+
+  it("defaults detail receipts to enabled and submits the row id", () => {
+    render(<BulkRow rowId={42} onRemove={vi.fn()} canRemove={false} />);
+
+    expect(screen.getByLabelText("Detail receipt")).toHaveProperty("checked", true);
+    expect(screen.getByLabelText("Detail receipt")).toHaveProperty("value", "42");
+    expect(document.querySelector<HTMLInputElement>('input[name="rowId"]')?.value).toBe("42");
   });
 });

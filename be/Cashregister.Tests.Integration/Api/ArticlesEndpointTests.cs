@@ -250,7 +250,7 @@ public sealed class ArticlesEndpointTests(
         using var httpClient = CreateHttpClient();
 
         var response = await httpClient.PostAsJsonAsync("/articles",
-            new RegisterArticleRequestDto("Some test article", 1000));
+            new RegisterArticleRequestDto("Some test article", 1000, true));
 
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
 
@@ -272,7 +272,7 @@ public sealed class ArticlesEndpointTests(
         using var httpClient = CreateHttpClient();
 
         var response = await httpClient.PostAsJsonAsync("/articles",
-            new RegisterArticleRequestDto("Odd cents article", 101));
+            new RegisterArticleRequestDto("Odd cents article", 101, true));
 
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
 
@@ -285,6 +285,86 @@ public sealed class ArticlesEndpointTests(
         var article = await getResponse.Content.ReadFromJsonAsync<ArticleDto>();
         Assert.NotNull(article);
         Assert.Equal(101L, article.PriceInCents);
+        Assert.True(article.PrintDetailReceipt);
+    }
+
+    [Fact]
+    public async Task RegisterAndGetArticle_PreservesDetailReceiptSelection()
+    {
+        await PrepareEnvironmentAsync();
+
+        using var httpClient = CreateHttpClient();
+
+        var response = await httpClient.PostAsJsonAsync("/articles",
+            new RegisterArticleRequestDto("Overview only article", 101, false));
+
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+
+        var entityPointer = await response.Content.ReadFromJsonAsync<EntityPointerDto>();
+        Assert.NotNull(entityPointer);
+
+        var getResponse = await httpClient.GetAsync($"/articles/{entityPointer.Id}");
+        Assert.True(getResponse.IsSuccessStatusCode);
+
+        var article = await getResponse.Content.ReadFromJsonAsync<ArticleDto>();
+        Assert.NotNull(article);
+        Assert.False(article.PrintDetailReceipt);
+    }
+
+    [Fact]
+    public async Task RegisterArticle_ReturnsBadRequest_WhenDetailReceiptSelectionIsMissing()
+    {
+        await PrepareEnvironmentAsync();
+
+        using var httpClient = CreateHttpClient();
+
+        var response = await httpClient.PostAsJsonAsync("/articles", new
+        {
+            description = "Missing detail receipt flag",
+            priceInCents = 101
+        });
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task ChangeArticle_UpdatesDetailReceiptSelection()
+    {
+        await PrepareEnvironmentAsync();
+
+        var articleId = await CreateArticleAsync("Configurable article", 500);
+
+        using var httpClient = CreateHttpClient();
+
+        var response = await httpClient.PostAsJsonAsync($"/articles/{articleId.Value}",
+            new ChangeArticleRequestDto("Configurable article", 500, false));
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+
+        var getResponse = await httpClient.GetAsync($"/articles/{articleId.Value}");
+        Assert.True(getResponse.IsSuccessStatusCode);
+
+        var article = await getResponse.Content.ReadFromJsonAsync<ArticleDto>();
+        Assert.NotNull(article);
+        Assert.False(article.PrintDetailReceipt);
+    }
+
+    [Fact]
+    public async Task ChangeArticle_ReturnsBadRequest_WhenDetailReceiptSelectionIsMissing()
+    {
+        await PrepareEnvironmentAsync();
+
+        var articleId = await CreateArticleAsync("Configurable article", 500);
+
+        using var httpClient = CreateHttpClient();
+
+        var response = await httpClient.PostAsJsonAsync($"/articles/{articleId.Value}", new
+        {
+            description = "Configurable article",
+            priceInCents = 500
+        });
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
     [Fact]
@@ -316,5 +396,18 @@ public sealed class ArticlesEndpointTests(
         Assert.Equal(expectedId, article.Id);
         // Ensure it's the raw ULID string, not the record ToString() format like "Identifier { Value = ... }"
         Assert.DoesNotContain("Identifier", article.Id, StringComparison.Ordinal);
+    }
+
+    private async Task<Identifier> CreateArticleAsync(string description, long priceInCents)
+    {
+        var registerResult = await RunScoped<IRegisterArticleTransaction, Result<Identifier>>(tx =>
+            tx.ExecuteAsync(new ArticleDefinition
+            {
+                Description = description,
+                Price = Cents.From(priceInCents)
+            }));
+
+        Assert.True(registerResult.Ok);
+        return registerResult.Value;
     }
 }

@@ -67,10 +67,16 @@ internal static class Handlers
         [FromBody] RegisterArticleRequestDto request
     )
     {
+        if (request.PrintDetailReceipt is null)
+        {
+            return TypedResults.BadRequest();
+        }
+
         var articleDefinition = new ArticleDefinition
         {
             Description = request.Description,
-            Price = Cents.From(request.PriceInCents)
+            Price = Cents.From(request.PriceInCents),
+            PrintDetailReceipt = request.PrintDetailReceipt.Value
         };
 
         var result = await registerArticleTransaction.ExecuteAsync(articleDefinition);
@@ -114,17 +120,23 @@ internal static class Handlers
         return TypedResults.Ok(articleDto);
     }
 
-    public static async Task<Results<NotFound, StatusCodeHttpResult, NoContent>> ChangeArticle(
+    public static async Task<Results<BadRequest, NotFound, InternalServerError, NoContent>> ChangeArticle(
         IChangeArticleTransaction changeArticleTransaction,
         [FromRoute] string id,
         [FromBody] ChangeArticleRequestDto request
     )
     {
+        if (request.PrintDetailReceipt is null)
+        {
+            return TypedResults.BadRequest();
+        }
+
         var articleChange = new ArticleChange
         {
             Id = Identifier.From(id),
             Description = request.Description,
-            Price = Cents.From(request.PriceInCents)
+            Price = Cents.From(request.PriceInCents),
+            PrintDetailReceipt = request.PrintDetailReceipt.Value
         };
 
         var result = await changeArticleTransaction.ExecuteAsync(articleChange);
@@ -134,7 +146,7 @@ internal static class Handlers
             return result.Error switch
             {
                 NoSuchArticleProblem => TypedResults.NotFound(),
-                _ => TypedResults.StatusCode(StatusCodes.Status500InternalServerError)
+                _ => TypedResults.InternalServerError()
             };
         }
 

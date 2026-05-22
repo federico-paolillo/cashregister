@@ -55,6 +55,7 @@ const article: ArticleDto = {
   id: "1",
   description: "Article 1",
   priceInCents: 1000,
+  printDetailReceipt: false,
 };
 
 const articleResult: Result<ArticleDto> = {
@@ -139,6 +140,7 @@ describe("Articles Page", () => {
 
     expect(screen.getByText("Article ID")).toBeDefined();
     expect(screen.getByDisplayValue("Article 1")).toBeDefined();
+    expect(screen.getByLabelText("Detail receipt")).toHaveProperty("checked", false);
     expect(screen.getByRole("link", { name: "Close article details" })).toBeDefined();
   });
 
@@ -348,6 +350,7 @@ describe("clientAction", () => {
       articleId: "art-42",
       description: "Updated name",
       priceInCents: "500",
+      printDetailReceipt: "on",
     });
 
     await clientAction(args);
@@ -355,6 +358,25 @@ describe("clientAction", () => {
     expect(deps.apiClient.post).toHaveBeenCalledWith("/articles/art-42", {
       description: "Updated name",
       priceInCents: 500,
+      printDetailReceipt: true,
+    });
+  });
+
+  it("posts disabled detail receipts for unchecked article edits", async () => {
+    vi.mocked(deps.apiClient.post).mockResolvedValue({ ok: true, value: undefined });
+
+    const args = buildFormRequest({
+      articleId: "art-42",
+      description: "Updated name",
+      priceInCents: "500",
+    });
+
+    await clientAction(args);
+
+    expect(deps.apiClient.post).toHaveBeenCalledWith("/articles/art-42", {
+      description: "Updated name",
+      priceInCents: 500,
+      printDetailReceipt: false,
     });
   });
 

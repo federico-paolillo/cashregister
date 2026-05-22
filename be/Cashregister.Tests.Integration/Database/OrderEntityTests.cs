@@ -21,6 +21,7 @@ public sealed class OrderEntityTests(
             Id = "some-article-id",
             Description = "Test Article",
             Price = 1200,
+            PrintDetailReceipt = true,
             Retired = false
         };
 
@@ -81,6 +82,7 @@ public sealed class OrderEntityTests(
             Id = "article-for-override",
             Description = "Override Article",
             Price = 500,
+            PrintDetailReceipt = true,
             Retired = false
         };
 
@@ -129,6 +131,7 @@ public sealed class OrderEntityTests(
             Id = "article-no-override",
             Description = "No Override Article",
             Price = 500,
+            PrintDetailReceipt = true,
             Retired = false
         };
 

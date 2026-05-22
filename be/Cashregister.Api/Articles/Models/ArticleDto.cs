@@ -5,7 +5,8 @@ namespace Cashregister.Api.Articles.Models;
 public sealed record ArticleDto(
     string Id,
     string Description,
-    long PriceInCents
+    long PriceInCents,
+    bool PrintDetailReceipt
 )
 {
     public static ArticleDto From(Article article)
@@ -15,7 +16,8 @@ public sealed record ArticleDto(
         return new ArticleDto(
             article.Id.Value,
             article.Description,
-            article.Price.Value
+            article.Price.Value,
+            article.PrintDetailReceipt
         );
     }
 }

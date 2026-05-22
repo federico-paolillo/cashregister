@@ -31,6 +31,7 @@ public sealed class FetchOrderPrintDataQuery(
                     .OrderBy(i => i.Id)
                     .Select(i => new
                     {
+                        i.ArticleId,
                         i.Description,
                         i.Price,
                         i.Quantity
@@ -45,13 +46,22 @@ public sealed class FetchOrderPrintDataQuery(
             return null;
         }
 
+        string[] articleIds = [.. projection.Items.Select(i => i.ArticleId).Distinct()];
+
+        var printDetailReceiptByArticle = await dbContext.Articles
+            .IgnoreQueryFilters()
+            .AsNoTracking()
+            .Where(a => articleIds.Contains(a.Id))
+            .ToDictionaryAsync(a => a.Id, a => a.PrintDetailReceipt);
+
         ImmutableArray<OrderPrintDataItem> items =
         [
             .. projection.Items.Select(i => new OrderPrintDataItem
             {
                 Description = i.Description,
                 Price = Cents.From(i.Price),
-                Quantity = i.Quantity
+                Quantity = i.Quantity,
+                PrintDetailReceipt = printDetailReceiptByArticle[i.ArticleId]
             })
         ];
 

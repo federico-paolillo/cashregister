@@ -13,6 +13,8 @@ public sealed class OrderPrintDataItem
 
     public required uint Quantity { get; init; }
 
+    public required bool PrintDetailReceipt { get; init; }
+
     public Cents Total()
     {
         return Cents.From(Price.Value * Quantity);

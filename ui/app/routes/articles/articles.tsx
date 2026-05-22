@@ -47,6 +47,7 @@ export async function clientAction({ request }: Route.ClientActionArgs) {
   const body: ChangeArticleRequestDto = {
     description: String(formData.get("description")),
     priceInCents: Number(formData.get("priceInCents")),
+    printDetailReceipt: formData.has("printDetailReceipt"),
   };
 
   return await deps.apiClient.post(`/articles/${articleId}`, body);

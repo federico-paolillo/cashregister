@@ -6,6 +6,7 @@ import { useFetcher } from "react-router";
 export interface ArticleFormData {
   description: string;
   priceInCents: number;
+  printDetailReceipt: boolean;
 }
 
 interface ArticleFormProps {
@@ -24,6 +25,7 @@ export function ArticleForm({
   const fetcher = useFetcher<Result<unknown>>();
   const descriptionId = useId();
   const priceId = useId();
+  const printDetailReceiptId = useId();
 
   const pending = fetcher.state !== "idle";
   const idling = fetcher.state === "idle";
@@ -65,6 +67,18 @@ export function ArticleForm({
         defaultCents={initialData?.priceInCents ?? 0}
         required
       />
+      <label
+        htmlFor={printDetailReceiptId}
+        className="flex items-center gap-2 text-sm font-medium text-gray-700"
+      >
+        <input
+          id={printDetailReceiptId}
+          name="printDetailReceipt"
+          type="checkbox"
+          defaultChecked={initialData?.printDetailReceipt ?? true}
+        />
+        Detail receipt
+      </label>
       <div className="flex justify-end gap-2">
         <button
           type="submit"
