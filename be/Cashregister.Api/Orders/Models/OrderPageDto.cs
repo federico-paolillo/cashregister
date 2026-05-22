@@ -14,6 +14,7 @@ public sealed record OrderListItemDto(
     string Id,
     string Number,
     long TotalInCents,
+    long? TotalOverrideInCents,
     long Date
 )
 {
@@ -25,6 +26,7 @@ public sealed record OrderListItemDto(
             order.Id.Value,
             order.Number.Value,
             order.Total.Value,
+            order.TotalOverride?.Value,
             order.Date.Value
         );
     }

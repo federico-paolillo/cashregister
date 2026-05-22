@@ -226,7 +226,7 @@ public sealed class FetchOrdersListQueryTests(
     }
 
     [Fact]
-    public async Task FetchAsync_WithTotalOverride_ShouldReturnOverrideAsTotal()
+    public async Task FetchAsync_WithTotalOverride_ShouldReturnItemAndOverrideTotals()
     {
         await PrepareEnvironmentAsync();
 
@@ -241,7 +241,8 @@ public sealed class FetchOrdersListQueryTests(
 
         Assert.Single(result);
         Assert.Equal(orderId.Value, result[0].Id.Value);
-        Assert.Equal(Cents.From(999L), result[0].Total);
+        Assert.Equal(Cents.From(2000L), result[0].Total);
+        Assert.Equal(Cents.From(999L), result[0].TotalOverride);
     }
 
     private async Task<Identifier> CreateOrderWithOverrideAsync(Identifier articleId, uint quantity,

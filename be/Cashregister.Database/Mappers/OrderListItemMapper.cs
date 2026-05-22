@@ -15,9 +15,8 @@ public sealed class OrderListItemMapper
             Id = Identifier.From(entity.Id),
             Number = OrderNumber.From(entity.RowId),
             Date = TimeStamp.From(entity.Date),
-            Total = entity.TotalOverride != null
-                ? Cents.From(entity.TotalOverride.Value)
-                : Cents.From(entity.Items.Sum(i => i.Quantity * i.Price))
+            Total = Cents.From(entity.Items.Sum(i => i.Quantity * i.Price)),
+            TotalOverride = entity.TotalOverride is not null ? Cents.From(entity.TotalOverride.Value) : null
         };
     }
 }

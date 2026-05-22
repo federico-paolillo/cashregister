@@ -12,10 +12,12 @@ const order: OrderListItemDto = {
   id: "1",
   number: "ORD-001",
   totalInCents: 350,
+  totalOverrideInCents: null,
   date: 1700000000,
 };
 
 function renderRow(props?: {
+  order?: OrderListItemDto;
   striped?: boolean;
   selected?: boolean;
   until?: string | null;
@@ -25,7 +27,7 @@ function renderRow(props?: {
       <table>
         <tbody>
           <OrderRow
-            order={order}
+            order={props?.order ?? order}
             striped={props?.striped ?? false}
             selected={props?.selected ?? false}
             until={props?.until ?? null}
@@ -47,6 +49,18 @@ describe("OrderRow", () => {
     renderRow();
 
     expect(screen.getByText("3.50")).toBeDefined();
+  });
+
+  it("renders an empty overridden total marker without an override", () => {
+    renderRow();
+
+    expect(screen.getByText("-")).toBeDefined();
+  });
+
+  it("renders the formatted overridden total", () => {
+    renderRow({ order: { ...order, totalOverrideInCents: 275 } });
+
+    expect(screen.getByText("2.75")).toBeDefined();
   });
 
   it("renders the formatted date", () => {

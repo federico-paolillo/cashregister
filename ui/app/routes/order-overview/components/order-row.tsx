@@ -23,6 +23,11 @@ export function OrderRow({ order, striped, selected, until }: OrderRowProps) {
         <Link to={to} className="block">{formatPrice(order.totalInCents)}</Link>
       </td>
       <td className="p-2 text-right">
+        <Link to={to} className="block">
+          {order.totalOverrideInCents === null ? "-" : formatPrice(order.totalOverrideInCents)}
+        </Link>
+      </td>
+      <td className="p-2 text-right">
         <Link to={to} className="block">{new Date(order.date * 1000).toLocaleString()}</Link>
       </td>
     </tr>

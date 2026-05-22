@@ -425,7 +425,7 @@ public sealed class OrdersEndpointTests(
     }
 
     [Fact]
-    public async Task CreateAndGetOrder_WithTotalOverride_ReturnsOverrideFields()
+    public async Task CreateAndGetOrder_WithTotalOverride_ReturnsItemAndOverrideTotals()
     {
         await PrepareEnvironmentAsync();
 
@@ -450,7 +450,16 @@ public sealed class OrdersEndpointTests(
         var order = await getResponse.Content.ReadFromJsonAsync<OrderDto>();
         Assert.NotNull(order);
         Assert.Equal(1000L, order.TotalOverrideInCents);
-        Assert.Equal(1000L, order.TotalInCents);
+        Assert.Equal(1500L, order.TotalInCents);
+
+        var ordersResponse = await httpClient.GetAsync("/orders");
+        Assert.True(ordersResponse.IsSuccessStatusCode);
+
+        var ordersPage = await ordersResponse.Content.ReadFromJsonAsync<OrdersPageDto>();
+        Assert.NotNull(ordersPage);
+        Assert.Single(ordersPage.Items);
+        Assert.Equal(1500L, ordersPage.Items[0].TotalInCents);
+        Assert.Equal(1000L, ordersPage.Items[0].TotalOverrideInCents);
     }
 
     [Fact]
@@ -479,7 +488,7 @@ public sealed class OrdersEndpointTests(
         var order = await getResponse.Content.ReadFromJsonAsync<OrderDto>();
         Assert.NotNull(order);
         Assert.Equal(999L, order.TotalOverrideInCents);
-        Assert.Equal(999L, order.TotalInCents);
+        Assert.Equal(1500L, order.TotalInCents);
     }
 
     [Fact]

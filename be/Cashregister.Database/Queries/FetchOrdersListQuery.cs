@@ -24,9 +24,8 @@ public sealed class FetchOrdersListQuery(
             Id = Identifier.From(o.Id),
             Number = OrderNumber.From(o.RowId),
             Date = TimeStamp.From(o.Date),
-            Total = o.TotalOverride != null
-                ? Cents.From(o.TotalOverride.Value)
-                : Cents.From(o.Items.Sum(i => i.Quantity * i.Price))
+            Total = Cents.From(o.Items.Sum(i => i.Quantity * i.Price)),
+            TotalOverride = o.TotalOverride != null ? Cents.From(o.TotalOverride.Value) : null
         };
     }
 }

@@ -19,8 +19,8 @@ afterEach(() => {
 });
 
 const orders: OrderListItemDto[] = [
-  { id: "1", number: "ORD-001", totalInCents: 350, date: 1700000000 },
-  { id: "2", number: "ORD-002", totalInCents: 450, date: 1700100000 },
+  { id: "1", number: "ORD-001", totalInCents: 350, totalOverrideInCents: null, date: 1700000000 },
+  { id: "2", number: "ORD-002", totalInCents: 450, totalOverrideInCents: 400, date: 1700100000 },
 ];
 
 describe("OrdersTable", () => {
@@ -41,6 +41,13 @@ describe("OrdersTable", () => {
     render(<OrdersTable orders={orders} selectedOrderId={null} until={null} />);
 
     expect(screen.queryByRole("columnheader", { name: "Actions" })).toBeNull();
+  });
+
+  it("renders total and overridden total columns", () => {
+    render(<OrdersTable orders={orders} selectedOrderId={null} until={null} />);
+
+    expect(screen.getByRole("columnheader", { name: "Total" })).toBeDefined();
+    expect(screen.getByRole("columnheader", { name: "Overridden Total" })).toBeDefined();
   });
 
   it("renders alternating striped rows", () => {

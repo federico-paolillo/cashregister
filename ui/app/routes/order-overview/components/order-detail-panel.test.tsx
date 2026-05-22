@@ -83,11 +83,13 @@ describe("OrderDetailPanel", () => {
     expect(screen.getByText("15.50")).toBeDefined();
   });
 
-  it("renders the overridden total when present", () => {
+  it("renders the item and overridden totals when an override is present", () => {
     renderPanel({
       order: { ...order, totalOverrideInCents: 1200 },
     });
 
+    expect(screen.getByText("Total")).toBeDefined();
+    expect(screen.getByText("15.50")).toBeDefined();
     expect(screen.getByText("Overridden Total")).toBeDefined();
     expect(screen.getByText("12.00")).toBeDefined();
   });

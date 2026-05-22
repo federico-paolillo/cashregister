@@ -36,6 +36,7 @@ export interface OrderListItemDto {
   id: string;
   number: string;
   totalInCents: number;
+  totalOverrideInCents: number | null;
   date: number;
 }
 

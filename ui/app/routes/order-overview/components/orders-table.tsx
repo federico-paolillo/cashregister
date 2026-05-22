@@ -14,6 +14,7 @@ export function OrdersTable({ orders, selectedOrderId, until }: OrdersTableProps
         <tr className="border-b bg-gray-100 text-left">
           <th className="p-2 font-semibold">Number</th>
           <th className="p-2 font-semibold text-right">Total</th>
+          <th className="p-2 font-semibold text-right">Overridden Total</th>
           <th className="p-2 font-semibold text-right">Date</th>
         </tr>
       </thead>
@@ -29,7 +30,7 @@ export function OrdersTable({ orders, selectedOrderId, until }: OrdersTableProps
         ))}
         {orders.length === 0 && (
           <tr>
-            <td colSpan={3} className="p-4 text-center text-gray-500 text-sm italic">
+            <td colSpan={4} className="p-4 text-center text-gray-500 text-sm italic">
               No orders found.
             </td>
           </tr>

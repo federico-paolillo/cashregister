@@ -40,7 +40,7 @@ public sealed record OrderDto(
             order.Id.Value,
             order.Number.Value,
             order.Date.Value,
-            order.Total().Value,
+            order.Items.Sum(item => item.Price.Value * item.Quantity),
             order.TotalOverride?.Value,
             items
         );

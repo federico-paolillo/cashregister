@@ -301,3 +301,12 @@ Added an always-visible Multiplier keypad to New Order so cashiers can enter a o
 
 - We changed cart insertion to accept a quantity increment because multiplier entry should add to an existing article quantity instead of creating a separate order path.
 - We kept the backend and order request contract unchanged because placed orders already carry article quantities.
+
+## Separate order totals from overrides
+
+Fixed order detail and overview totals so the displayed total is the stored order-item sum and the optional override remains a separate value. The order detail API keeps `totalInCents` and `totalOverrideInCents` distinct for overridden orders, and overview rows now carry both values for the two-column orders table.
+
+### Key decisions
+
+- We kept override-aware domain totals unchanged because this bug concerns order-display contracts, while other workflows use the effective total intentionally.
+- We compute displayed item totals from order-item price snapshots and quantities so later article edits do not rewrite order history.
