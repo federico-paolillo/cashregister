@@ -10,6 +10,8 @@ public sealed class Article
 
     public bool PrintDetailReceipt { get; init; } = true;
 
+    public long? QuantityAvailable { get; init; }
+
     public RetiredArticle Retire()
     {
         return new RetiredArticle

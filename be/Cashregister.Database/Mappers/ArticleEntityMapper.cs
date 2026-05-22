@@ -19,7 +19,8 @@ public sealed class ArticleEntityMapper
             Id = Identifier.From(entity.Id),
             Description = entity.Description,
             Price = Cents.From(entity.Price),
-            PrintDetailReceipt = entity.PrintDetailReceipt
+            PrintDetailReceipt = entity.PrintDetailReceipt,
+            QuantityAvailable = entity.QuantityAvailable
         };
     }
 
@@ -33,6 +34,7 @@ public sealed class ArticleEntityMapper
             Description = article.Description,
             Price = article.Price.Value,
             PrintDetailReceipt = article.PrintDetailReceipt,
+            QuantityAvailable = article.QuantityAvailable,
             Retired = false
         };
     }

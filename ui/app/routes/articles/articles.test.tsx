@@ -39,8 +39,8 @@ vi.mock("@cashregister/deps", () => ({
 
 const pageData: ArticlesPageDto = {
   items: [
-    { id: "1", description: "Article 1", priceInCents: 1000 },
-    { id: "2", description: "Article 2", priceInCents: 2000 },
+    { id: "1", description: "Article 1", priceInCents: 1000, quantityAvailable: null },
+    { id: "2", description: "Article 2", priceInCents: 2000, quantityAvailable: null },
   ],
   next: "cursor-1",
   hasNext: true,
@@ -56,6 +56,7 @@ const article: ArticleDto = {
   description: "Article 1",
   priceInCents: 1000,
   printDetailReceipt: false,
+  quantityAvailable: null,
 };
 
 const articleResult: Result<ArticleDto> = {
@@ -351,6 +352,8 @@ describe("clientAction", () => {
       description: "Updated name",
       priceInCents: "500",
       printDetailReceipt: "on",
+      quantityAvailableEnabled: "on",
+      quantityAvailable: "-3",
     });
 
     await clientAction(args);
@@ -359,6 +362,7 @@ describe("clientAction", () => {
       description: "Updated name",
       priceInCents: 500,
       printDetailReceipt: true,
+      quantityAvailable: -3,
     });
   });
 
@@ -377,6 +381,7 @@ describe("clientAction", () => {
       description: "Updated name",
       priceInCents: 500,
       printDetailReceipt: false,
+      quantityAvailable: null,
     });
   });
 

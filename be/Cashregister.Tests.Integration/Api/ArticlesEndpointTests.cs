@@ -250,7 +250,7 @@ public sealed class ArticlesEndpointTests(
         using var httpClient = CreateHttpClient();
 
         var response = await httpClient.PostAsJsonAsync("/articles",
-            new RegisterArticleRequestDto("Some test article", 1000, true));
+            new RegisterArticleRequestDto("Some test article", 1000, true, null));
 
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
 
@@ -272,7 +272,7 @@ public sealed class ArticlesEndpointTests(
         using var httpClient = CreateHttpClient();
 
         var response = await httpClient.PostAsJsonAsync("/articles",
-            new RegisterArticleRequestDto("Odd cents article", 101, true));
+            new RegisterArticleRequestDto("Odd cents article", 101, true, null));
 
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
 
@@ -286,6 +286,7 @@ public sealed class ArticlesEndpointTests(
         Assert.NotNull(article);
         Assert.Equal(101L, article.PriceInCents);
         Assert.True(article.PrintDetailReceipt);
+        Assert.Null(article.QuantityAvailable);
     }
 
     [Fact]
@@ -296,7 +297,7 @@ public sealed class ArticlesEndpointTests(
         using var httpClient = CreateHttpClient();
 
         var response = await httpClient.PostAsJsonAsync("/articles",
-            new RegisterArticleRequestDto("Overview only article", 101, false));
+            new RegisterArticleRequestDto("Overview only article", 101, false, null));
 
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
 
@@ -309,6 +310,37 @@ public sealed class ArticlesEndpointTests(
         var article = await getResponse.Content.ReadFromJsonAsync<ArticleDto>();
         Assert.NotNull(article);
         Assert.False(article.PrintDetailReceipt);
+    }
+
+    [Fact]
+    public async Task RegisterAndGetArticle_PreservesQuantityAvailable()
+    {
+        await PrepareEnvironmentAsync();
+
+        using var httpClient = CreateHttpClient();
+
+        var response = await httpClient.PostAsJsonAsync("/articles",
+            new RegisterArticleRequestDto("Tracked article", 101, true, 15));
+
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+
+        var entityPointer = await response.Content.ReadFromJsonAsync<EntityPointerDto>();
+        Assert.NotNull(entityPointer);
+
+        var listResponse = await httpClient.GetAsync("/articles");
+        Assert.True(listResponse.IsSuccessStatusCode);
+
+        var page = await listResponse.Content.ReadFromJsonAsync<ArticlesPageDto>();
+        Assert.NotNull(page);
+        Assert.Single(page.Items);
+        Assert.Equal(15, page.Items[0].QuantityAvailable);
+
+        var getResponse = await httpClient.GetAsync($"/articles/{entityPointer.Id}");
+        Assert.True(getResponse.IsSuccessStatusCode);
+
+        var article = await getResponse.Content.ReadFromJsonAsync<ArticleDto>();
+        Assert.NotNull(article);
+        Assert.Equal(15, article.QuantityAvailable);
     }
 
     [Fact]
@@ -337,7 +369,7 @@ public sealed class ArticlesEndpointTests(
         using var httpClient = CreateHttpClient();
 
         var response = await httpClient.PostAsJsonAsync($"/articles/{articleId.Value}",
-            new ChangeArticleRequestDto("Configurable article", 500, false));
+            new ChangeArticleRequestDto("Configurable article", 500, false, null));
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
 
@@ -347,6 +379,40 @@ public sealed class ArticlesEndpointTests(
         var article = await getResponse.Content.ReadFromJsonAsync<ArticleDto>();
         Assert.NotNull(article);
         Assert.False(article.PrintDetailReceipt);
+    }
+
+    [Fact]
+    public async Task ChangeArticle_UpdatesAndDisablesQuantityAvailable()
+    {
+        await PrepareEnvironmentAsync();
+
+        var articleId = await CreateArticleAsync("Quantity article", 500);
+
+        using var httpClient = CreateHttpClient();
+
+        var updateResponse = await httpClient.PostAsJsonAsync($"/articles/{articleId.Value}",
+            new ChangeArticleRequestDto("Quantity article", 500, true, -2));
+
+        Assert.Equal(HttpStatusCode.NoContent, updateResponse.StatusCode);
+
+        var getResponse = await httpClient.GetAsync($"/articles/{articleId.Value}");
+        Assert.True(getResponse.IsSuccessStatusCode);
+
+        var article = await getResponse.Content.ReadFromJsonAsync<ArticleDto>();
+        Assert.NotNull(article);
+        Assert.Equal(-2, article.QuantityAvailable);
+
+        var disableResponse = await httpClient.PostAsJsonAsync($"/articles/{articleId.Value}",
+            new ChangeArticleRequestDto("Quantity article", 500, true, null));
+
+        Assert.Equal(HttpStatusCode.NoContent, disableResponse.StatusCode);
+
+        getResponse = await httpClient.GetAsync($"/articles/{articleId.Value}");
+        Assert.True(getResponse.IsSuccessStatusCode);
+
+        article = await getResponse.Content.ReadFromJsonAsync<ArticleDto>();
+        Assert.NotNull(article);
+        Assert.Null(article.QuantityAvailable);
     }
 
     [Fact]

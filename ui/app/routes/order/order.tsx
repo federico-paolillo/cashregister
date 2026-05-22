@@ -97,6 +97,14 @@ export default function Order({ loaderData, actionData }: Route.ComponentProps) 
   const totalOverrideCents = decimalToCents(totalOverride);
   const hasOverride = totalOverride.trim() !== "" && totalOverrideCents !== null;
   const displayTotalCents = hasOverride ? totalOverrideCents : computedTotalCents;
+  const lowQuantityArticleIds = new Set(
+    articles
+      .filter((article) =>
+        article.quantityAvailable != null
+        && article.quantityAvailable - (cart.get(article.id)?.quantity ?? 0)
+          <= deps.lowQuantityWarningThreshold)
+      .map((article) => article.id),
+  );
 
   useLoaderError(loaderData);
 
@@ -142,7 +150,11 @@ export default function Order({ loaderData, actionData }: Route.ComponentProps) 
         <div className="flex-7 overflow-auto p-4 border-r">
           <div className="flex gap-4">
             <div className="min-w-0 flex-1">
-              <ArticleSelector articles={articles} onSelect={selectArticle} />
+              <ArticleSelector
+                articles={articles}
+                lowQuantityArticleIds={lowQuantityArticleIds}
+                onSelect={selectArticle}
+              />
             </div>
             <OrderMultiplier
               value={multiplier}
@@ -172,6 +184,7 @@ export default function Order({ loaderData, actionData }: Route.ComponentProps) 
               hasOverride={hasOverride}
               displayTotalCents={displayTotalCents}
               totalOverride={totalOverride}
+              lowQuantityArticleIds={lowQuantityArticleIds}
               onTotalOverrideChange={setTotalOverride}
               onDecrease={(articleId) => dispatch({ type: "decrease", articleId })}
               onRemove={(articleId) => dispatch({ type: "remove", articleId })}

@@ -8,6 +8,7 @@ export interface ArticleListItemDto {
   id: string;
   description: string;
   priceInCents: number;
+  quantityAvailable: number | null;
 }
 
 export interface ArticleDto {
@@ -15,18 +16,21 @@ export interface ArticleDto {
   description: string;
   priceInCents: number;
   printDetailReceipt: boolean;
+  quantityAvailable: number | null;
 }
 
 export interface RegisterArticleRequestDto {
   description: string;
   priceInCents: number;
   printDetailReceipt: boolean;
+  quantityAvailable: number | null;
 }
 
 export interface ChangeArticleRequestDto {
   description: string;
   priceInCents: number;
   printDetailReceipt: boolean;
+  quantityAvailable: number | null;
 }
 
 export interface OrdersPageDto {

@@ -27,6 +27,7 @@ vi.mock("@cashregister/deps", () => ({
     apiClient: {
       post: vi.fn(),
     },
+    lowQuantityWarningThreshold: 5,
   },
 }));
 
@@ -35,8 +36,8 @@ vi.mock("@cashregister/components/use-error-messages", () => ({
 }));
 
 const articles = [
-  { id: "art1", description: "Espresso", priceInCents: 300 },
-  { id: "art2", description: "Latte", priceInCents: 450 },
+  { id: "art1", description: "Espresso", priceInCents: 300, quantityAvailable: null },
+  { id: "art2", description: "Latte", priceInCents: 450, quantityAvailable: null },
 ];
 
 const loaderResult = { ok: true as const, value: { next: null, hasNext: false, items: articles } };
@@ -212,6 +213,72 @@ describe("Order", () => {
     expect(screen.getByText("No items yet.")).toBeDefined();
   });
 
+  it("warns on selector and summary when cart reaches the quantity threshold", () => {
+    renderOrder({
+      loaderData: {
+        ok: true,
+        value: {
+          next: null,
+          hasNext: false,
+          items: [{ ...articles[0], quantityAvailable: 6 }],
+        },
+      },
+    });
+
+    const articleButton = screen.getByRole("button", { name: /^Espresso/i });
+    expect(articleButton.className).not.toContain("bg-orange");
+
+    fireEvent.click(articleButton);
+
+    expect(articleButton.className).toContain("bg-orange-100");
+    expect(articleButton.className).toContain("text-orange-900");
+    expect(articleButton.querySelector("div:last-child")?.className).toContain("text-orange-700");
+
+    const summaryEntry = screen.getByText(/Espresso × 1/).closest("div");
+    expect(summaryEntry?.className).toContain("bg-orange-100");
+    expect(summaryEntry?.className).toContain("text-orange-900");
+    expect(screen.getByRole("button", { name: "Decrease Espresso" }).className).toContain("bg-orange-200");
+    expect(screen.getByRole("button", { name: "Remove Espresso" }).className).toContain("text-orange-800");
+  });
+
+  it("clears quantity warning when cart quantity moves above the threshold", () => {
+    renderOrder({
+      loaderData: {
+        ok: true,
+        value: {
+          next: null,
+          hasNext: false,
+          items: [{ ...articles[0], quantityAvailable: 7 }],
+        },
+      },
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: /^Espresso/i }));
+    fireEvent.click(screen.getByRole("button", { name: /^Espresso/i }));
+
+    expect(screen.getByRole("button", { name: /^Espresso/i }).className).toContain("bg-orange-100");
+
+    fireEvent.click(screen.getByRole("button", { name: "Decrease Espresso" }));
+
+    expect(screen.getByRole("button", { name: /^Espresso/i }).className).not.toContain("bg-orange");
+    expect(screen.getByText(/Espresso × 1/).closest("div")?.className).not.toContain("bg-orange");
+  });
+
+  it("warns immediately for stored enabled quantity at the threshold", () => {
+    renderOrder({
+      loaderData: {
+        ok: true,
+        value: {
+          next: null,
+          hasNext: false,
+          items: [{ ...articles[0], quantityAvailable: 5 }],
+        },
+      },
+    });
+
+    expect(screen.getByRole("button", { name: /^Espresso/i }).className).toContain("bg-orange-100");
+  });
+
   it("resets cart when action succeeds", () => {
     const { rerender } = renderOrder();
     fireEvent.click(screen.getByRole("button", { name: /^Espresso/i }));
@@ -370,8 +437,8 @@ describe("clientAction", () => {
   });
 });
 
-const espresso = { id: "art1", description: "Espresso", priceInCents: 300 };
-const latte = { id: "art2", description: "Latte", priceInCents: 450 };
+const espresso = { id: "art1", description: "Espresso", priceInCents: 300, quantityAvailable: null };
+const latte = { id: "art2", description: "Latte", priceInCents: 450, quantityAvailable: null };
 
 describe("cartReducer", () => {
   it("adds an article with quantity 1", () => {

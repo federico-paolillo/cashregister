@@ -13,7 +13,8 @@ public sealed record ArticlesPageDto(
 public sealed record ArticleListItemDto(
     string Id,
     string Description,
-    long PriceInCents
+    long PriceInCents,
+    long? QuantityAvailable
 )
 {
     public static ArticleListItemDto From(ArticleListItem article)
@@ -23,7 +24,8 @@ public sealed record ArticleListItemDto(
         return new ArticleListItemDto(
             article.Id.Value,
             article.Description,
-            article.Price.Value
+            article.Price.Value,
+            article.QuantityAvailable
         );
     }
 }

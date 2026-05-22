@@ -74,6 +74,7 @@ public static class ServiceCollectionExtensions
     private static void AddQueriesAndCommands(IServiceCollection services)
     {
         services.AddScoped<ISaveOrderCommand, SaveOrderCommand>();
+        services.AddScoped<IDecrementArticleAvailabilityCommand, DecrementArticleAvailabilityCommand>();
         services.AddScoped<IFetchArticlesQuery, FetchArticlesQuery>();
         services.AddScoped<IFetchOrderQuery, FetchOrderQuery>();
         services.AddScoped<IFetchOrderPrintDataQuery, FetchOrderPrintDataQuery>();

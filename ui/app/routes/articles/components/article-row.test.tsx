@@ -12,9 +12,11 @@ const article: ArticleListItemDto = {
   id: "1",
   description: "Espresso",
   priceInCents: 350,
+  quantityAvailable: null,
 };
 
 function renderRow(props?: {
+  article?: ArticleListItemDto;
   striped?: boolean;
   selected?: boolean;
   until?: string | null;
@@ -24,7 +26,7 @@ function renderRow(props?: {
       <table>
         <tbody>
           <ArticleRow
-            article={article}
+            article={props?.article ?? article}
             striped={props?.striped ?? false}
             selected={props?.selected ?? false}
             until={props?.until ?? null}
@@ -46,6 +48,18 @@ describe("ArticleRow", () => {
     renderRow();
 
     expect(screen.getByText("3.50")).toBeDefined();
+  });
+
+  it("renders a dash when quantity tracking is disabled", () => {
+    renderRow();
+
+    expect(screen.getByText("-")).toBeDefined();
+  });
+
+  it("renders the available quantity when tracking is enabled", () => {
+    renderRow({ article: { ...article, quantityAvailable: 0 } });
+
+    expect(screen.getByText("0")).toBeDefined();
   });
 
   it("links to the selected article on the articles route", () => {

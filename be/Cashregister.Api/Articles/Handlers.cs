@@ -76,7 +76,8 @@ internal static class Handlers
         {
             Description = request.Description,
             Price = Cents.From(request.PriceInCents),
-            PrintDetailReceipt = request.PrintDetailReceipt.Value
+            PrintDetailReceipt = request.PrintDetailReceipt.Value,
+            QuantityAvailable = request.QuantityAvailable
         };
 
         var result = await registerArticleTransaction.ExecuteAsync(articleDefinition);
@@ -136,7 +137,8 @@ internal static class Handlers
             Id = Identifier.From(id),
             Description = request.Description,
             Price = Cents.From(request.PriceInCents),
-            PrintDetailReceipt = request.PrintDetailReceipt.Value
+            PrintDetailReceipt = request.PrintDetailReceipt.Value,
+            QuantityAvailable = request.QuantityAvailable
         };
 
         var result = await changeArticleTransaction.ExecuteAsync(articleChange);

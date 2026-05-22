@@ -9,4 +9,6 @@ public sealed class ArticleDefinition
     public required Cents Price { get; init; }
 
     public bool PrintDetailReceipt { get; init; } = true;
+
+    public long? QuantityAvailable { get; init; }
 }

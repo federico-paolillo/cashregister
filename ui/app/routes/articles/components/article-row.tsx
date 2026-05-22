@@ -22,6 +22,9 @@ export function ArticleRow({ article, striped, selected, until }: ArticleRowProp
       <td className="p-2 text-right">
         <Link to={to} className="block">{formatPrice(article.priceInCents)}</Link>
       </td>
+      <td className="p-2 text-right">
+        <Link to={to} className="block">{article.quantityAvailable ?? "-"}</Link>
+      </td>
     </tr>
   );
 }

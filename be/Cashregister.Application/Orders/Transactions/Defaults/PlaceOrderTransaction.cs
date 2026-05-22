@@ -10,6 +10,7 @@ namespace Cashregister.Application.Orders.Transactions.Defaults;
 
 public sealed class PlaceOrderTransaction(
     IFetchArticlesQuery fetchArticlesQuery,
+    IDecrementArticleAvailabilityCommand decrementArticleAvailabilityCommand,
     ISaveOrderCommand saveOrderCommand,
     IUnitOfWork unitOfWork
 ) :
@@ -61,6 +62,7 @@ public sealed class PlaceOrderTransaction(
         };
 
         await saveOrderCommand.SaveAsync(pendingOrder);
+        await decrementArticleAvailabilityCommand.DecrementAsync(orderRequest.Items);
 
         return Result.Ok(pendingOrder.Id);
     }

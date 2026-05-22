@@ -27,6 +27,7 @@ public sealed class SaveArticleCommand(
             maybeArticleEntity.Description = article.Description;
             maybeArticleEntity.Price = article.Price.Value;
             maybeArticleEntity.PrintDetailReceipt = article.PrintDetailReceipt;
+            maybeArticleEntity.QuantityAvailable = article.QuantityAvailable;
         }
     }
 

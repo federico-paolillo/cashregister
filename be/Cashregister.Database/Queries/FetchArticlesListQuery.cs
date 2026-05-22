@@ -21,7 +21,8 @@ public sealed class FetchArticlesListQuery(
         {
             Id = Identifier.From(a.Id),
             Description = a.Description,
-            Price = Cents.From(a.Price)
+            Price = Cents.From(a.Price),
+            QuantityAvailable = a.QuantityAvailable
         };
     }
 }

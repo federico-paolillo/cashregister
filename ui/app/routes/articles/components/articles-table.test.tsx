@@ -17,8 +17,8 @@ vi.mock("react-router", async (importOriginal) => {
 afterEach(cleanup);
 
 const articles: ArticleListItemDto[] = [
-  { id: "1", description: "Espresso", priceInCents: 350 },
-  { id: "2", description: "Latte", priceInCents: 450 },
+  { id: "1", description: "Espresso", priceInCents: 350, quantityAvailable: null },
+  { id: "2", description: "Latte", priceInCents: 450, quantityAvailable: -2 },
 ];
 
 describe("ArticlesTable", () => {
@@ -29,10 +29,18 @@ describe("ArticlesTable", () => {
     expect(screen.getByText("Latte")).toBeDefined();
   });
 
+  it("renders the available quantity column", () => {
+    render(<ArticlesTable articles={articles} selectedArticleId={null} until={null} />);
+
+    expect(screen.getByRole("columnheader", { name: "Available quantity" })).toBeDefined();
+    expect(screen.getByText("-2")).toBeDefined();
+    expect(screen.getByText("-")).toBeDefined();
+  });
+
   it("shows the empty message when there are no articles", () => {
     render(<ArticlesTable articles={[]} selectedArticleId={null} until={null} />);
 
-    expect(screen.getByText("No articles found.")).toBeDefined();
+    expect(screen.getByText("No articles found.")).toHaveProperty("colSpan", 3);
   });
 
   it("does not render the actions column", () => {

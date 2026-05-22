@@ -351,3 +351,35 @@ Added an article checkbox that controls whether that article emits per-unit deta
 - We read the article setting from current article state during printing so later edits affect reprints without copying receipt configuration into historical order items.
 - We require the article write API to receive the boolean explicitly while the frontend creation checkbox starts checked to preserve the operator default.
 - We keep receipt price and description content on order-item snapshots while filtering only the per-unit detail programs from current article configuration.
+
+## Soft article availability warnings
+
+Added optional article availability balances that can be enabled from bulk creation or article editing. New orders decrement enabled balances without blocking oversell, and the order screen highlights selector buttons and summary entries when the current cart would leave an enabled article at or below the configured warning threshold.
+
+### ExecPlan
+
+`plans/soft-article-availability.md`
+
+### Key decisions
+
+- We use nullable article quantity as the disabled state so existing articles migrate with soft inventory off.
+- We warn from projected cart balance in the frontend because the cashier needs the signal before placing the order.
+- We keep application-side decrements soft and manually correctable instead of adding reservations, hard rejection, or locking behavior for future concurrent registers.
+
+## Soft availability warning palette refinement
+
+Adjusted low-availability order styling so warning text stays visibly orange and the summary row controls get orange surfaces instead of transparent icon buttons.
+
+### Key decisions
+
+- We avoid near-black orange text shades in the warning state because the warning should read as orange throughout the article button and summary entry.
+- We assert both warning text and warning control surfaces in order UI tests so later styling changes do not quietly reintroduce neutral button text.
+
+## Articles availability overview column
+
+Added available quantity to the Articles table after price so cashiers can scan soft article balances without opening each article editor.
+
+### Key decisions
+
+- We reuse the quantity already present in article list data instead of adding a table-specific backend path.
+- We render disabled quantity tracking as `-` and keep the management table plain because low-quantity warning colors belong to order-taking.

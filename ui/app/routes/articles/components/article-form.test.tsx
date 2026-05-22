@@ -45,7 +45,12 @@ describe("ArticleForm", () => {
     render(
       <ArticleForm
         articleId="abc-123"
-        initialData={{ description: "Latte", priceInCents: 450, printDetailReceipt: false }}
+        initialData={{
+          description: "Latte",
+          priceInCents: 450,
+          printDetailReceipt: false,
+          quantityAvailable: 12,
+        }}
       />,
     );
 
@@ -61,6 +66,14 @@ describe("ArticleForm", () => {
       "checked",
       false,
     );
+    expect(screen.getByLabelText("Quantity available")).toHaveProperty(
+      "checked",
+      true,
+    );
+    expect(screen.getByLabelText("Available pieces")).toHaveProperty(
+      "value",
+      "12",
+    );
   });
 
   it("defaults detail receipts to enabled", () => {
@@ -68,6 +81,19 @@ describe("ArticleForm", () => {
 
     expect(screen.getByLabelText("Detail receipt")).toHaveProperty(
       "checked",
+      true,
+    );
+  });
+
+  it("defaults quantity available to disabled", () => {
+    render(<ArticleForm articleId="abc-123" />);
+
+    expect(screen.getByLabelText("Quantity available")).toHaveProperty(
+      "checked",
+      false,
+    );
+    expect(screen.getByLabelText("Available pieces")).toHaveProperty(
+      "disabled",
       true,
     );
   });

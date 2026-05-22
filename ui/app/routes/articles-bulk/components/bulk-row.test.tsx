@@ -11,6 +11,8 @@ describe("BulkRow", () => {
     expect(screen.getByLabelText("Description")).toBeDefined();
     expect(screen.getByLabelText("Price")).toBeDefined();
     expect(screen.getByLabelText("Detail receipt")).toBeDefined();
+    expect(screen.getByLabelText("Quantity available")).toBeDefined();
+    expect(screen.getByLabelText("Available pieces")).toBeDefined();
   });
 
   it("does not show the Remove button when canRemove is false", () => {
@@ -56,5 +58,17 @@ describe("BulkRow", () => {
     expect(screen.getByLabelText("Detail receipt")).toHaveProperty("checked", true);
     expect(screen.getByLabelText("Detail receipt")).toHaveProperty("value", "42");
     expect(document.querySelector<HTMLInputElement>('input[name="rowId"]')?.value).toBe("42");
+  });
+
+  it("defaults quantity available to disabled", () => {
+    render(<BulkRow rowId={42} onRemove={vi.fn()} canRemove={false} />);
+
+    expect(screen.getByLabelText("Quantity available")).toHaveProperty("checked", false);
+    expect(screen.getByLabelText("Available pieces")).toHaveProperty("disabled", true);
+
+    fireEvent.click(screen.getByLabelText("Quantity available"));
+
+    expect(screen.getByLabelText("Available pieces")).toHaveProperty("disabled", false);
+    expect(screen.getByLabelText("Available pieces")).toHaveProperty("name", "quantityAvailable-42");
   });
 });

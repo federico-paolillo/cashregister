@@ -3,6 +3,7 @@ import { mustParseConfiguration } from "@cashregister/settings";
 
 export interface Deps {
   apiClient: ApiClient;
+  lowQuantityWarningThreshold: number;
 }
 
 function makeDeps(): Deps {
@@ -10,6 +11,7 @@ function makeDeps(): Deps {
 
   return {
     apiClient: new ApiClient(settings.apiBaseUrl),
+    lowQuantityWarningThreshold: settings.lowQuantityWarningThreshold,
   };
 }
 

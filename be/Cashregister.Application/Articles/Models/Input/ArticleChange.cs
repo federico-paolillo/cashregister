@@ -11,4 +11,6 @@ public sealed class ArticleChange
     public required Cents Price { get; init; }
 
     public bool PrintDetailReceipt { get; init; } = true;
+
+    public long? QuantityAvailable { get; init; }
 }

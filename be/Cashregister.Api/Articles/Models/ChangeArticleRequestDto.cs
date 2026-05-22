@@ -3,5 +3,6 @@ namespace Cashregister.Api.Articles.Models;
 public sealed record ChangeArticleRequestDto(
     string Description,
     long PriceInCents,
-    bool? PrintDetailReceipt
+    bool? PrintDetailReceipt,
+    long? QuantityAvailable
 );

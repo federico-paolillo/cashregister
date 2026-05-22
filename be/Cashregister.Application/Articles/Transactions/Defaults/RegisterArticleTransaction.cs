@@ -24,7 +24,8 @@ public sealed class RegisterArticleTransaction(
             Id = newArticleId,
             Description = articleDefinition.Description,
             Price = articleDefinition.Price,
-            PrintDetailReceipt = articleDefinition.PrintDetailReceipt
+            PrintDetailReceipt = articleDefinition.PrintDetailReceipt,
+            QuantityAvailable = articleDefinition.QuantityAvailable
         };
 
         await saveArticleCommand.SaveAsync(article);

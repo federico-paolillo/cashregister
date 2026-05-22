@@ -14,6 +14,7 @@ export function ArticlesTable({ articles, selectedArticleId, until }: ArticlesTa
         <tr className="border-b bg-gray-100 text-left">
           <th className="p-2 font-semibold">Name</th>
           <th className="p-2 font-semibold text-right">Price</th>
+          <th className="p-2 font-semibold text-right">Available quantity</th>
         </tr>
       </thead>
       <tbody>
@@ -28,7 +29,7 @@ export function ArticlesTable({ articles, selectedArticleId, until }: ArticlesTa
         ))}
         {articles.length === 0 && (
           <tr>
-            <td colSpan={2} className="p-4 text-center text-gray-500 text-sm italic">
+            <td colSpan={3} className="p-4 text-center text-gray-500 text-sm italic">
               No articles found.
             </td>
           </tr>

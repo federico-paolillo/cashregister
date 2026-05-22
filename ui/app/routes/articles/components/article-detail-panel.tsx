@@ -60,6 +60,7 @@ export function ArticleDetailPanel({ article, closeTo }: ArticleDetailPanelProps
             description: article.description,
             priceInCents: article.priceInCents,
             printDetailReceipt: article.printDetailReceipt,
+            quantityAvailable: article.quantityAvailable,
           }}
           onError={(message) => addError(message)}
         />

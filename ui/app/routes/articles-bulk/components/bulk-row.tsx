@@ -1,4 +1,4 @@
-import { useId } from "react";
+import { useId, useState } from "react";
 import { MoneyInput } from "@cashregister/components/money-input";
 
 interface BulkRowProps {
@@ -12,6 +12,9 @@ export function BulkRow({ rowId, onRemove, canRemove }: BulkRowProps) {
   const descriptionId = `${id}-description`;
   const priceId = `${id}-price`;
   const printDetailReceiptId = `${id}-print-detail-receipt`;
+  const quantityAvailableEnabledId = `${id}-quantity-available-enabled`;
+  const quantityAvailableId = `${id}-quantity-available`;
+  const [quantityAvailableEnabled, setQuantityAvailableEnabled] = useState(false);
 
   return (
     <div className="flex gap-4 items-end rounded border border-gray-200 p-4">
@@ -48,6 +51,37 @@ export function BulkRow({ rowId, onRemove, canRemove }: BulkRowProps) {
         />
         Detail receipt
       </label>
+      <div className="flex w-44 flex-col gap-2">
+        <label
+          htmlFor={quantityAvailableEnabledId}
+          className="flex items-center gap-2 text-sm font-medium text-gray-700"
+        >
+          <input
+            id={quantityAvailableEnabledId}
+            name="quantityAvailableEnabled"
+            type="checkbox"
+            value={rowId}
+            checked={quantityAvailableEnabled}
+            onChange={(event) => setQuantityAvailableEnabled(event.currentTarget.checked)}
+          />
+          Quantity available
+        </label>
+        <div className="flex flex-col gap-1">
+          <label htmlFor={quantityAvailableId} className="text-sm font-medium text-gray-700">
+            Available pieces
+          </label>
+          <input
+            id={quantityAvailableId}
+            name={`quantityAvailable-${rowId}`}
+            type="number"
+            step="1"
+            defaultValue={0}
+            disabled={!quantityAvailableEnabled}
+            required={quantityAvailableEnabled}
+            className="input-field"
+          />
+        </div>
+      </div>
       {canRemove && (
         <button
           type="button"

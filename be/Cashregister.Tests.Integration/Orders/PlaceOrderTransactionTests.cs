@@ -1,3 +1,4 @@
+using Cashregister.Application.Articles.Data;
 using Cashregister.Application.Articles.Models.Input;
 using Cashregister.Application.Articles.Transactions;
 using Cashregister.Application.Orders.Data;
@@ -102,5 +103,84 @@ public sealed class PlaceOrderTransactionTests(
         Assert.NotNull(order);
         Assert.Equal(Cents.From(350L), order.Total());
         Assert.Equal(Cents.From(350L), order.TotalOverride);
+    }
+
+    [Fact]
+    public async Task PlaceOrderTransaction_ShouldDecrementQuantityAvailableBelowZero()
+    {
+        await PrepareEnvironmentAsync();
+
+        var registerArticleResult = await RunScoped<IRegisterArticleTransaction, Result<Identifier>>(tx =>
+            tx.ExecuteAsync(new ArticleDefinition
+            {
+                Description = "Tracked article",
+                Price = Cents.From(100L),
+                QuantityAvailable = 3
+            })
+        );
+
+        Assert.True(registerArticleResult.Ok);
+
+        var articleId = registerArticleResult.Value;
+
+        var placeOrderResult = await RunScoped<IPlaceOrderTransaction, Result<Identifier>>(tx =>
+            tx.ExecuteAsync(new OrderRequest
+            {
+                Items =
+                    [
+                        new OrderRequestItem
+                        {
+                            Article = articleId,
+                            Quantity = 5
+                        }
+                    ]
+            })
+        );
+
+        Assert.True(placeOrderResult.Ok);
+
+        var article = await RunScoped<IFetchArticleQuery, Article?>(q => q.FetchAsync(articleId));
+
+        Assert.NotNull(article);
+        Assert.Equal(-2, article.QuantityAvailable);
+    }
+
+    [Fact]
+    public async Task PlaceOrderTransaction_ShouldLeaveDisabledQuantityAvailableUnchanged()
+    {
+        await PrepareEnvironmentAsync();
+
+        var registerArticleResult = await RunScoped<IRegisterArticleTransaction, Result<Identifier>>(tx =>
+            tx.ExecuteAsync(new ArticleDefinition
+            {
+                Description = "Untracked article",
+                Price = Cents.From(100L)
+            })
+        );
+
+        Assert.True(registerArticleResult.Ok);
+
+        var articleId = registerArticleResult.Value;
+
+        var placeOrderResult = await RunScoped<IPlaceOrderTransaction, Result<Identifier>>(tx =>
+            tx.ExecuteAsync(new OrderRequest
+            {
+                Items =
+                    [
+                        new OrderRequestItem
+                        {
+                            Article = articleId,
+                            Quantity = 2
+                        }
+                    ]
+            })
+        );
+
+        Assert.True(placeOrderResult.Ok);
+
+        var article = await RunScoped<IFetchArticleQuery, Article?>(q => q.FetchAsync(articleId));
+
+        Assert.NotNull(article);
+        Assert.Null(article.QuantityAvailable);
     }
 }

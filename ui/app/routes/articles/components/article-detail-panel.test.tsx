@@ -37,6 +37,7 @@ const article: ArticleDto = {
   description: "Espresso",
   priceInCents: 350,
   printDetailReceipt: true,
+  quantityAvailable: null,
 };
 
 describe("ArticleDetailPanel", () => {
@@ -91,6 +92,7 @@ describe("ArticleDetailPanel", () => {
           description: "Latte",
           priceInCents: 450,
           printDetailReceipt: false,
+          quantityAvailable: 7,
         }}
         closeTo="/articles"
       />,

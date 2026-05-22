@@ -31,7 +31,8 @@ public sealed class ChangeArticleTransaction(
             Id = change.Id,
             Description = change.Description,
             Price = change.Price,
-            PrintDetailReceipt = change.PrintDetailReceipt
+            PrintDetailReceipt = change.PrintDetailReceipt,
+            QuantityAvailable = change.QuantityAvailable
         };
 
         await saveArticleCommand.SaveAsync(updatedArticle);

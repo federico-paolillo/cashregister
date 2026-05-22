@@ -1,12 +1,13 @@
 import { MoneyInput } from "@cashregister/components/money-input";
 import type { Result } from "@cashregister/result";
-import { useEffect, useId, useRef } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { useFetcher } from "react-router";
 
 export interface ArticleFormData {
   description: string;
   priceInCents: number;
   printDetailReceipt: boolean;
+  quantityAvailable: number | null;
 }
 
 interface ArticleFormProps {
@@ -26,6 +27,11 @@ export function ArticleForm({
   const descriptionId = useId();
   const priceId = useId();
   const printDetailReceiptId = useId();
+  const quantityAvailableEnabledId = useId();
+  const quantityAvailableId = useId();
+  const [quantityAvailableEnabled, setQuantityAvailableEnabled] = useState(
+    initialData?.quantityAvailable != null,
+  );
 
   const pending = fetcher.state !== "idle";
   const idling = fetcher.state === "idle";
@@ -79,6 +85,36 @@ export function ArticleForm({
         />
         Detail receipt
       </label>
+      <fieldset className="flex flex-col gap-3 rounded border border-gray-200 p-3">
+        <label
+          htmlFor={quantityAvailableEnabledId}
+          className="flex items-center gap-2 text-sm font-medium text-gray-700"
+        >
+          <input
+            id={quantityAvailableEnabledId}
+            name="quantityAvailableEnabled"
+            type="checkbox"
+            checked={quantityAvailableEnabled}
+            onChange={(event) => setQuantityAvailableEnabled(event.currentTarget.checked)}
+          />
+          Quantity available
+        </label>
+        <div className="flex flex-col gap-1">
+          <label htmlFor={quantityAvailableId} className="text-sm font-medium text-gray-700">
+            Available pieces
+          </label>
+          <input
+            id={quantityAvailableId}
+            name="quantityAvailable"
+            type="number"
+            step="1"
+            defaultValue={initialData?.quantityAvailable ?? 0}
+            disabled={!quantityAvailableEnabled}
+            required={quantityAvailableEnabled}
+            className="input-field"
+          />
+        </div>
+      </fieldset>
       <div className="flex justify-end gap-2">
         <button
           type="submit"

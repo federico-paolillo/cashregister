@@ -13,6 +13,7 @@ export async function clientAction({ request }: Route.ClientActionArgs) {
   const prices = formData.getAll("priceInCents") as string[];
   const rowIds = formData.getAll("rowId") as string[];
   const detailReceiptRowIds = new Set(formData.getAll("printDetailReceipt") as string[]);
+  const quantityAvailableRowIds = new Set(formData.getAll("quantityAvailableEnabled") as string[]);
 
   const results = await Promise.all(
     descriptions.map((description, i) => {
@@ -20,6 +21,9 @@ export async function clientAction({ request }: Route.ClientActionArgs) {
         description,
         priceInCents: Number(prices[i]),
         printDetailReceipt: detailReceiptRowIds.has(rowIds[i]),
+        quantityAvailable: quantityAvailableRowIds.has(rowIds[i])
+          ? Number(formData.get(`quantityAvailable-${rowIds[i]}`))
+          : null,
       };
 
       return deps.apiClient.post("/articles", body);

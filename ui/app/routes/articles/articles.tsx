@@ -44,10 +44,15 @@ export async function clientAction({ request }: Route.ClientActionArgs) {
     return failure({ message: "missing article id", status: 400 });
   }
 
+  const quantityAvailable = formData.has("quantityAvailableEnabled")
+    ? Number(formData.get("quantityAvailable"))
+    : null;
+
   const body: ChangeArticleRequestDto = {
     description: String(formData.get("description")),
     priceInCents: Number(formData.get("priceInCents")),
     printDetailReceipt: formData.has("printDetailReceipt"),
+    quantityAvailable,
   };
 
   return await deps.apiClient.post(`/articles/${articleId}`, body);

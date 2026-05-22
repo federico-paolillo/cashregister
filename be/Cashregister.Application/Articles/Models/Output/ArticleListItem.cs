@@ -10,4 +10,6 @@ public sealed class ArticleListItem : IPageItem
     public required Cents Price { get; init; }
 
     public required Identifier Id { get; init; }
+
+    public long? QuantityAvailable { get; init; }
 }

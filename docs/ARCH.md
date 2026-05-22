@@ -71,7 +71,7 @@ Persistence is implemented with EF Core and SQLite in `Cashregister.Database`.
 
 `ApplicationDbContext` implements both `IApplicationDbContext` and `IUnitOfWork`. Starting and rolling back are no-ops for EF because a scoped `DbContext` begins tracking on construction and discards unsaved changes on disposal. `SaveChangesAsync` commits successful transactions.
 
-Money columns such as `ArticleEntity.Price`, `OrderItemEntity.Price`, and `OrderEntity.TotalOverride` are stored as `long` cents. Their database names are intentionally domain-oriented, while API DTO names use explicit `*InCents` suffixes. Articles also persist `PrintDetailReceipt`, the current article-level selection for whether order printing emits per-unit detail receipts.
+Money columns such as `ArticleEntity.Price`, `OrderItemEntity.Price`, and `OrderEntity.TotalOverride` are stored as `long` cents. Their database names are intentionally domain-oriented, while API DTO names use explicit `*InCents` suffixes. Articles also persist `PrintDetailReceipt`, the current article-level selection for whether order printing emits per-unit detail receipts, and nullable `QuantityAvailable`, a manually editable soft availability balance disabled when unset.
 
 The database connection is configured from `DataSource`. At runtime, `be/Cashregister.Api/Program.cs` adds environment variables with the `CASHREGISTER_` prefix, so `CASHREGISTER_DATASOURCE` supplies this value. The development launch profile sets it to `cashregister.db`.
 

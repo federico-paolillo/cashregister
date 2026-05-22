@@ -109,7 +109,12 @@ describe("ArticlesBulk", () => {
 });
 
 function buildBulkFormRequest(
-  articles: Array<{ description: string; priceInCents: string; printDetailReceipt?: boolean }>,
+  articles: Array<{
+    description: string;
+    priceInCents: string;
+    printDetailReceipt?: boolean;
+    quantityAvailable?: string;
+  }>,
 ): Route.ClientActionArgs {
   const formData = new FormData();
   for (const [index, article] of articles.entries()) {
@@ -119,6 +124,10 @@ function buildBulkFormRequest(
     formData.append("priceInCents", article.priceInCents);
     if (article.printDetailReceipt !== false) {
       formData.append("printDetailReceipt", rowId);
+    }
+    if (article.quantityAvailable !== undefined) {
+      formData.append("quantityAvailableEnabled", rowId);
+      formData.append(`quantityAvailable-${rowId}`, article.quantityAvailable);
     }
   }
   return {
@@ -140,7 +149,7 @@ describe("clientAction", () => {
 
     await clientAction(
       buildBulkFormRequest([
-        { description: "Espresso", priceInCents: "300" },
+        { description: "Espresso", priceInCents: "300", quantityAvailable: "12" },
         { description: "Latte", priceInCents: "450", printDetailReceipt: false },
       ]),
     );
@@ -150,11 +159,13 @@ describe("clientAction", () => {
       description: "Espresso",
       priceInCents: 300,
       printDetailReceipt: true,
+      quantityAvailable: 12,
     });
     expect(deps.apiClient.post).toHaveBeenCalledWith("/articles", {
       description: "Latte",
       priceInCents: 450,
       printDetailReceipt: false,
+      quantityAvailable: null,
     });
   });
 

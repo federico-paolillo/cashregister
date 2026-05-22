@@ -8,42 +8,42 @@ services:
       - "65000:65000"
     volumes:
       - ./rp.Caddyfile:/etc/caddy/Caddyfile:ro
-      - gateway-data:/data
-      - gateway-config:/config
     networks:
       - cashregister
+    restart: always
 
   api:
     build:
       context: .
-      dockerfile: Api.Dockerfile
+      dockerfile: be.Dockerfile
     image: cashregister-api:local
+    environment:
+      ASPNETCORE_URLS: http://0.0.0.0:65000
+      DOTNET_URLS: http://0.0.0.0:65000
+      ASPNETCORE_ENVIRONMENT: Production
+      DOTNET_ENVIRONMENT: Production
+      CASHREGISTER_DATASOURCE: /var/lib/cashregister/cashregister.db
     expose:
       - "65000"
     volumes:
-      - api-data:/var/lib/cashregister
+      - /home/federico/cashregister:/var/lib/cashregister
     networks:
       - cashregister
+    restart: always
 
   ui:
     build:
       context: .
-      dockerfile: Ui.Dockerfile
+      dockerfile: ui.Dockerfile
       args:
         API_BASE_URL: /api
+        VITE_LOW_QUANTITY_WARNING_THRESHOLD: 5
     image: cashregister-ui:local
     expose:
       - "65000"
-    volumes:
-      - ui-caddy-data:/var/lib/caddy
     networks:
       - cashregister
+    restart: always
 
 networks:
   cashregister:
-
-volumes:
-  api-data:
-  gateway-config:
-  gateway-data:
-  ui-caddy-data:

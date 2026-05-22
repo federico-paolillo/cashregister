@@ -6,7 +6,8 @@ public sealed record ArticleDto(
     string Id,
     string Description,
     long PriceInCents,
-    bool PrintDetailReceipt
+    bool PrintDetailReceipt,
+    long? QuantityAvailable
 )
 {
     public static ArticleDto From(Article article)
@@ -17,7 +18,8 @@ public sealed record ArticleDto(
             article.Id.Value,
             article.Description,
             article.Price.Value,
-            article.PrintDetailReceipt
+            article.PrintDetailReceipt,
+            article.QuantityAvailable
         );
     }
 }
