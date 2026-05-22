@@ -22,13 +22,8 @@ public static class ServiceCollectionExtensions
         return serviceCollection;
     }
 
-    public static IServiceCollection AddFileDevice(this IServiceCollection serviceCollection, IConfiguration configuration)
+    public static IServiceCollection AddFileDevice(this IServiceCollection serviceCollection)
     {
-        ArgumentNullException.ThrowIfNull(configuration);
-
-        serviceCollection.AddOptions<FileDeviceSettings>()
-            .BindConfiguration(FileDeviceSettings.Section);
-
         serviceCollection.AddScoped<IDevice, FileDevice>();
 
         return serviceCollection;

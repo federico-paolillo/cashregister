@@ -39,10 +39,11 @@ public static class Cli
         {
             var device = parseResult.GetValue(deviceOption);
 
-            services.Configure<FileDeviceSettings>(s => s.Target = device!);
-
             using var svcProvider = services.BuildServiceProvider();
             using var scope = svcProvider.CreateScope();
+
+            var targetStore = scope.ServiceProvider.GetRequiredService<FileDeviceTargetStore>();
+            targetStore.Select(device!);
 
             var tool = scope.ServiceProvider.GetRequiredService<TestTool>();
 

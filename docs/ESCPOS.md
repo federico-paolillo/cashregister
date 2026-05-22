@@ -9,7 +9,6 @@ be/Cashregister.Printmon/
 ├── Devices/
 │   ├── IDevice.cs
 │   ├── FileDevice.cs
-│   ├── FileDeviceSettings.cs
 │   └── FileDeviceTargetStore.cs
 ├── Encoders/
 │   ├── IEncoder.cs
@@ -84,9 +83,9 @@ Do not bypass the builder in application code unless a test is explicitly assert
 
 `IDevice.PrintAsync(PrintProgram)` is the async I/O boundary. Encoding is synchronous; device output is async.
 
-`FileDevice` depends on `FileDeviceTargetStore` and `IEncoder<byte[]>`. It encodes a program and writes the bytes to the current target with `FileStream`. The target must be an existing writable filesystem path such as `/dev/usb/lp0`; CUPS queue URIs are not valid targets for this implementation.
+`FileDevice` depends on `FileDeviceTargetStore` and `IEncoder<byte[]>`. It encodes a program and writes the bytes to the current target with `FileStream`. The target must be an existing writable filesystem path such as `/dev/usb/lp0`; CUPS queue URIs are not valid targets for this implementation. A print attempt with no selected target returns `NoSelectedFileDeviceTargetProblem`.
 
-`FileDeviceSettings.Section` is `FileDevice`, and `FileDeviceSettings.Target` is the startup target. `FileDeviceTargetStore` stores the active target in memory and can be changed at runtime.
+`FileDeviceTargetStore` stores the active target in memory and starts with no target. The API preselects the first available catalog printer during startup when one exists, and device selection can change that runtime target later. The CLI uses its explicit `--device` argument to set the same runtime target before printing.
 
 `MarkdownDevice` lives in `Cashregister.Printmon.Emulator/Device`. It is development-only and depends on `IEncoder<byte[]>`, `IPrinterEmulator`, `IMarkdownRenderer`, and `MarkdownDeviceSettings`. It encodes the `PrintProgram`, runs the ESC/POS emulator pipeline, renders the final receipt to markdown, and writes the markdown to `<unix_timestamp_milliseconds>_<Path.GetRandomFileName()>` under `MarkdownDeviceSettings.RootFolder`.
 

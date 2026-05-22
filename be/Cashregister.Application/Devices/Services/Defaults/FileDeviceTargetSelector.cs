@@ -8,7 +8,7 @@ public sealed class FileDeviceTargetSelector(
     FileDeviceTargetStore targetStore
 )
 {
-    public string CurrentTarget => targetStore.CurrentTarget;
+    public string? CurrentTarget => targetStore.CurrentTarget;
 
     public async Task<bool> SelectAsync(string id, CancellationToken cancellationToken)
     {

@@ -5,6 +5,8 @@ using Cashregister.Api.Orders;
 using Cashregister.Api.Statistics;
 using Cashregister.Application.Articles.Extensions;
 using Cashregister.Application.Devices.Extensions;
+using Cashregister.Application.Devices.Services;
+using Cashregister.Application.Devices.Services.Defaults;
 using Cashregister.Application.Orders.Extensions;
 using Cashregister.Application.Receipts.Extensions;
 using Cashregister.Application.Statistics.Extensions;
@@ -44,7 +46,7 @@ if (builder.Environment.IsDevelopment())
 }
 else
 {
-    builder.Services.AddFileDevice(builder.Configuration);
+    builder.Services.AddFileDevice();
 }
 
 var app = builder.Build();
@@ -55,6 +57,7 @@ app.MapDevices();
 app.MapStatistics();
 
 await ApplyMigrationsAsync(app);
+await PreselectPrinterAsync(app);
 
 await app.RunAsync();
 
@@ -69,4 +72,21 @@ static async Task ApplyMigrationsAsync(WebApplication webApplication)
     await using var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
     await dbContext.Database.MigrateAsync();
+}
+
+static async Task PreselectPrinterAsync(WebApplication webApplication)
+{
+    // A local function ensures that the scope gets released before continuing
+
+    using var scope = webApplication.Services.CreateScope();
+
+    var catalog = scope.ServiceProvider.GetRequiredService<IPrinterDeviceCatalog>();
+    var selector = scope.ServiceProvider.GetRequiredService<FileDeviceTargetSelector>();
+
+    var devices = await catalog.ListAsync(CancellationToken.None);
+
+    if (devices.Count > 0)
+    {
+        await selector.SelectAsync(devices[0].Id, CancellationToken.None);
+    }
 }

@@ -98,6 +98,7 @@ The backend API is an ASP.NET Core Minimal API in `Cashregister.Api`.
 - registers database, articles, orders, receipts, and printer-device services;
 - maps article, order, and device route modules;
 - applies database migrations;
+- preselects the first discovered printer target when one is available;
 - starts the web application.
 
 Route modules follow the same pattern:
@@ -159,7 +160,7 @@ Receipt printing is split across application and Printmon code.
 
 Application receipt code builds `PrintProgram` instances through `IReceiptPrintProgramService`. `PrintProgram` is the portable representation of what should be printed. Actual ESC/POS command records, encoders, emulator behavior, CLI tooling, and file-device rules are documented in [`ESCPOS.md`](ESCPOS.md).
 
-The API always wires `FileDeviceTargetStore`, the file-printer catalog, and `BinaryEncoder` for device selection and ESC/POS encoding. Outside development it registers `FileDevice`, which writes encoded bytes to the selected filesystem target. In development it registers `MarkdownDevice`, which runs the emulator pipeline and writes rendered markdown receipts to files under the configured root folder.
+The API always wires `FileDeviceTargetStore`, the file-printer catalog, and `BinaryEncoder` for device selection and ESC/POS encoding. On startup it selects the first catalog printer when one is available; manual selection can change that runtime target later. Outside development it registers `FileDevice`, which writes encoded bytes to the selected filesystem target and fails when no target is selected. In development it registers `MarkdownDevice`, which runs the emulator pipeline and writes rendered markdown receipts to files under the configured root folder.
 
 `IPrintReceiptHandler` orchestrates receipt printing by asking `IReceiptPrintProgramService` to build print programs for an order id and then sending each program to the configured `IDevice`. `PlaceOrderActivity` uses independent scoped operations to place an order, print its receipt, and fetch the saved order for the API response. Receipt reprinting remains exposed as an explicit order action at `POST /orders/{id}/print`.
 

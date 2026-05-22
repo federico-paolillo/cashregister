@@ -1,4 +1,5 @@
 using Cashregister.Factories;
+using Cashregister.Printmon.Devices.Problems;
 using Cashregister.Printmon.Encoders;
 
 namespace Cashregister.Printmon.Devices;
@@ -17,7 +18,13 @@ public sealed class FileDevice(
             return Result.Error(encodeResult.Error);
         }
 
-        await using var fileDeviceStream = new FileStream(targetStore.CurrentTarget, FileMode.Open, FileAccess.Write, FileShare.Write, 4096, useAsync: true);
+        var currentTarget = targetStore.CurrentTarget;
+        if (currentTarget is null)
+        {
+            return Result.Error(new NoSelectedFileDeviceTargetProblem());
+        }
+
+        await using var fileDeviceStream = new FileStream(currentTarget, FileMode.Open, FileAccess.Write, FileShare.Write, 4096, useAsync: true);
 
         await fileDeviceStream.WriteAsync(encodeResult.Value);
 

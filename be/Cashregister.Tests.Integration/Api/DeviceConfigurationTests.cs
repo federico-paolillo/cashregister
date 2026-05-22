@@ -53,13 +53,7 @@ public sealed class DeviceConfigurationTests(
     [Fact]
     public async Task Application_UsesFileDevice_OutsideDevelopment()
     {
-        await PrepareEnvironmentAsync(
-            Environments.Production,
-            services =>
-            {
-                services.Configure<FileDeviceSettings>(options => options.Target = "/dev/null");
-            }
-        );
+        await PrepareEnvironmentAsync(Environments.Production);
 
         using var scope = NewServiceScope();
 

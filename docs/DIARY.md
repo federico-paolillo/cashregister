@@ -323,3 +323,17 @@ Removed the runtime receipt mode selection path. Receipt printing now always emi
 
 - We kept the overview and item-slip builders separate because the next article configuration task should gate only per-unit slips.
 - We did not add article print configuration or filtering yet because this refactor removes modes only.
+
+## Startup printer preselection
+
+Changed printer target startup state to come from discovered runtime devices instead of `FileDevice` configuration. API startup now preselects the first printer catalog entry when one exists, while manual `/devices` selection can still replace it. A physical `FileDevice` print attempt with no selected target now returns an explicit device problem instead of relying on a configured sink target.
+
+### ExecPlan
+
+`plans/startup-printer-preselection.md`
+
+### Key decisions
+
+- We removed the configured startup target so the normal one-printer path follows device discovery directly.
+- We keep missing printer selection as a print failure because silently skipping or discarding a receipt would hide an operational problem.
+- We keep CLI printing explicit by loading its existing `--device` value into the runtime target store before it prints.

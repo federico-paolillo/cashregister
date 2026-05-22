@@ -3,7 +3,6 @@ using System.Net;
 using Cashregister.Api.Devices.Models;
 using Cashregister.Application.Devices.Models;
 using Cashregister.Application.Devices.Services;
-using Cashregister.Printmon.Devices;
 
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -16,11 +15,10 @@ public sealed class DevicesEndpointTests(
 ) : IntegrationTest(testOutputHelper)
 {
     [Fact]
-    public async Task GetDevices_ReturnsDevicesWithSelectedDevice()
+    public async Task GetDevices_ReturnsStartupPreselectedDevice()
     {
         await PrepareEnvironmentAsync(services => ConfigureDevices(
             services,
-            "/dev/usb/lp1",
             [
                 new PrinterDevice("printer-0", "Receipt Printer A", "/dev/usb/lp0", "Front counter"),
                 new PrinterDevice("printer-1", "Receipt Printer B", "/dev/usb/lp1", "Back counter")
@@ -35,10 +33,25 @@ public sealed class DevicesEndpointTests(
         Assert.True(response.IsSuccessStatusCode);
         Assert.NotNull(devices);
         Assert.Equal(2, devices.Length);
-        Assert.False(devices[0].Selected);
-        Assert.True(devices[1].Selected);
-        Assert.Equal("Receipt Printer B", devices[1].Name);
-        Assert.Equal("/dev/usb/lp1", devices[1].Target);
+        Assert.True(devices[0].Selected);
+        Assert.False(devices[1].Selected);
+        Assert.Equal("Receipt Printer A", devices[0].Name);
+        Assert.Equal("/dev/usb/lp0", devices[0].Target);
+    }
+
+    [Fact]
+    public async Task GetDevices_ReturnsNoSelectedDevice_WhenCatalogIsEmpty()
+    {
+        await PrepareEnvironmentAsync(services => ConfigureDevices(services, []));
+
+        using var httpClient = CreateHttpClient();
+
+        var response = await httpClient.GetAsync("/devices");
+        var devices = await response.Content.ReadFromJsonAsync<DeviceDto[]>();
+
+        Assert.True(response.IsSuccessStatusCode);
+        Assert.NotNull(devices);
+        Assert.Empty(devices);
     }
 
     [Fact]
@@ -46,7 +59,6 @@ public sealed class DevicesEndpointTests(
     {
         await PrepareEnvironmentAsync(services => ConfigureDevices(
             services,
-            "/dev/usb/lp0",
             [
                 new PrinterDevice("printer-0", "Receipt Printer A", "/dev/usb/lp0", null),
                 new PrinterDevice("printer-1", "Receipt Printer B", "/dev/usb/lp1", null)
@@ -71,7 +83,6 @@ public sealed class DevicesEndpointTests(
     {
         await PrepareEnvironmentAsync(services => ConfigureDevices(
             services,
-            "/dev/usb/lp0",
             [
                 new PrinterDevice("printer-0", "Receipt Printer A", "/dev/usb/lp0", null)
             ]
@@ -89,7 +100,6 @@ public sealed class DevicesEndpointTests(
     {
         await PrepareEnvironmentAsync(services => ConfigureDevices(
             services,
-            "/dev/usb/lp0",
             [
                 new PrinterDevice("printer-0", "Receipt Printer A", "/dev/usb/lp0", null)
             ]
@@ -104,12 +114,10 @@ public sealed class DevicesEndpointTests(
 
     private static void ConfigureDevices(
         IServiceCollection services,
-        string target,
         IReadOnlyList<PrinterDevice> devices
     )
     {
         services.RemoveAll<IPrinterDeviceCatalog>();
-        services.Configure<FileDeviceSettings>(options => options.Target = target);
         services.AddSingleton<IPrinterDeviceCatalog>(_ => new StubPrinterDeviceCatalog(devices));
     }
 

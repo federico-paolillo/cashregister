@@ -10,6 +10,7 @@ var services = new ServiceCollection();
 
 services.AddScoped<IDevice, FileDevice>();
 services.AddScoped<IEncoder<byte[]>, BinaryEncoder>();
+services.AddSingleton<FileDeviceTargetStore>();
 
 services.AddScoped<TestTool>();
 
