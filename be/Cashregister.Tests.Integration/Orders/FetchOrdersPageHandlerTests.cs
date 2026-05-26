@@ -23,10 +23,10 @@ public sealed class FetchOrdersPageHandlerTests(
 
         var articleId = await CreateArticleAsync("Article A", 100);
 
-        await CreateOrderAsync(articleId, 1);
-        await CreateOrderAsync(articleId, 2);
-        await CreateOrderAsync(articleId, 3);
-        await CreateOrderAsync(articleId, 4);
+        _ = await CreateOrderAsync(articleId, 1);
+        _ = await CreateOrderAsync(articleId, 2);
+        var order3Id = await CreateOrderAsync(articleId, 3);
+        var order4Id = await CreateOrderAsync(articleId, 4);
 
         var result = await RunScoped<IFetchOrdersPageHandler, Result<Page<OrderListItem>>>(handler =>
             handler.ExecuteAsync(new PageRequest
@@ -43,8 +43,9 @@ public sealed class FetchOrdersPageHandlerTests(
         Assert.True(page.HasNext);
         Assert.NotNull(page.Next);
 
-        // Verify orders are returned in ascending order by ID
-        Assert.True(string.Compare(page.Items[0].Id.Value, page.Items[1].Id.Value, StringComparison.Ordinal) < 0);
+        Assert.True(string.Compare(page.Items[0].Id.Value, page.Items[1].Id.Value, StringComparison.Ordinal) > 0);
+        Assert.Equal(order4Id.Value, page.Items[0].Id.Value);
+        Assert.Equal(order3Id.Value, page.Items[1].Id.Value);
     }
 
     [Fact]
@@ -54,10 +55,10 @@ public sealed class FetchOrdersPageHandlerTests(
 
         var articleId = await CreateArticleAsync("Article A", 100);
 
-        await CreateOrderAsync(articleId, 1);
-        await CreateOrderAsync(articleId, 2);
-        await CreateOrderAsync(articleId, 3);
-        await CreateOrderAsync(articleId, 4);
+        var order1Id = await CreateOrderAsync(articleId, 1);
+        var order2Id = await CreateOrderAsync(articleId, 2);
+        var order3Id = await CreateOrderAsync(articleId, 3);
+        var order4Id = await CreateOrderAsync(articleId, 4);
 
         var page1Result = await RunScoped<IFetchOrdersPageHandler, Result<Page<OrderListItem>>>(handler =>
             handler.ExecuteAsync(new PageRequest
@@ -74,6 +75,8 @@ public sealed class FetchOrdersPageHandlerTests(
         Assert.Equal(2, firstPage.Size);
         Assert.True(firstPage.HasNext);
         Assert.NotNull(firstPage.Next);
+        Assert.Equal(order4Id.Value, firstPage.Items[0].Id.Value);
+        Assert.Equal(order3Id.Value, firstPage.Items[1].Id.Value);
 
         var page2Result = await RunScoped<IFetchOrdersPageHandler, Result<Page<OrderListItem>>>(handler =>
             handler.ExecuteAsync(new PageRequest
@@ -90,6 +93,8 @@ public sealed class FetchOrdersPageHandlerTests(
         Assert.Equal(2, secondPage.Size);
         Assert.False(secondPage.HasNext);
         Assert.Null(secondPage.Next);
+        Assert.Equal(order2Id.Value, secondPage.Items[0].Id.Value);
+        Assert.Equal(order1Id.Value, secondPage.Items[1].Id.Value);
     }
 
     [Fact]
@@ -99,8 +104,8 @@ public sealed class FetchOrdersPageHandlerTests(
 
         var articleId = await CreateArticleAsync("Article A", 100);
 
-        await CreateOrderAsync(articleId, 1);
-        await CreateOrderAsync(articleId, 2);
+        var order1Id = await CreateOrderAsync(articleId, 1);
+        var order2Id = await CreateOrderAsync(articleId, 2);
 
         var result = await RunScoped<IFetchOrdersPageHandler, Result<Page<OrderListItem>>>(handler =>
             handler.ExecuteAsync(new PageRequest
@@ -116,6 +121,8 @@ public sealed class FetchOrdersPageHandlerTests(
         Assert.Equal(2, page.Size);
         Assert.False(page.HasNext);
         Assert.Null(page.Next);
+        Assert.Equal(order2Id.Value, page.Items[0].Id.Value);
+        Assert.Equal(order1Id.Value, page.Items[1].Id.Value);
     }
 
     [Fact]
@@ -252,15 +259,15 @@ public sealed class FetchOrdersPageHandlerTests(
 
         var articleId = await CreateArticleAsync("Article A", 100);
 
-        var order1Id = await CreateOrderAsync(articleId, 1);
-        await CreateOrderAsync(articleId, 2);
-        await CreateOrderAsync(articleId, 3);
+        _ = await CreateOrderAsync(articleId, 1);
+        var order2Id = await CreateOrderAsync(articleId, 2);
+        var order3Id = await CreateOrderAsync(articleId, 3);
 
         var result = await RunScoped<IFetchOrdersPageHandler, Result<Page<OrderListItem>>>(handler =>
             handler.ExecuteAsync(new PageRequest
             {
                 After = null,
-                Until = order1Id,
+                Until = order3Id,
                 Size = 1
             })
         );
@@ -269,7 +276,10 @@ public sealed class FetchOrdersPageHandlerTests(
         var page = result.Value;
 
         Assert.Equal(2, page.Size);
-        Assert.Equal(order1Id.Value, page.Items[0].Id.Value);
+        Assert.Equal(order3Id.Value, page.Items[0].Id.Value);
+        Assert.Equal(order2Id.Value, page.Items[1].Id.Value);
+        Assert.True(page.HasNext);
+        Assert.Equal(order2Id.Value, page.Next?.Value);
     }
 
     [Fact]

@@ -18,15 +18,15 @@ public sealed class FetchOrdersListQueryTests(
 ) : IntegrationTest(testOutputHelper)
 {
     [Fact]
-    public async Task FetchAsync_WithNoAfter_ShouldReturnFirstOrdersInOrder()
+    public async Task FetchAsync_WithNoAfter_ShouldReturnNewestOrdersFirst()
     {
         await PrepareEnvironmentAsync();
 
         var articleId = await CreateArticleAsync("Article A", 100);
 
-        var order1Id = await CreateOrderAsync(articleId, 1);
-        var order2Id = await CreateOrderAsync(articleId, 2);
-        _ = await CreateOrderAsync(articleId, 3);
+        _ = await CreateOrderAsync(articleId, 2);
+        var order3Id = await CreateOrderAsync(articleId, 3);
+        var order4Id = await CreateOrderAsync(articleId, 4);
 
         var result =
             await RunScoped<IPaginationQuery<OrderListItem>, ImmutableArray<OrderListItem>>(fetcher =>
@@ -35,20 +35,9 @@ public sealed class FetchOrdersListQueryTests(
 
         Assert.Equal(2, result.Length);
 
-        // Verify orders are returned in ascending order by ID (ULID)
-        Assert.True(string.Compare(result[0].Id.Value, result[1].Id.Value, StringComparison.Ordinal) < 0);
-
-        // Verify the first two orders are returned
-        var expectedIds = new[]
-            {
-                order1Id,
-                order2Id
-            }
-            .OrderBy(id => id.Value)
-            .ToArray();
-
-        Assert.Equal(expectedIds[0].Value, result[0].Id.Value);
-        Assert.Equal(expectedIds[1].Value, result[1].Id.Value);
+        Assert.True(string.Compare(result[0].Id.Value, result[1].Id.Value, StringComparison.Ordinal) > 0);
+        Assert.Equal(order4Id.Value, result[0].Id.Value);
+        Assert.Equal(order3Id.Value, result[1].Id.Value);
     }
 
     [Fact]
@@ -58,20 +47,20 @@ public sealed class FetchOrdersListQueryTests(
 
         var articleId = await CreateArticleAsync("Article A", 100);
 
-        _ = await CreateOrderAsync(articleId, 1);
+        var order1Id = await CreateOrderAsync(articleId, 1);
         var order2Id = await CreateOrderAsync(articleId, 2);
         var order3Id = await CreateOrderAsync(articleId, 3);
-        var order4Id = await CreateOrderAsync(articleId, 4);
+        _ = await CreateOrderAsync(articleId, 4);
 
         var result =
             await RunScoped<IPaginationQuery<OrderListItem>, ImmutableArray<OrderListItem>>(fetcher =>
-                fetcher.FetchAsync(3, order2Id)
+                fetcher.FetchAsync(3, order3Id)
             );
 
         Assert.Equal(2, result.Length);
 
-        Assert.Equal(order3Id.Value, result[0].Id.Value);
-        Assert.Equal(order4Id.Value, result[1].Id.Value);
+        Assert.Equal(order2Id.Value, result[0].Id.Value);
+        Assert.Equal(order1Id.Value, result[1].Id.Value);
     }
 
     [Fact]
@@ -81,8 +70,8 @@ public sealed class FetchOrdersListQueryTests(
 
         var articleId = await CreateArticleAsync("Article A", 100);
 
-        await CreateOrderAsync(articleId, 1);
-        await CreateOrderAsync(articleId, 2);
+        var order1Id = await CreateOrderAsync(articleId, 1);
+        var order2Id = await CreateOrderAsync(articleId, 2);
 
         var result =
             await RunScoped<IPaginationQuery<OrderListItem>, ImmutableArray<OrderListItem>>(fetcher =>
@@ -90,9 +79,8 @@ public sealed class FetchOrdersListQueryTests(
             );
 
         Assert.Equal(2, result.Length);
-
-        // Verify orders are returned in ascending order
-        Assert.True(string.Compare(result[0].Id.Value, result[1].Id.Value, StringComparison.Ordinal) < 0);
+        Assert.Equal(order2Id.Value, result[0].Id.Value);
+        Assert.Equal(order1Id.Value, result[1].Id.Value);
     }
 
     [Fact]
@@ -147,43 +135,43 @@ public sealed class FetchOrdersListQueryTests(
     }
 
     [Fact]
-    public async Task FetchUntilAsync_ShouldReturnOrdersUpToAndIncludingCursor()
+    public async Task FetchUntilAsync_ShouldReturnNewestOrdersThroughCursor()
     {
         await PrepareEnvironmentAsync();
 
         var articleId = await CreateArticleAsync("Article A", 100);
 
-        var order1Id = await CreateOrderAsync(articleId, 1);
+        _ = await CreateOrderAsync(articleId, 2);
+        var order3Id = await CreateOrderAsync(articleId, 3);
+        var order4Id = await CreateOrderAsync(articleId, 4);
+
+        var result =
+            await RunScoped<IPaginationQuery<OrderListItem>, ImmutableArray<OrderListItem>>(fetcher =>
+                fetcher.FetchUntilAsync(order3Id)
+            );
+
+        Assert.Equal(2, result.Length);
+        Assert.Equal(order4Id.Value, result[0].Id.Value);
+        Assert.Equal(order3Id.Value, result[1].Id.Value);
+    }
+
+    [Fact]
+    public async Task FetchUntilAsync_WithCursorAtNewestOrder_ShouldReturnThatOrder()
+    {
+        await PrepareEnvironmentAsync();
+
+        var articleId = await CreateArticleAsync("Article A", 100);
+
+        _ = await CreateOrderAsync(articleId, 1);
         var order2Id = await CreateOrderAsync(articleId, 2);
-        _ = await CreateOrderAsync(articleId, 3);
 
         var result =
             await RunScoped<IPaginationQuery<OrderListItem>, ImmutableArray<OrderListItem>>(fetcher =>
                 fetcher.FetchUntilAsync(order2Id)
             );
 
-        Assert.Equal(2, result.Length);
-        Assert.Equal(order1Id.Value, result[0].Id.Value);
-        Assert.Equal(order2Id.Value, result[1].Id.Value);
-    }
-
-    [Fact]
-    public async Task FetchUntilAsync_WithCursorAtFirstOrder_ShouldReturnThatOrder()
-    {
-        await PrepareEnvironmentAsync();
-
-        var articleId = await CreateArticleAsync("Article A", 100);
-
-        var order1Id = await CreateOrderAsync(articleId, 1);
-        _ = await CreateOrderAsync(articleId, 2);
-
-        var result =
-            await RunScoped<IPaginationQuery<OrderListItem>, ImmutableArray<OrderListItem>>(fetcher =>
-                fetcher.FetchUntilAsync(order1Id)
-            );
-
         Assert.Single(result);
-        Assert.Equal(order1Id.Value, result[0].Id.Value);
+        Assert.Equal(order2Id.Value, result[0].Id.Value);
     }
 
     [Fact]

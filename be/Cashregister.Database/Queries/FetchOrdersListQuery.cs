@@ -1,6 +1,8 @@
+using System.Collections.Immutable;
 using System.Linq.Expressions;
 
 using Cashregister.Application.Orders.Models.Output;
+using Cashregister.Application.Pagination;
 using Cashregister.Database.Entities;
 using Cashregister.Domain;
 
@@ -10,14 +12,44 @@ namespace Cashregister.Database.Queries;
 
 public sealed class FetchOrdersListQuery(
     IApplicationDbContext applicationDbContext
-) : PaginationQuery<OrderEntity, OrderListItem>
+) : IPaginationQuery<OrderListItem>
 {
-    protected override IQueryable<OrderEntity> GetQueryable()
+    public async Task<ImmutableArray<OrderListItem>> FetchAsync(uint count, Identifier? after = null)
+    {
+        var integerCount = (int)count;
+        var afterValue = after?.Value;
+
+        var items = await GetQueryable()
+            .Where(e => afterValue == null || e.Id.CompareTo(afterValue) < 0)
+            .OrderByDescending(e => e.Id)
+            .Take(integerCount)
+            .Select(GetProjection())
+            .ToArrayAsync();
+
+        return [.. items];
+    }
+
+    public async Task<ImmutableArray<OrderListItem>> FetchUntilAsync(Identifier until)
+    {
+        ArgumentNullException.ThrowIfNull(until);
+
+        var untilValue = until.Value;
+
+        var items = await GetQueryable()
+            .Where(e => e.Id.CompareTo(untilValue) >= 0)
+            .OrderByDescending(e => e.Id)
+            .Select(GetProjection())
+            .ToArrayAsync();
+
+        return [.. items];
+    }
+
+    private IQueryable<OrderEntity> GetQueryable()
     {
         return applicationDbContext.Orders.Include(o => o.Items);
     }
 
-    protected override Expression<Func<OrderEntity, OrderListItem>> GetProjection()
+    private static Expression<Func<OrderEntity, OrderListItem>> GetProjection()
     {
         return o => new OrderListItem
         {

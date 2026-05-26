@@ -361,7 +361,7 @@ public sealed class OrdersEndpointTests(
         Assert.NotNull(ordersPage1.Next);
         Assert.True(ordersPage1.HasNext);
         Assert.Single(ordersPage1.Items);
-        Assert.Equal(order1Id.Value, ordersPage1.Items[0].Id);
+        Assert.Equal(order2Id.Value, ordersPage1.Items[0].Id);
 
         response = await httpClient.GetAsync($"/orders?pageSize=1&after={ordersPage1.Next}");
 
@@ -373,7 +373,7 @@ public sealed class OrdersEndpointTests(
         Assert.Null(ordersPage2.Next);
         Assert.False(ordersPage2.HasNext);
         Assert.Single(ordersPage2.Items);
-        Assert.Equal(order2Id.Value, ordersPage2.Items[0].Id);
+        Assert.Equal(order1Id.Value, ordersPage2.Items[0].Id);
     }
 
     [Fact]
@@ -383,9 +383,9 @@ public sealed class OrdersEndpointTests(
 
         var articleId = await CreateArticleForOrderAsync("Test article", 100L);
 
-        var order1Id = await PlaceOrderAsync(articleId, 1);
+        _ = await PlaceOrderAsync(articleId, 1);
         var order2Id = await PlaceOrderAsync(articleId, 2);
-        await PlaceOrderAsync(articleId, 3);
+        var order3Id = await PlaceOrderAsync(articleId, 3);
 
         using var httpClient = CreateHttpClient();
 
@@ -406,7 +406,7 @@ public sealed class OrdersEndpointTests(
 
         Assert.NotNull(page);
         Assert.Equal(2, page.Items.Length);
-        Assert.Equal(order1Id.Value, page.Items[0].Id);
+        Assert.Equal(order3Id.Value, page.Items[0].Id);
         Assert.Equal(order2Id.Value, page.Items[1].Id);
         Assert.True(page.HasNext);
         Assert.Equal(order2Id.Value, page.Next);
