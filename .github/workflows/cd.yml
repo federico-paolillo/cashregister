@@ -113,6 +113,7 @@ jobs:
           push: true
           build-args: |
             API_BASE_URL=/api
+            LOW_QUANTITY_WARNING_THRESHOLD=5
           tags: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.FE_IMAGE_NAME }}:${{ inputs.version }}
 
       - name: Create git tag and draft release

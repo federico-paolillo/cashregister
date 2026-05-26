@@ -2,9 +2,6 @@
 
 FROM node:22-bookworm AS ui-build
 
-ARG API_BASE_URL=http://localhost:60000
-ENV VITE_API_BASE_URL=${API_BASE_URL}
-
 WORKDIR /src/ui
 
 COPY ui/package.json ui/package-lock.json ./
@@ -13,6 +10,12 @@ RUN --mount=type=cache,target=/root/.npm \
     npm ci
 
 COPY ui/ ./
+
+ARG API_BASE_URL=http://localhost:60000
+ENV VITE_API_BASE_URL=${API_BASE_URL}
+
+ARG LOW_QUANTITY_WARNING_THRESHOLD=5
+ENV VITE_LOW_QUANTITY_WARNING_THRESHOLD=${LOW_QUANTITY_WARNING_THRESHOLD}
 
 RUN --mount=type=cache,target=/root/.npm \
     npm run build
@@ -45,8 +48,6 @@ RUN chmod 0444 /out/etc/caddy/Caddyfile
 
 FROM gcr.io/distroless/static-debian12:nonroot AS runtime
 
-ARG API_BASE_URL=http://localhost:60000
-ENV VITE_API_BASE_URL=${API_BASE_URL}
 ENV HOME=/var/lib/caddy
 ENV XDG_DATA_HOME=/var/lib/caddy
 

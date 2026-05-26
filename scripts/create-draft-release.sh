@@ -31,8 +31,10 @@ Target ref: ${target_ref}
 
 Images:
 
-- ${api_image}@${api_digest}
-- ${fe_image}@${fe_digest}
+- [${api_image}@${api_digest}](${api_image}@${api_digest})
+- [${fe_image}@${fe_digest}](${fe_image}@${fe_digest})
+
+Note: unknown/unknown OS/Arch entries are [Attestation Manifest Descriptors](https://docs.docker.com/build/metadata/attestations/attestation-storage/#attestation-manifest-descriptor).
 
 Edit these notes before publishing the release.
 EOF

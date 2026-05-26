@@ -13,12 +13,22 @@ dir = "."
 run = "./scripts/act-cd.sh"
 
 [tasks.ui]
-description = "Run the UI locally"
+description = "Run frontend locally"
 dir = "ui"
 run = "npm run dev"
 
 [tasks.be]
-description = "Run the UI locally"
+description = "Run backend locally"
 dir = "be"
 run = "dotnet run --project Cashregister.Api --configuration Debug"
 env = { "ASPNETCORE_ENVIRONMENT" = "Production" }
+
+[tasks.run]
+description = "Run both frontend and backend locally"
+run = [
+  { tasks = ["be", "ui"] }
+]
+
+[tasks.compose]
+description = "Run local docker-compose manifest"
+run = "docker compose --file=docker-compose.local.yaml up --build --detach"
