@@ -2,314 +2,53 @@
 
 > This file records implementation decisions, design choices, and strategies per task to avoid re-deriving the same conclusions when picking up work later.
 
-## UI Docker image
+## Past developments
 
-Added a buildx-oriented Dockerfile for publishing the React frontend as static files served by Caddy on port 65000. The image builds the UI with Node, builds a static Caddy binary with the official Caddy builder, and runs from a distroless nonroot runtime image. The root `Caddyfile` owns the server configuration. The build accepts `API_BASE_URL` and bakes it into Vite through `VITE_API_BASE_URL`.
+This section consolidates older diary entries. Exact historical wording is intentionally left to git history and the referenced ExecPlans; the current diary keeps the durable implementation decisions and cross-layer contracts needed for future work.
 
-### Key decisions
+### Frontend workflows and routing
 
-- We build Caddy from source with `CGO_ENABLED=0` instead of using the official Caddy runtime image because the final stage must be distroless.
-- We keep API routing outside this image because the frontend artifact is a static bundle and deployment should decide how the API is exposed.
-- We put Caddy runtime state under `/var/lib/caddy` so application files and configuration stay read-only while Caddy still has an explicit writable state volume.
-- We document `VITE_API_BASE_URL` in the runtime environment, but rely on the build argument because Vite replaces that value at build time.
+The UI moved toward route-local, master-detail workflows for articles and orders. Article editing lives on `/articles` with `articleId` query selection, while creation stays on `/articles/bulk`; order inspection lives on `/orders` with `orderId` query selection instead of a separate order route. Row selection owns inspection, table actions were removed where the selected detail panel owns the action, and order reprinting moved into the selected detail surface. Route components should rely on React Router generated loader-data typing, and route-specific URL helpers should stay local when their query state is not app-wide.
 
-## UI route simplification
+The frontend API delay is centralized in `ApiClient`, where every response path waits for the same randomized 50ms to 150ms floor without adding latency to already-slower calls. The New Order multiplier keypad remains frontend-only and reuses existing per-article quantity fields because the backend order request already accepts quantities. The reusable tabber uses an uncontrolled compound API with ARIA tab semantics because the statistics page needed composable tabs without route-level tab state.
 
-Removed stale frontend assumptions left after simplifying article and order navigation. Article editing is now the only single-article form path on `/articles`, while article creation remains on `/articles/bulk`. Order details stay embedded in the order overview instead of depending on the removed single-order route.
+ExecPlans: `plans/article-master-detail.md`, `plans/order-master-detail.md`.
 
-### Key decisions
+### Money, totals, and statistics
 
-- We removed the article form intent mechanism because the form is no longer shared by create and edit flows.
-- We inlined order item rendering into the order overview detail panel because the removed order view route was its only other owner.
-- We kept the modal system and modal tests untouched because future UI flows may still use it.
+Money is preserved as exact integer cents from API DTOs through domain and persistence, while the frontend presents decimal money inputs and submits hidden cent fields such as `priceInCents` and `totalOverrideInCents`. The old 5-cent CHF rounding was removed from `Cents`; invalid decimal precision is rejected instead of rounded or truncated because amount-in must equal amount-out. Database column names such as `Price` and `TotalOverride` stayed unchanged because their stored `long` values already represent cents.
 
-## Central frontend API delay
+Order display separates stored item totals from optional overrides: detail and overview contracts expose `totalInCents` and `totalOverrideInCents` distinctly, and displayed item totals come from order-item price snapshots so later article edits do not rewrite history. Statistics also use persisted order items as the historical source of truth. Retired articles are excluded from active-article tables but still included in order-level totals, current article descriptions are useful for UI scanning, sale-time descriptions are kept in raw CSV for auditability, and order overrides are not allocated down to article rows because overrides are stored only at order level.
 
-Added a randomized artificial delay to the frontend `ApiClient` so local API calls take at least 50ms and at most 150ms. The delay starts in parallel with `fetch`, making fast local calls perceptible without adding extra latency to calls that are already slower than the selected delay.
+Statistics CSV behavior belongs in Application handlers, while filenames and `text/csv` content type stay in the API boundary. Human-facing aggregate CSV money columns use invariant decimal strings with two fractional digits and price-oriented headers; the later raw `sales.csv` export emits one order-item row per sale with integer cents, stable flattened columns, no totals, and enough historical fields for Excel analysis. API integration tests should use public DTOs and typed HTTP helpers unless the test is explicitly about malformed JSON or serializer-boundary behavior.
 
-### Key decisions
+ExecPlans: `plans/harmonize-price-handling.md`, `plans/statistics-tab.md`, `plans/statistics-inventory-and-raw-export.md`.
 
-- We kept the delay frontend-only and centralized in `ApiClient` because all route loaders, actions, and components already call the backend through `deps.apiClient`.
-- We delay successful responses, HTTP error responses, and network failures consistently so UI loading and disabled states do not flicker for local calls.
+### Receipt printing and devices
 
-## Article master-detail editor
+Receipt construction is Application behavior. The receipt service builds `PrintProgram` instances from receipt-specific projections and returns `Result<PrintProgram>` with `Problem` values for expected missing-order cases. The receipt projection deliberately avoids depending on Domain aggregate models, formats dates as UTC, and orders items by persisted item id because order items have no explicit line-number column. Printing itself is not a transaction because it orchestrates external printer I/O and does not mutate persistence.
 
-Changed `/articles` from edit-button modal editing into a master-detail screen symmetric with `/orders`. Selecting an article now stores `articleId` in the URL, highlights the selected row, and opens a right-side detail panel that reuses the existing article form for edits. Cursor pagination keeps the selected article id while loading more rows, and article creation remains in the existing modal flow.
+`POST /orders/{id}/print` remains the explicit reprint endpoint. Order creation now runs the `PlaceOrderActivity` saga: place the order, print the receipt, and fetch the saved order before returning. Saga steps run in independent scopes; if printing fails after order placement, the order remains committed and the API reports the print failure. The frontend reprint action calls the print endpoint directly instead of a React Router action because printing does not change order list data and should not revalidate pagination.
 
-### ExecPlan
+Device selection is runtime state. The backend exposes `/devices` without an `/api` prefix, while `/api` remains a frontend proxy and deployment concern. Device ids are URL-safe identifiers derived from writable Linux printer file paths, and selection validates against the catalog rather than accepting arbitrary paths. Runtime printer settings use singleton stores, not Options cache mutation, because options binding is configuration input. The development markdown printer runs encoded bytes through the emulator pipeline in `Development` so local output exercises the same ESC/POS bytes as production. The retired receipt-mode work introduced runtime normal/detail selection; later detailed entries document its removal and replacement with always-detail printing.
 
-`plans/article-master-detail.md`
+ExecPlan: `plans/receipt-mode-detail-printing.md`.
 
-### Key decisions
+### Deployment and operations
 
-- We fetch the selected article through `GET /articles/{id}` as `ArticleDto` instead of deriving it from the current list page so the route matches the orders implementation and the backend API signature.
-- We removed the article table actions column because row selection now owns editing and delete belongs to the selected detail panel.
-- We made the article form support panel usage through a cancel link while preserving modal cancel behavior for article creation.
-- We restored article deletion in the detail panel instead of the table row; delete uses a panel-local API call to `DELETE /articles/{id}` and closes the panel only after success so the route does not revalidate a deleted `articleId`.
+The UI image serves a Vite static bundle through Caddy on port 65000 and bakes `API_BASE_URL` into the build as `VITE_API_BASE_URL`; API routing stays outside that image because deployment decides how the backend is exposed. The backend image publishes `Cashregister.Api` as a self-contained linux-x64 single-file executable on .NET 10 Ubuntu chiseled `runtime-deps`; `/app` stays read-only for the non-root runtime user and `/var/lib/cashregister` is the writable SQLite state directory.
 
-## Order overview route cleanup
+Docker and shell-script conventions live in `docs/DOCKER.md` instead of backend/frontend convention docs. Compose deployment uses a separate gateway Caddy config and UI Caddy config, stripping external `/api/*` before traffic reaches unprefixed backend route groups. Build artifacts derive from BuildKit target architecture so local Compose builds runnable images without hardcoded amd64 binaries. Review cleanup kept tracked `Api.Dockerfile` and `Ui.Dockerfile` casing because case-only filename churn was unnecessary.
 
-Cleaned up the order overview master-detail implementation after review. The route now relies on React Router generated loader-data typing instead of a local duplicate type, and order overview URL construction lives in a route-local helper module so selection and close links share the same query-string policy.
+### Architecture and documentation
 
-### Key decisions
+The documentation split is intentional: `ARCH.md` owns current high-level backend/frontend architecture, `ESCPOS.md` owns `Cashregister.Printmon.*` command, encoder, emulator, CLI, and printer-device details, and development conventions live in `docs/CONVENTIONS.md`. DevOps conventions remain separate in `docs/DOCKER.md`. Documentation-only work should avoid source edits and use `git diff --check` as the minimum verification.
 
-- We kept URL helpers local to the order overview route because `orderId` and `until` are route-specific state, not an app-wide URL abstraction.
-- We documented that route components should use React Router generated loader-data typing because local loader-data interfaces drift from the actual loader return shape.
+`ARCH.md` was kept focused on the implemented system instead of future architecture. Future BYOD and daemon work is documented separately in later detailed entries so the current architecture remains accurate.
 
-## Orders master-detail view
+ExecPlan: `plans/arch-escpos-conventions-refresh.md`.
 
-Changed `/orders` from list-to-route navigation into a master-detail screen. Selecting an order now keeps the user on `/orders`, stores the selection in `orderId` query state, and opens a closable right-side detail panel with persisted order metadata, item lines, totals, and the reprint action. Cursor pagination remains form-based and keeps the current selection when loading more rows.
-
-### ExecPlan
-
-`plans/order-master-detail.md`
-
-### Key decisions
-
-- We implemented a new read-only detail panel component instead of adapting the make-order summary because the order list displays persisted orders, not mutable cart state.
-- We moved reprint from the row into the detail panel so the table is a pure selection surface and the action stays attached to the currently inspected order.
-- We distinguished row-selection reloads from pagination reloads through `useNavigation().formData` so the "Load More" button only enters its loading state for actual pagination submissions.
-
-## Typed API test payloads
-
-Updated the odd-cent order override API test to use `OrderRequestDto` with `PostAsJsonAsync` instead of hand-written JSON and `StringContent`. Documented the testing convention so API integration tests default to typed DTOs and typed HTTP helpers.
-
-### Key decisions
-
-- We use raw JSON only when the test is explicitly about malformed payloads, unknown fields, or serializer-boundary behavior; normal endpoint behavior should be tested through the public DTO types.
-
-## Harmonized price handling
-
-Refactored price handling so the backend preserves exact integer cents from API DTOs through domain and persistence, while the frontend presents decimal money inputs to users and submits hidden cent fields. Removed the 5-cent CHF rounding from `Cents`, made order creation accept `totalOverrideInCents`, and introduced a shared money input component backed by centralized string-based parsing.
-
-### ExecPlan
-
-`plans/harmonize-price-handling.md`
-
-### Key decisions
-
-- We kept database column names `Price` and `TotalOverride` because their stored `long` values already represent cents; API names remain explicit with `InCents`.
-- We normalize valid frontend money input on blur to avoid cursor jumps while typing.
-- We reject invalid decimal precision instead of rounding or truncating because amount-in must equal amount-out.
-
-## Submitted order reprint action
-
-Added a reprint action to the `/orders` frontend table. Each submitted order row now exposes a printer icon button that posts to the existing receipt print endpoint and disables only itself while the request is pending. Successful print requests show an informational confirmation with the order id, and failed print requests surface through the existing frontend error message system.
-
-### Key decisions
-
-- We reused `POST /orders/{id}/print` because the backend already exposes explicit receipt reprinting and has endpoint coverage for success, missing orders, and device failures.
-- We kept the reprint request inside the row component instead of adding a React Router action because printing is a side effect that does not change order list data and should not revalidate the paginated table.
-
-## Order creation receipt printing saga
-
-Wired `POST /orders` to `PlaceOrderActivity` so order creation now runs the in-process saga: place the order, print its receipt, and fetch the saved order before returning the created pointer. The endpoint still returns `400` for invalid order requests, but printer or orchestration failures now surface as `500`.
-
-### Key decisions
-
-- We register `PlaceOrderActivity` and the generic `Scoped<T>` helper through an Activities service collection extension because activities are composition services, not order transaction implementations.
-- We keep the saga steps in independent scopes because that is the existing activity model; if printing fails after order placement, the order remains committed and the API reports the print failure.
-- We added both activity-level and API-level tests because previous order endpoint coverage only proved persistence, not receipt printing.
-
-## Order receipt printing endpoint
-
-Added an Application-layer `IPrintReceiptHandler` and exposed receipt printing through `POST /orders/{id}/print`. The handler builds the receipt `PrintProgram` through the existing receipt service and sends it to the configured `IDevice`. The API maps missing order print data to `404`, successful device delivery to `204`, and unexpected device failures to `500`.
-
-### Key decisions
-
-- We made receipt printing a handler instead of a transaction because it orchestrates external printer I/O and does not mutate persistence.
-- We reused `IReceiptPrintProgramService` instead of fetching receipt data in the handler because the service already owns the order-to-`PrintProgram` workflow.
-- We initially kept order creation separate from printing; `POST /orders` now prints through `PlaceOrderActivity`, while `POST /orders/{id}/print` remains available for explicit reprints.
-
-## Technician device selection page
-
-Added a `/devices` frontend route and backend device endpoints for selecting the receipt printer target at runtime. The backend exposes `/devices` only; `/api` remains a frontend proxy/base-url concern. Device ids are URL-safe identifiers derived from writable Linux printer file paths because the current `FileDevice` writes bytes through `FileStream`.
-
-### Key decisions
-
-- We keep selected target state in a singleton runtime store initialized from `FileDeviceSettings.Target`. We do not mutate the Options cache because options binding is configuration input, not runtime application state.
-- We validate selection ids against the current device catalog before updating the runtime target. We do not accept arbitrary path strings from the client.
-- We enumerate `/dev/usb/lp*` and `/dev/lp*` file devices instead of CUPS queues because CUPS URIs are not valid `FileStream` targets.
-- We use `/dev/null` as the development default target because `FileDevice` opens an existing file path for writing.
-
-## Receipt PrintProgram template service
-
-Added an Application-layer receipt service that builds a `PrintProgram` for an order from a receipt-specific projection. The projection contains only order number, id, date, item descriptions, and quantities; it deliberately excludes prices and totals. The service is pure and only constructs the print template, leaving actual printer I/O for later order-submission orchestration.
-
-### Key decisions
-
-- We return `Result<PrintProgram>` and `NoSuchOrderPrintDataProblem` for missing orders because expected Application failures use `Result<T>` and `Problem`, not exceptions.
-- We project receipt data directly from EF entities into Application output models because receipt construction should not depend on Domain aggregate models.
-- We format receipt dates as UTC because `TimeStamp` stores Unix seconds generated from UTC time.
-
-## Stable receipt item order
-
-Fixed receipt projection item ordering so printed receipt lines are deterministic. The projection now orders order items before materializing receipt print data, and the integration test asserts the item sequence instead of only checking membership.
-
-### Key decisions
-
-- We order receipt items by their persisted item id because order items currently have no explicit line-number column. This keeps receipt output stable without changing the schema.
-
-## Architecture, ESC/POS, and conventions documentation refresh
-
-Refreshed the project documentation split so `ARCH.md` covers high-level backend/frontend architecture, `ESCPOS.md` owns all `Cashregister.Printmon.*` command-level details, and root `CONVENTIONS.md` captures reusable backend/frontend development rules for a future `AGENTS.md` update.
-
-### ExecPlan
-
-`plans/arch-escpos-conventions-refresh.md`
-
-### Key decisions
-
-- We kept ESC/POS instruction, encoder, emulator, CLI, and printer-device details out of `ARCH.md` because duplicating them there would create documentation drift.
-- We put `CONVENTIONS.md` at repository root because it is intended to feed future agent instructions rather than explain one subsystem.
-- We treated this as documentation-only work and did not touch source code or the existing unrelated `AGENTS.md` modification.
-
-## Development markdown printer device
-
-Added a development-only `MarkdownDevice` in `Cashregister.Printmon.Emulator` and wired the API startup to use it only in the `Development` environment. The device encodes a `PrintProgram`, runs the existing emulator pipeline, renders the final receipt to markdown, and writes it to a timestamped file under the configured root folder. Non-development environments still use `FileDevice`.
-
-### Key decisions
-
-- We placed `MarkdownDevice` in `Cashregister.Printmon.Emulator/Device` because it is defined by the emulator pipeline, not by raw printer file output.
-- We kept `BinaryEncoder` in the flow and ran the full emulator decode/execute path so development output exercises the same ESC/POS bytes that production printing emits.
-- We switched the API composition root on `builder.Environment.IsDevelopment()` instead of adding a runtime toggle because the requirement is environment-specific, not operator-selectable.
-
-## Backend API Docker image
-
-Added a buildx-oriented Dockerfile for publishing `Cashregister.Api` as a self-contained linux-x64 single-file executable without Native AOT. The runtime image uses the official .NET 10 Ubuntu chiseled `runtime-deps` base because the backend now opts into invariant globalization, and the application files are copied as root-owned read-only files under `/app` while SQLite state lives under `/var/lib/cashregister`.
-
-### Key decisions
-
-- We use `runtime-deps` instead of `aspnet` because the published API is self-contained and carries the .NET runtime with the app.
-- We keep `/app` read-only for the non-root runtime user and reserve `/var/lib/cashregister` as the writable application state directory.
-- We put the build command in `build-be-dockerfile.sh` so local and CI invocations use the same buildx arguments.
-
-## DevOps conventions document
-
-Added `docs/DOCKER.md` as the home for Docker, container-image, and shell-script conventions. The document records hardened container defaults and minimal shell-script defaults so deployment-related work does not have to rediscover the same baseline.
-
-### Key decisions
-
-- We keep DevOps conventions separate from backend and frontend conventions because container hardening and shell-script behavior apply across project areas.
-- We mention `docs/DOCKER.md` from `AGENTS.md` and `docs/CONVENTIONS.md` so future work can find the new convention surface.
-
-## Docker Compose gateway entry point
-
-Completed the Docker Compose deployment entry point with `gateway`, `api`, and `ui` services. The gateway uses the official Caddy image and mounts `rp.Caddyfile`; the UI image now consumes `ui.Caddyfile` for its internal static-file server. External `/api/*` traffic is stripped before reaching the backend so API route groups remain unprefixed.
-
-### Key decisions
-
-- We split gateway and UI Caddy configuration into `rp.Caddyfile` and `ui.Caddyfile` to keep reverse-proxy routing separate from static SPA serving.
-- We removed the legacy root `Caddyfile` after moving its only live consumer to `ui.Caddyfile`.
-- We derive Docker build artifacts from BuildKit target architecture because Compose should produce runnable local images instead of mixing native base images with hardcoded amd64 binaries.
-
-## Runtime receipt mode detail printing
-
-Added a non-persistent receipt mode runtime setting, exposed through `/receipt-mode` and surfaced on the Devices page beside printer selection. Normal mode preserves the existing one-receipt summary output. Detail mode prints one priced overview receipt followed by one item receipt per ordered unit, so an order for three coffees prints four receipts.
-
-### ExecPlan
-
-`plans/receipt-mode-detail-printing.md`
-
-### Key decisions
-
-- We store receipt mode in a singleton runtime store because it should behave like the current printer selection and reset on backend restart.
-- We return multiple `PrintProgram` instances from the receipt service so each receipt keeps the existing builder lifecycle, feed, and cut behavior.
-- We put the toggle on the Devices page because printer selection and receipt mode are both runtime print configuration.
-
-## Review finding cleanup for receipt mode and Docker Compose
-
-Fixed review findings from the receipt-mode and Compose changes. Docker build references now match the tracked `Api.Dockerfile` and `Ui.Dockerfile` casing, and the edited receipt C# files conform to the repository final-newline formatter rule.
-
-### Key decisions
-
-- We kept the existing uppercase Dockerfile names because they are already tracked that way and changing case-only filenames is unnecessary for the finding.
-- We used the project formatter for the final-newline cleanup so the result matches `.editorconfig` exactly.
-
-## Statistics navigation tab
-
-Added an all-time Statistics tab with backend aggregate statistics, JSON and CSV endpoints, and frontend tables for active-article sales and order-volume totals. The article table excludes retired articles and includes active articles with zero sales, while order-volume totals include all historical orders and order items. CSV export is split into one file per table.
-
-### ExecPlan
-
-`plans/statistics-tab.md`
-
-### Key decisions
-
-- We aggregate per-article volume from historical order-item prices because article edits must not rewrite past sales statistics.
-- We keep retired article sales out of the article table but inside order-level totals because historical order value must remain complete.
-- We expose two CSV downloads instead of one mixed CSV because each file stays rectangular and mirrors one visible table.
-
-## Statistics CSV price formatting
-
-Changed statistics CSV exports so money columns use decimal price strings with two fractional digits instead of raw integer cents. The JSON API still returns cents because the frontend money contract is cents-only; only human-facing CSV files changed.
-
-### Key decisions
-
-- We renamed CSV headers from `*InCents` to price-oriented names so the exported values are not mislabeled.
-- We format with invariant culture and `0.00` because CSV files should be stable regardless of server locale.
-
-## Statistics CSV application handlers
-
-Moved statistics CSV generation out of the API route handlers into Application-layer handlers. The API now allocates the response stream, asks the Application handler to write the CSV content, and returns the populated bytes with HTTP content type and filename metadata.
-
-### Key decisions
-
-- We keep CsvHelper in `Cashregister.Application` because CSV row projection and serialization are application behavior for this export use case, not HTTP behavior.
-- We keep filenames and `text/csv` content type in `Cashregister.Api` because those are response transport concerns.
-- We convert the API-owned `MemoryStream` to bytes before returning so the stream can be disposed immediately without handing ASP.NET a dead stream.
-
-## Statistics CSV class maps
-
-Refactored statistics CSV exports to map Application output models directly with CsvHelper `ClassMap<T>`. CSV files no longer include total rows because they are intended for Excel, where users can compute totals from the exported data rows.
-
-### Key decisions
-
-- We removed CSV-specific record types because the exports now map cleanly from `ArticleStatisticsItem` and `OrderStatisticsSummary`.
-- We keep the UI and JSON totals unchanged; only CSV output omits totals.
-- We made the map types public because CsvHelper instantiates them through map registration and the analyzer does not treat that as direct internal usage.
-
-## Statistics inventory and raw sales export
-
-Refactored statistics around persisted order items as the historical source of truth. The statistics page now shows summary metrics, sold-article inventory, and per-order expected versus real volume. The old aggregate CSV downloads were replaced with one raw `sales.csv` export containing one order-item row per sale, integer cents, sale-time descriptions, current article descriptions, and optional order overrides. No totals are emitted in CSV.
-
-### ExecPlan
-
-`plans/statistics-inventory-and-raw-export.md`
-
-### Key decisions
-
-- We use order-item price snapshots for expected volume so later article price edits do not change history.
-- We show current article descriptions in the UI, but keep sale-time descriptions in the CSV for auditability.
-- We do not allocate order overrides to article rows because overrides are stored at order level only.
-- We use a flattened CSV record in the writer so CsvHelper emits stable raw columns for Excel.
-
-## Statistics reusable tabber
-
-Added a small shared tabber for frontend views and refactored the Statistics page into article and order panels. Article inventory stays the first view, order summary metrics move beside order-volume rows, and the raw sales CSV export remains visible outside the tab selection.
-
-### Key decisions
-
-- We use an uncontrolled compound tabber API because the statistics page needs composable triggers and panels without route-level tab state.
-- We include ARIA tab semantics and keyboard tab selection in the shared component so its first consumer does not set a weak accessibility baseline.
-
-## Order multiplier keypad
-
-Added an always-visible Multiplier keypad to New Order so cashiers can enter a one-use article quantity before selecting an article. The keypad is frontend-only: it accumulates a two-digit optional multiplier, clears leading zero entry, resets after the next article selection, and reuses the order form's existing per-article quantity fields.
-
-### Key decisions
-
-- We changed cart insertion to accept a quantity increment because multiplier entry should add to an existing article quantity instead of creating a separate order path.
-- We kept the backend and order request contract unchanged because placed orders already carry article quantities.
-
-## Separate order totals from overrides
-
-Fixed order detail and overview totals so the displayed total is the stored order-item sum and the optional override remains a separate value. The order detail API keeps `totalInCents` and `totalOverrideInCents` distinct for overridden orders, and overview rows now carry both values for the two-column orders table.
-
-### Key decisions
-
-- We kept override-aware domain totals unchanged because this bug concerns order-display contracts, while other workflows use the effective total intentionally.
-- We compute displayed item totals from order-item price snapshots and quantities so later article edits do not rewrite order history.
+---
 
 ## Detail-only receipt printing refactor
 
@@ -417,3 +156,33 @@ Added CI and CD workflows for source validation and manual releases. CI runs bac
 - We kept CI/CD workflows on GitHub-native setup actions and official Docker actions instead of using Mise inside hosted workflows.
 - We publish `cashregister-api:<version>` and `cashregister-fe:<version>` only, without a mutable `latest` tag.
 - We document version reuse as a release-management discipline instead of adding fragile GHCR preflight scripts.
+
+## README local startup and release notes refresh
+
+Updated the README with local startup instructions for Docker Compose and Mise-based development, and aligned the release documentation with the current workflow policy: operator-owned version strings, no strict SemVer enforcement, and discipline-driven version reuse. Fixed the draft-release helper notes so the frontend digest links to the frontend image and the BuildKit attestation OS/Arch note uses the correct `unknown/unknown` spelling.
+
+### Key decisions
+
+- We document `docker-compose.local.yaml` as the local Compose entry point because the generic compose file was retired.
+- We keep release version guidance descriptive instead of adding validation rules the workflow no longer enforces.
+- We mention BuildKit attestation manifests in README because GHCR exposes them as `unknown/unknown` entries and that display can look like an unexpected third image.
+
+## Diary compaction
+
+Compacted older diary entries into a consolidated `Past developments` section while keeping the ten most recent pre-existing task entries in full. The compacted section preserves durable decisions, source-of-truth rules, cross-layer contracts, and ExecPlan references, while exact old prose remains recoverable from git history.
+
+### Key decisions
+
+- We replaced older detailed entries instead of adding only an index because the goal was to reduce the working length of `DIARY.md`.
+- We kept the recent receipt, availability, v2, release, and README entries detailed because they are the current context most likely to guide near-term work.
+- We did not use an ExecPlan because this was documentation maintenance, not a complex feature or significant refactor.
+
+## Newest-first order overview API
+
+Changed only the paginated `GET /orders` path to return orders from newest to oldest while preserving the existing cursor shape. The order list query now owns descending cursor semantics so article pagination and statistics exports keep their existing ordering.
+
+### Key decisions
+
+- We made `after` continue after the cursor in displayed newest-first order, which means fetching older orders by id.
+- We left `/statistics` and `/statistics/sales.csv` unchanged because the requested UX change targets only the order overview API.
+- We did not use an ExecPlan because this was a small, scoped query and test change.
