@@ -1,6 +1,6 @@
 [tools]
 dotnet = "10.0.202"
-node = "22"
+node = "24"
 
 [tasks.ci]
 description = "Run the CI workflow locally with act."
