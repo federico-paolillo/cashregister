@@ -1,0 +1,64 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Validate build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: be/global.json
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: ui/package-lock.json
+
+      - name: Restore frontend dependencies
+        working-directory: ui
+        run: npm ci
+
+      - name: Format backend
+        working-directory: be
+        run: dotnet format --verify-no-changes
+
+      - name: Build backend
+        working-directory: be
+        run: dotnet build
+
+      - name: Test backend
+        working-directory: be
+        run: dotnet test
+
+      - name: Lint frontend
+        working-directory: ui
+        run: npm run lint
+
+      - name: Build frontend
+        working-directory: ui
+        run: npm run build
+
+      - name: Test frontend
+        working-directory: ui
+        run: npm run test
+
+      # TODO: enable Codecov after backend/frontend test commands emit coverage reports.
+      # - name: Upload coverage to Codecov
+      #   uses: codecov/codecov-action@v5
+      #   with:
+      #     token: ${{ secrets.CODECOV_TOKEN }}

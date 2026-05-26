@@ -1,0 +1,24 @@
+[tools]
+dotnet = "10.0.202"
+node = "22"
+
+[tasks.ci]
+description = "Run the CI workflow locally with act."
+dir = "."
+run = "./scripts/act-ci.sh"
+
+[tasks.cd]
+description = "Run the CD workflow locally with act without publishing images or releases."
+dir = "."
+run = "./scripts/act-cd.sh"
+
+[tasks.ui]
+description = "Run the UI locally"
+dir = "ui"
+run = "npm run dev"
+
+[tasks.be]
+description = "Run the UI locally"
+dir = "be"
+run = "dotnet run --project Cashregister.Api --configuration Debug"
+env = { "ASPNETCORE_ENVIRONMENT" = "Production" }

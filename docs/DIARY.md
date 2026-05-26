@@ -383,3 +383,37 @@ Added available quantity to the Articles table after price so cashiers can scan 
 
 - We reuse the quantity already present in article list data instead of adding a table-specific backend path.
 - We render disabled quantity tracking as `-` and keep the management table plain because low-quantity warning colors belong to order-taking.
+
+## V2 BYOD architecture breakdown
+
+Documented the intended v2 Bring Your Own Device architecture separately from the current implemented architecture. The v2 document captures the future print-station and spooler-daemon model, daemon mTLS identity, long-poll job leasing, at-least-once printing semantics, observability requirements, and all-in-one deployment expectations without changing the v1 architecture references.
+
+### Key decisions
+
+- We kept `ARCH.md` focused on the currently implemented system because v2 is a future architecture and should not make the current project documentation misleading.
+- We documented `PrintStation` as the routing concept instead of cashier device identity because BYOD devices are transient while printer destinations are operationally stable.
+- We explicitly accept at-least-once printing and duplicate receipts because the daemon cannot prove physical paper output and acknowledgement loss can happen after a successful device write.
+
+## V2 daemon machine-to-machine authentication
+
+Updated the v2 architecture document to make identity-provider machine-to-machine authentication the default daemon authentication model. Daemons use per-device service accounts or clients and bearer tokens over ordinary HTTPS, while Cashregister keeps tenant and print station assignment in its own database. Mutual TLS remains documented as an optional stronger transport-level model rather than a baseline requirement.
+
+### Key decisions
+
+- We prefer one machine-to-machine credential per daemon because shared credentials make revocation and attribution weak.
+- We keep daemon credentials tenant-neutral because tenant assignment belongs to Cashregister print station configuration, not the identity provider credential.
+- We avoid requiring Scaleway TLS passthrough and a Cashregister-managed CA for v2 because API-layer token validation works with ordinary HTTPS ingress.
+
+## GitHub Actions release pipeline
+
+Added CI and CD workflows for source validation and manual releases. CI runs backend formatting, build, and tests plus frontend install, lint, build, and tests on pushes to `main`. CD reruns the same validation, then publishes multi-platform GHCR images for the backend and frontend, creates the release git tag, and opens a draft GitHub release. Local workflow checks use Mise tasks that run `act` through Docker Compose without pushing images or creating releases.
+
+### ExecPlan
+
+`plans/github-actions-release-pipeline.md`
+
+### Key decisions
+
+- We kept CI/CD workflows on GitHub-native setup actions and official Docker actions instead of using Mise inside hosted workflows.
+- We publish `cashregister-api:<version>` and `cashregister-fe:<version>` only, without a mutable `latest` tag.
+- We document version reuse as a release-management discipline instead of adding fragile GHCR preflight scripts.
