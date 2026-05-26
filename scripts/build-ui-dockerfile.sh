@@ -8,7 +8,7 @@ LOW_QUANTITY_WARNING_THRESHOLD="${LOW_QUANTITY_WARNING_THRESHOLD:-5}"
 
 docker buildx build \
   --platform linux/arm64 \
-  -f ui.Dockerfile \ 
+  -f ui.Dockerfile \
   --build-arg API_BASE_URL="${API_BASE_URL}" \
   --build-arg LOW_QUANTITY_WARNING_THRESHOLD="${LOW_QUANTITY_WARNING_THRESHOLD}" \
   --load \
