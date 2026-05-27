@@ -1,6 +1,7 @@
 import { MoneyInput } from "@cashregister/components/money-input";
 import { formatPrice } from "@cashregister/money";
 import type { CartEntry } from "../order";
+import { ArticleStatusIcons } from "./article-status-icons";
 
 interface OrderSummaryProps {
   cartEntries: CartEntry[];
@@ -36,21 +37,24 @@ export function OrderSummary({
             return (
               <div
                 key={entry.article.id}
-                className={lowQuantity
-                  ? "flex items-center justify-between border-b border-orange-300 bg-orange-100 px-2 py-1 text-sm text-orange-900"
-                  : "flex items-center justify-between border-b py-1 text-sm"}
+                className="flex items-center justify-between border-b py-1 text-sm"
               >
-                <span>
-                  {entry.article.description} × {entry.quantity}
+                <span className="flex min-w-0 items-center gap-2">
+                  <span className="truncate">
+                    {entry.article.description} × {entry.quantity}
+                  </span>
+                  <ArticleStatusIcons
+                    lowQuantity={lowQuantity}
+                    printDetailReceipt={entry.article.printDetailReceipt}
+                    className="shrink-0"
+                  />
                 </span>
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
                     aria-label={`Decrease ${entry.article.description}`}
                     onClick={() => onDecrease(entry.article.id)}
-                    className={lowQuantity
-                      ? "cursor-pointer rounded bg-orange-200 px-1 text-orange-800 hover:bg-orange-300 hover:text-orange-900 active:bg-orange-400 active:text-orange-900"
-                      : "cursor-pointer text-gray-400 hover:text-blue-600"}
+                    className="cursor-pointer text-gray-400 hover:text-blue-600"
                   >
                     −
                   </button>
@@ -61,9 +65,7 @@ export function OrderSummary({
                     type="button"
                     aria-label={`Remove ${entry.article.description}`}
                     onClick={() => onRemove(entry.article.id)}
-                    className={lowQuantity
-                      ? "cursor-pointer rounded bg-orange-200 px-1 text-orange-800 hover:bg-orange-300 hover:text-orange-900 active:bg-orange-400 active:text-orange-900"
-                      : "cursor-pointer text-gray-400 hover:text-red-600"}
+                    className="cursor-pointer text-gray-400 hover:text-red-600"
                   >
                     ✕
                   </button>

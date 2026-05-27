@@ -8,6 +8,7 @@ export interface ArticleListItemDto {
   id: string;
   description: string;
   priceInCents: number;
+  printDetailReceipt: boolean;
   quantityAvailable: number | null;
 }
 

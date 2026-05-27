@@ -12,6 +12,7 @@ const article: ArticleListItemDto = {
   id: "1",
   description: "Espresso",
   priceInCents: 350,
+  printDetailReceipt: true,
   quantityAvailable: null,
 };
 

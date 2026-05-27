@@ -36,8 +36,8 @@ vi.mock("@cashregister/components/use-error-messages", () => ({
 }));
 
 const articles = [
-  { id: "art1", description: "Espresso", priceInCents: 300, quantityAvailable: null },
-  { id: "art2", description: "Latte", priceInCents: 450, quantityAvailable: null },
+  { id: "art1", description: "Espresso", priceInCents: 300, printDetailReceipt: true, quantityAvailable: null },
+  { id: "art2", description: "Latte", priceInCents: 450, printDetailReceipt: true, quantityAvailable: null },
 ];
 
 const loaderResult = { ok: true as const, value: { next: null, hasNext: false, items: articles } };
@@ -226,19 +226,15 @@ describe("Order", () => {
     });
 
     const articleButton = screen.getByRole("button", { name: /^Espresso/i });
-    expect(articleButton.className).not.toContain("bg-orange");
+    expect(screen.queryByLabelText("Low stock")).toBeNull();
 
     fireEvent.click(articleButton);
 
-    expect(articleButton.className).toContain("bg-orange-100");
-    expect(articleButton.className).toContain("text-orange-900");
-    expect(articleButton.querySelector("div:last-child")?.className).toContain("text-orange-700");
-
-    const summaryEntry = screen.getByText(/Espresso × 1/).closest("div");
-    expect(summaryEntry?.className).toContain("bg-orange-100");
-    expect(summaryEntry?.className).toContain("text-orange-900");
-    expect(screen.getByRole("button", { name: "Decrease Espresso" }).className).toContain("bg-orange-200");
-    expect(screen.getByRole("button", { name: "Remove Espresso" }).className).toContain("text-orange-800");
+    expect(screen.getAllByLabelText("Low stock")).toHaveLength(2);
+    expect(articleButton.className).not.toContain("bg-orange");
+    expect(screen.getByText(/Espresso × 1/).closest("div")?.className).not.toContain("bg-orange");
+    expect(screen.getByRole("button", { name: "Decrease Espresso" }).className).not.toContain("bg-orange");
+    expect(screen.getByRole("button", { name: "Remove Espresso" }).className).not.toContain("text-orange");
   });
 
   it("clears quantity warning when cart quantity moves above the threshold", () => {
@@ -256,12 +252,11 @@ describe("Order", () => {
     fireEvent.click(screen.getByRole("button", { name: /^Espresso/i }));
     fireEvent.click(screen.getByRole("button", { name: /^Espresso/i }));
 
-    expect(screen.getByRole("button", { name: /^Espresso/i }).className).toContain("bg-orange-100");
+    expect(screen.getAllByLabelText("Low stock")).toHaveLength(2);
 
     fireEvent.click(screen.getByRole("button", { name: "Decrease Espresso" }));
 
-    expect(screen.getByRole("button", { name: /^Espresso/i }).className).not.toContain("bg-orange");
-    expect(screen.getByText(/Espresso × 1/).closest("div")?.className).not.toContain("bg-orange");
+    expect(screen.queryByLabelText("Low stock")).toBeNull();
   });
 
   it("warns immediately for stored enabled quantity at the threshold", () => {
@@ -276,7 +271,26 @@ describe("Order", () => {
       },
     });
 
-    expect(screen.getByRole("button", { name: /^Espresso/i }).className).toContain("bg-orange-100");
+    expect(screen.getByLabelText("Low stock")).toBeDefined();
+  });
+
+  it("shows detail receipt disabled status on selector and summary", () => {
+    renderOrder({
+      loaderData: {
+        ok: true,
+        value: {
+          next: null,
+          hasNext: false,
+          items: [{ ...articles[0], printDetailReceipt: false }],
+        },
+      },
+    });
+
+    expect(screen.getByLabelText("Detail receipt disabled")).toBeDefined();
+
+    fireEvent.click(screen.getByRole("button", { name: /^Espresso/i }));
+
+    expect(screen.getAllByLabelText("Detail receipt disabled")).toHaveLength(2);
   });
 
   it("resets cart when action succeeds", () => {
@@ -437,8 +451,8 @@ describe("clientAction", () => {
   });
 });
 
-const espresso = { id: "art1", description: "Espresso", priceInCents: 300, quantityAvailable: null };
-const latte = { id: "art2", description: "Latte", priceInCents: 450, quantityAvailable: null };
+const espresso = { id: "art1", description: "Espresso", priceInCents: 300, printDetailReceipt: true, quantityAvailable: null };
+const latte = { id: "art2", description: "Latte", priceInCents: 450, printDetailReceipt: true, quantityAvailable: null };
 
 describe("cartReducer", () => {
   it("adds an article with quantity 1", () => {

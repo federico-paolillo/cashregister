@@ -39,8 +39,8 @@ vi.mock("@cashregister/deps", () => ({
 
 const pageData: ArticlesPageDto = {
   items: [
-    { id: "1", description: "Article 1", priceInCents: 1000, quantityAvailable: null },
-    { id: "2", description: "Article 2", priceInCents: 2000, quantityAvailable: null },
+    { id: "1", description: "Article 1", priceInCents: 1000, printDetailReceipt: true, quantityAvailable: null },
+    { id: "2", description: "Article 2", priceInCents: 2000, printDetailReceipt: true, quantityAvailable: null },
   ],
   next: "cursor-1",
   hasNext: true,

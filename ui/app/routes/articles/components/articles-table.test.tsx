@@ -17,8 +17,8 @@ vi.mock("react-router", async (importOriginal) => {
 afterEach(cleanup);
 
 const articles: ArticleListItemDto[] = [
-  { id: "1", description: "Espresso", priceInCents: 350, quantityAvailable: null },
-  { id: "2", description: "Latte", priceInCents: 450, quantityAvailable: -2 },
+  { id: "1", description: "Espresso", priceInCents: 350, printDetailReceipt: true, quantityAvailable: null },
+  { id: "2", description: "Latte", priceInCents: 450, printDetailReceipt: true, quantityAvailable: -2 },
 ];
 
 describe("ArticlesTable", () => {

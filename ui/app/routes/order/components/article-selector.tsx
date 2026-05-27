@@ -1,5 +1,6 @@
 import { formatPrice } from "@cashregister/money";
 import type { ArticleListItemDto } from "@cashregister/model";
+import { ArticleStatusIcons } from "./article-status-icons";
 
 interface ArticleSelectorProps {
   articles: ArticleListItemDto[];
@@ -17,13 +18,17 @@ export function ArticleSelector({ articles, lowQuantityArticleIds, onSelect }: A
           <button
             key={article.id}
             type="button"
+            aria-label={article.description}
             onClick={() => onSelect(article)}
-            className={lowQuantity
-              ? "rounded border border-orange-400 bg-orange-100 p-4 text-left text-orange-900 hover:border-orange-500 hover:bg-orange-200 hover:text-orange-900 active:border-orange-600 active:bg-orange-300 active:text-orange-900"
-              : "rounded border border-gray-200 p-4 text-left hover:bg-blue-50 active:bg-blue-100"}
+            className="relative min-h-24 rounded border border-gray-200 p-4 pr-12 text-left hover:bg-blue-50 active:bg-blue-100"
           >
+            <ArticleStatusIcons
+              lowQuantity={lowQuantity}
+              printDetailReceipt={article.printDetailReceipt}
+              className="absolute right-2 top-2"
+            />
             <div className="font-medium text-sm">{article.description}</div>
-            <div className={lowQuantity ? "text-sm text-orange-700" : "text-sm text-gray-500"}>
+            <div className="text-sm text-gray-500">
               {formatPrice(article.priceInCents)}
             </div>
           </button>
