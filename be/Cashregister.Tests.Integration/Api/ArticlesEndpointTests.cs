@@ -334,6 +334,7 @@ public sealed class ArticlesEndpointTests(
         Assert.NotNull(page);
         Assert.Single(page.Items);
         Assert.Equal(15, page.Items[0].QuantityAvailable);
+        Assert.True(page.Items[0].PrintDetailReceipt);
 
         var getResponse = await httpClient.GetAsync($"/articles/{entityPointer.Id}");
         Assert.True(getResponse.IsSuccessStatusCode);
@@ -341,6 +342,27 @@ public sealed class ArticlesEndpointTests(
         var article = await getResponse.Content.ReadFromJsonAsync<ArticleDto>();
         Assert.NotNull(article);
         Assert.Equal(15, article.QuantityAvailable);
+    }
+
+    [Fact]
+    public async Task GetArticles_PreservesDetailReceiptSelection()
+    {
+        await PrepareEnvironmentAsync();
+
+        using var httpClient = CreateHttpClient();
+
+        var response = await httpClient.PostAsJsonAsync("/articles",
+            new RegisterArticleRequestDto("Overview only list article", 101, false, null));
+
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+
+        var listResponse = await httpClient.GetAsync("/articles");
+        Assert.True(listResponse.IsSuccessStatusCode);
+
+        var page = await listResponse.Content.ReadFromJsonAsync<ArticlesPageDto>();
+        Assert.NotNull(page);
+        Assert.Single(page.Items);
+        Assert.False(page.Items[0].PrintDetailReceipt);
     }
 
     [Fact]

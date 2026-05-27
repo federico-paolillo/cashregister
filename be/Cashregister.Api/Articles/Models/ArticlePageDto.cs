@@ -14,6 +14,7 @@ public sealed record ArticleListItemDto(
     string Id,
     string Description,
     long PriceInCents,
+    bool PrintDetailReceipt,
     long? QuantityAvailable
 )
 {
@@ -25,6 +26,7 @@ public sealed record ArticleListItemDto(
             article.Id.Value,
             article.Description,
             article.Price.Value,
+            article.PrintDetailReceipt,
             article.QuantityAvailable
         );
     }

@@ -22,6 +22,7 @@ public sealed class FetchArticlesListQuery(
             Id = Identifier.From(a.Id),
             Description = a.Description,
             Price = Cents.From(a.Price),
+            PrintDetailReceipt = a.PrintDetailReceipt,
             QuantityAvailable = a.QuantityAvailable
         };
     }
