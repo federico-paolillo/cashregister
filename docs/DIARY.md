@@ -186,3 +186,32 @@ Changed only the paginated `GET /orders` path to return orders from newest to ol
 - We made `after` continue after the cursor in displayed newest-first order, which means fetching older orders by id.
 - We left `/statistics` and `/statistics/sales.csv` unchanged because the requested UX change targets only the order overview API.
 - We did not use an ExecPlan because this was a small, scoped query and test change.
+
+## Order article status icon badges
+
+Replaced the order screen's orange low-availability surface highlighting with compact icon badges and added a muted printer-off badge for articles whose detailed receipt printing is disabled. The paginated article list API now includes the detail-receipt flag so the order screen can render both statuses from its existing `/articles` load.
+
+### Key decisions
+
+- We use icon badges instead of additional colored article surfaces so low stock and receipt configuration can coexist without adding another full-row highlight color.
+- We keep disabled detail receipts visually neutral because it is article configuration, not a sale-blocking warning.
+- We expose `printDetailReceipt` on article list items rather than adding an order-specific API because the list already carries the order screen's article metadata.
+
+## Order article status icon component split
+
+Split the order screen status badge SVGs into dedicated route-local icon components while keeping the status wrapper responsible only for deciding which article badges to render.
+
+### Key decisions
+
+- We keep icon components untested because they are static SVG presentation and the order route tests already cover whether the statuses appear in the intended UI surfaces.
+- We leave the wrapper route-local because the statuses are currently only part of the order-taking screen.
+
+## Consolidated multi-agent codebase review
+
+Produced a root `REVIEW.md` from five read-only backend and frontend review slices. The review scores overall codebase quality, separates backend and frontend findings, and focuses on idioms, SOLID, enterprise-pattern consistency, and project conventions. No source code was changed as part of the review.
+
+### Key decisions
+
+- We kept the review at the repository root to avoid replacing existing nested review documents.
+- We treated the backend's enterprise-heavy structure as intentional and flagged only places where implementations weaken the documented architectural guarantees.
+- We did not use an ExecPlan because this was a documentation-only review task.
