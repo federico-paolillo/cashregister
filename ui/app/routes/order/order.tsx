@@ -147,9 +147,9 @@ export default function Order({ loaderData, actionData }: Route.ComponentProps) 
         <h1 className="text-xl font-semibold">New Order</h1>
       </header>
       <main className="flex flex-1 overflow-hidden">
-        <div className="flex-7 overflow-auto p-4 border-r">
-          <div className="flex gap-4">
-            <div className="min-w-0 flex-1">
+        <div className="flex-7 min-w-0 overflow-hidden p-4 border-r">
+          <div className="flex h-full min-h-0 gap-4">
+            <div className="min-w-0 flex-1 overflow-auto">
               <ArticleSelector
                 articles={articles}
                 lowQuantityArticleIds={lowQuantityArticleIds}

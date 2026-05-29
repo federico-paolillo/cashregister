@@ -215,3 +215,21 @@ Produced a root `REVIEW.md` from five read-only backend and frontend review slic
 - We kept the review at the repository root to avoid replacing existing nested review documents.
 - We treated the backend's enterprise-heavy structure as intentional and flagged only places where implementations weaken the documented architectural guarantees.
 - We did not use an ExecPlan because this was a documentation-only review task.
+
+## Grouped order article selection
+
+Grouped the order screen article selector by initial letter while preserving the existing article button design and order submission behavior. The selector now derives sections client-side from the loaded article descriptions, sorts articles alphabetically within each section, and places non-letter starts under `#`.
+
+### Key decisions
+
+- We kept grouping and sorting in the frontend because the order UI already loads enough article data and backend article pagination remains ID-based.
+- We split the selector into route-local React components so the existing article button rendering stays isolated from section composition.
+
+## Fixed order multiplier while scrolling articles
+
+Adjusted the order screen layout so the article selector owns the scroll area while the multiplier keypad remains fixed in the left order pane. This keeps quantity entry visible while browsing grouped article sections and does not change cart behavior or order submission.
+
+### Key decisions
+
+- We moved scrolling to the article-list wrapper instead of making the multiplier sticky because the multiplier is already a sibling of the article selector.
+- We kept the change in the route layout only because no backend contract or shared component behavior changed.

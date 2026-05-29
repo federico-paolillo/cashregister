@@ -1,0 +1,13 @@
+---
+version: "0.1.2"
+level: copilot
+---
+
+This format is based on [AI-DECLARATION.md](https://ai-declaration.md/en/0.1.2).
+
+## Notes
+
+- All output was reviewed by a human.
+- Human drove all architecture decisions. 
+- Initial implementation and architecture was done by a human.
+- Claude Code and Codex was used to develop the application.GENTS

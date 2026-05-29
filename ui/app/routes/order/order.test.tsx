@@ -1,6 +1,6 @@
 import React from "react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { render, screen, cleanup, fireEvent } from "@testing-library/react";
+import { render, screen, cleanup, fireEvent, within } from "@testing-library/react";
 import Order, { clientAction, cartReducer } from "@cashregister/routes/order/order";
 import type { CartEntry } from "@cashregister/routes/order/order";
 import * as reactRouter from "react-router";
@@ -42,6 +42,15 @@ const articles = [
 
 const loaderResult = { ok: true as const, value: { next: null, hasNext: false, items: articles } };
 
+const groupedArticles = [
+  { id: "art-latte", description: "Latte", priceInCents: 450, printDetailReceipt: true, quantityAvailable: null },
+  { id: "art-badge-no-detail", description: "Badge No Detail", priceInCents: 450, printDetailReceipt: false, quantityAvailable: null },
+  { id: "art-number", description: "5 Arrosticini", priceInCents: 700, printDetailReceipt: true, quantityAvailable: null },
+  { id: "art-acqua", description: "Acqua", priceInCents: 100, printDetailReceipt: true, quantityAvailable: null },
+  { id: "art-brioche", description: "Brioche", priceInCents: 250, printDetailReceipt: true, quantityAvailable: null },
+  { id: "art-badge-low-stock", description: "Badge Low Stock", priceInCents: 300, printDetailReceipt: true, quantityAvailable: 5 },
+];
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function renderOrder(props: any = {}) {
   return render(
@@ -70,6 +79,84 @@ describe("Order", () => {
     renderOrder();
     expect(screen.getByText("Espresso")).toBeDefined();
     expect(screen.getByText("Latte")).toBeDefined();
+  });
+
+  it("groups articles by initial section and omits missing sections", () => {
+    renderOrder({
+      loaderData: {
+        ok: true,
+        value: {
+          next: null,
+          hasNext: false,
+          items: groupedArticles,
+        },
+      },
+    });
+
+    const articleSectionHeadings = screen
+      .getAllByRole("heading", { level: 2 })
+      .filter((heading) => heading.textContent?.length === 1);
+
+    expect(articleSectionHeadings.map((heading) => heading.textContent)).toEqual([
+      "#",
+      "A",
+      "B",
+      "L",
+    ]);
+    expect(screen.queryByRole("heading", { name: "C" })).toBeNull();
+  });
+
+  it("sorts articles alphabetically inside each initial section", () => {
+    renderOrder({
+      loaderData: {
+        ok: true,
+        value: {
+          next: null,
+          hasNext: false,
+          items: groupedArticles,
+        },
+      },
+    });
+
+    const bSection = screen.getByRole("heading", { name: "B" }).closest("section")!;
+    expect(within(bSection).getAllByRole("button").map((button) => button.getAttribute("aria-label"))).toEqual([
+      "Badge Low Stock",
+      "Badge No Detail",
+      "Brioche",
+    ]);
+  });
+
+  it("groups non-letter article starts under hash", () => {
+    renderOrder({
+      loaderData: {
+        ok: true,
+        value: {
+          next: null,
+          hasNext: false,
+          items: groupedArticles,
+        },
+      },
+    });
+
+    const hashSection = screen.getByRole("heading", { name: "#" }).closest("section")!;
+    expect(within(hashSection).getByRole("button", { name: "5 Arrosticini" })).toBeDefined();
+  });
+
+  it("adds an article to the cart from a grouped section", () => {
+    renderOrder({
+      loaderData: {
+        ok: true,
+        value: {
+          next: null,
+          hasNext: false,
+          items: groupedArticles,
+        },
+      },
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Acqua" }));
+
+    expect(screen.getByText(/Acqua × 1/)).toBeDefined();
   });
 
   it("shows empty cart message initially", () => {
