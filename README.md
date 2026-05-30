@@ -40,15 +40,6 @@ mise run ui
 
 The backend listens on `http://localhost:5122`. The frontend is served by Vite, and its `/api` proxy forwards requests to the backend.
 
-Local workflow checks also use Mise:
-
-```bash
-mise run ci
-mise run cd
-```
-
-`mise run ci` runs the CI workflow locally through `act`. `mise run cd` runs the CD workflow locally through `act` without publishing images, creating git tags, or creating GitHub releases.
-
 ## Release Management
 
 Releases are manual. Run the `CD` GitHub Actions workflow with the version you want to publish and the git ref you want to release. The workflow validates the source, builds Docker images for `linux/amd64` and `linux/arm64`, pushes them to GitHub Container Registry, creates the git tag, and creates a GitHub draft release.

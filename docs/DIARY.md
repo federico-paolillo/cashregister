@@ -233,3 +233,12 @@ Adjusted the order screen layout so the article selector owns the scroll area wh
 
 - We moved scrolling to the article-list wrapper instead of making the multiplier sticky because the multiplier is already a sibling of the article selector.
 - We kept the change in the route layout only because no backend contract or shared component behavior changed.
+
+## Removed local act harness
+
+Removed the local GitHub Actions emulator harness from active project behavior. Hosted GitHub Actions are now the only workflow execution path, and local verification relies on the direct backend and frontend commands documented in `ARCH.md`.
+
+### Key decisions
+
+- We deleted the local harness instead of replacing it with another workflow emulator because GitHub-hosted workflows are the source of truth.
+- We removed the Mise workflow tasks instead of repointing them to direct validation commands because their previous contract was specifically local GitHub Actions execution.
