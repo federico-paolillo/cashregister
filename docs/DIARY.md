@@ -242,3 +242,61 @@ Removed the local GitHub Actions emulator harness from active project behavior. 
 
 - We deleted the local harness instead of replacing it with another workflow emulator because GitHub-hosted workflows are the source of truth.
 - We removed the Mise workflow tasks instead of repointing them to direct validation commands because their previous contract was specifically local GitHub Actions execution.
+
+## V2 daemon setup access point
+
+Documented daemon network onboarding for v2 around a temporary setup access point and captive-portal-style local page. The daemon enters setup mode on first boot, missing Wi-Fi configuration, or repeated connection failure, using five twelve-second attempts as the baseline threshold. The setup mode changes Wi-Fi credentials without requiring `adb`, shell access, `nmcli`, or a Linux workstation, and it is explicitly separate from destructive factory reset.
+
+### Key decisions
+
+- We made setup AP onboarding the baseline because changing mobile hotspots through `adb` is not acceptable for normal operators.
+- We treat a new Wi-Fi profile as a candidate commit when the hardware cannot run access-point and client mode together, so a bad password automatically returns the daemon to setup mode.
+- We kept a dedicated setup/reset button as future work because it requires explicit communication between the Arduino microcontroller and the Linux CPU.
+
+## V2 product observability
+
+Expanded the v2 observability model around OpenTelemetry instrumentation for the API server and daemon. The updated design focuses on product signals such as order creation, print-job leasing, receipt writes, polling, acknowledgements, setup-mode entry, and Wi-Fi failures rather than generic host monitoring. Telemetry flows through an OpenTelemetry Collector or Grafana Alloy gateway before Grafana Cloud so tail sampling, batching, retries, and cloud credentials stay outside individual application processes.
+
+### Key decisions
+
+- We require collector-side tail sampling because the .NET SDK cannot reliably keep all failed traces while dropping successful traces before the outcome is known.
+- We keep all error traces and only ten percent of successful traces to preserve failure diagnostics while limiting normal traffic volume.
+- We define "receipt written" as successful ESC/POS bytes written to the configured printer file device because the daemon cannot prove physical paper output.
+
+## V2 architecture sanity check
+
+Reviewed the v2 BYOD architecture for consistency across daemon setup, tenant scoping, Zitadel-backed authentication, print stations, BYOD constraints, all-in-one deployments, and observability. The document now separates daemon identity from tenant authority, treats Cashregister as the owner of daemon credential metadata rather than identity-provider secrets, makes print-job payload ownership explicit, and aligns observability language with outbound OTLP telemetry instead of inbound daemon scraping.
+
+### Key decisions
+
+- We keep daemon credentials tenant-neutral and derive tenant authority only from Cashregister print-station assignment because reassignment should not require issuing a new identity-provider credential.
+- We require durable print jobs to include an immutable print payload because daemons should execute leased work, not reconstruct receipt business content from mutable order state.
+- We document unresolved decisions explicitly because daemon credential provisioning, print payload format, Zitadel tenant mapping, reprint semantics, and offline all-in-one behavior need owner input before implementation.
+
+## Repo-local multi-agent workflow
+
+Added `.agents` coordinator, worker, reviewer, merger, skill, and workflow-template files for repo-local parallel feature coordination. The workflow is adapted to Cash Register's backend, Printmon, and UI surfaces and explicitly keeps canonical runtime behavior in the existing project docs and source code.
+
+### ExecPlan
+
+`plans/repo-local-multi-agent-workflow.md`
+
+### Key decisions
+
+- We kept `.agents` non-canonical because the repository already has dedicated source-of-truth documents for architecture, ESC/POS behavior, conventions, plans, and diary history.
+- We created backend, Printmon, and UI worker/reviewer pairs because those are the independently assignable implementation surfaces.
+- We skipped runtime verification because the change adds documentation and workflow tooling only.
+
+## Removed standalone convention docs
+
+Removed `docs/CONVENTIONS.md` and `docs/DOCKER.md` after migrating their active backend, frontend, documentation-only, Docker, and shell-script guidance into `.agents/skills/*`. Product and runtime contracts remain in `docs/ARCH.md` and `docs/ESCPOS.md`; planning and bookkeeping remain in `AGENTS.md`, `docs/PLANS.md`, and `docs/DIARY.md`.
+
+### ExecPlan
+
+`plans/repo-local-multi-agent-workflow.md`
+
+### Key decisions
+
+- We moved agent-facing implementation practice into skills to avoid duplicating the same rules in both docs and `.agents`.
+- We left historical diary and old ExecPlan references untouched because they document past repository states rather than active guidance.
+- We skipped runtime verification because the change removes and updates documentation/workflow files only.

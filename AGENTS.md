@@ -75,6 +75,12 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 - Use conventional commits when committing, for example `feat:`, `fix:`, `docs:`, `test:`, or `chore:`.
 - Avoid repetitions. If you see or make a code block twice, refactor.
 
+## Repo-Local Multi-Agent Workflow
+
+For significant parallel feature work, use `.agents/skills/cashregister-agentic-feature/SKILL.md`. Role profiles live in `.agents/agents/`, implementation-practice skills live in `.agents/skills/`, and workflow templates live in `.agents/workflows/templates/`.
+
+`.agents` is non-canonical for product behavior and runtime contracts. Agent workflow and implementation-practice guidance lives there. Durable behavior, public contracts, architecture, ESC/POS behavior, and bookkeeping remain in the canonical repository docs and source code.
+
 ## Documentation
 
 `docs/` folder has all the documentation, context and information you will need.
@@ -83,8 +89,6 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 
 - docs/ARCH.md - Main architecture and design choices. Read this to get your bearings.
 - docs/ESCPOS.md - Architecture and design choices for the ESC/POS implementation. Read this to understand how printing works.
-- docs/CONVENTIONS.md - How to work on the project. This is fundamental
-- docs/DOCKER.md - DevOps conventions for Dockerfiles, container images, and shell scripts.
 
 ### Optional reads
 
@@ -130,7 +134,7 @@ Include an `ExecPlan` section with `path_to_exec_plan` relative to `docs/` folde
 
 If you make changes that alter what is referenced in `ARCH.md` or `ESCPOS.md` you have to update those files as well. `ARCH.md` and `ESCPOS.md` must not get out of sync. There is no need to document every tiny little detail in `ARCH.md` or `ESCPOS.md` as they document the high-level architecture of Cashregister.
 
-`CONVENTIONS.md` must be updated if you introduce new development conventions or techniques.
+Update the relevant `.agents/skills/*/SKILL.md` file if you introduce new agent-facing development conventions or techniques.
 
 ## Parallel Worktree Mode
 
@@ -151,7 +155,6 @@ The following files are integration-sensitive:
 - docs/DIARY.md
 - docs/ARCH.md
 - docs/ESCPOS.md
-- docs/CONVENTIONS.md
 - docs/plans/*
 
 When updating these files:
@@ -160,7 +163,7 @@ When updating these files:
 - Use a unique heading that includes the task name.
 - Keep entries concise.
 - Do not modify another task diary entry or plan.
-- If the task does not require architectural or convention changes, do not edit ARCH.md, ESCPOS.md, or CONVENTIONS.md.
+- If the task does not require architectural or ESC/POS changes, do not edit ARCH.md or ESCPOS.md.
 
 ### ExecPlans in parallel work
 
@@ -186,4 +189,4 @@ At the end of the task, provide a handoff summary:
 - Docs updated
 - Known risks
 - Likely conflict areas
-- Whether ARCH.md, ESCPOS.md, CONVENTIONS.md, or DIARY.md were changed
+- Whether ARCH.md, ESCPOS.md, DIARY.md, or `.agents/skills/*` were changed
