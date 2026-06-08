@@ -26,9 +26,16 @@ services:
     expose:
       - "65000"
     volumes:
-      - database:/var/lib/cashregister
+      - trecallo_database:/var/lib/cashregister
+      - type: bind
+        source: /dev
+        target: /dev
     networks:
       - cashregister
+    device_cgroup_rules:
+      - "c 180:* rw"
+    group_add:
+      - "989"
     restart: always
 
   ui:
@@ -49,4 +56,4 @@ networks:
   cashregister:
 
 volumes:
-  database:
+  trecallo_database:

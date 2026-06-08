@@ -300,3 +300,13 @@ Removed `docs/CONVENTIONS.md` and `docs/DOCKER.md` after migrating their active 
 - We moved agent-facing implementation practice into skills to avoid duplicating the same rules in both docs and `.agents`.
 - We left historical diary and old ExecPlan references untouched because they document past repository states rather than active guidance.
 - We skipped runtime verification because the change removes and updates documentation/workflow files only.
+
+## Fixed local USB printer device visibility
+
+Updated local Compose so the API container can see dynamically attached USB printer file devices under `/dev/usb`. The container now gets the host `/dev` namespace, keeps the USB printer cgroup rule for major 180, and joins the host `lp` group id used by the local printer device.
+
+### Key decisions
+
+- We bind `/dev` instead of only `/dev/usb` because this host removes and recreates the `/dev/usb` directory during printer replug, leaving a narrow bind mount pinned to the old directory.
+- We keep `c 180:* rw` and group id `989` so the local container can use USB printer file devices without granting blanket device cgroup access.
+- We hard-coded group id `989` because the target local host reports `/dev/usb/lp0` as owned by that group.
