@@ -9,6 +9,7 @@ using Cashregister.Application.Receipts.Data;
 using Cashregister.Application.Receipts.Models.Output;
 using Cashregister.Application.Receipts.Problems;
 using Cashregister.Application.Receipts.Services;
+using Cashregister.Application.Receipts.Services.Defaults;
 using Cashregister.Domain;
 using Cashregister.Factories;
 using Cashregister.Printmon;
@@ -25,6 +26,8 @@ public sealed class ReceiptPrintProgramServiceTests(
     ITestOutputHelper testOutputHelper
 ) : IntegrationTest(testOutputHelper)
 {
+    private readonly RomeTimeConverter _romeTimeConverter = new();
+
     [Fact]
     public async Task BuildAsync_ReturnsProblem_WhenOrderDoesNotExist()
     {
@@ -72,6 +75,39 @@ public sealed class ReceiptPrintProgramServiceTests(
         Assert.Contains($"Date: {FormatDate(orderPrintData.Date)}", firstItemReceipt, StringComparison.Ordinal);
         Assert.DoesNotContain("Total:", firstItemReceipt, StringComparison.Ordinal);
         Assert.DoesNotContain("@", firstItemReceipt, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task BuildAsync_FormatsReceiptDatesInRomeTime()
+    {
+        var order = new OrderPrintData
+        {
+            Id = Identifier.From("order-id"),
+            Number = OrderNumber.From(1),
+            Date = TimeStamp.From(
+                new DateTimeOffset(2026, 6, 15, 12, 0, 0, TimeSpan.Zero)
+                    .ToUnixTimeSeconds()),
+            Total = Cents.From(123),
+            Items =
+            [
+                new OrderPrintDataItem
+                {
+                    Description = "Coffee",
+                    Price = Cents.From(123),
+                    Quantity = 1,
+                    PrintDetailReceipt = true
+                }
+            ]
+        };
+
+        var service = new ReceiptPrintProgramService(new StaticOrderPrintDataQuery(order), _romeTimeConverter);
+
+        var result = await service.BuildAsync(order.Id);
+
+        Assert.True(result.Ok);
+        Assert.Equal(2, result.Value.Length);
+        Assert.Contains("Date: 2026-06-15 14:00:00", Render(result.Value[0]), StringComparison.Ordinal);
+        Assert.Contains("Date: 2026-06-15 14:00:00", Render(result.Value[1]), StringComparison.Ordinal);
     }
 
     [Fact]
@@ -164,10 +200,19 @@ public sealed class ReceiptPrintProgramServiceTests(
 
     private static string FormatDate(TimeStamp date)
     {
-        return DateTimeOffset
-            .FromUnixTimeSeconds(date.Value)
-            .UtcDateTime
-            .ToString("yyyy-MM-dd HH:mm:ss 'UTC'", CultureInfo.InvariantCulture);
+        return new RomeTimeConverter()
+            .ToRomeTime(date)
+            .ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
+    }
+
+    private sealed class StaticOrderPrintDataQuery(
+        OrderPrintData orderPrintData
+    ) : IFetchOrderPrintDataQuery
+    {
+        public Task<OrderPrintData?> FetchAsync(Identifier orderId)
+        {
+            return Task.FromResult<OrderPrintData?>(orderPrintData);
+        }
     }
 
     private async Task<Identifier> CreateArticleAsync(

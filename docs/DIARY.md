@@ -310,3 +310,13 @@ Updated local Compose so the API container can see dynamically attached USB prin
 - We bind `/dev` instead of only `/dev/usb` because this host removes and recreates the `/dev/usb` directory during printer replug, leaving a narrow bind mount pinned to the old directory.
 - We keep `c 180:* rw` and group id `989` so the local container can use USB printer file devices without granting blanket device cgroup access.
 - We hard-coded group id `989` because the target local host reports `/dev/usb/lp0` as owned by that group.
+
+## Receipt dates in Rome time
+
+Receipt date formatting now converts stored UTC Unix timestamps to Rome local time before rendering receipt print programs. The conversion uses an injectable helper with hardcoded CET/CEST transition rules so distroless containers do not need `tzdata` or system time-zone lookup for receipt output.
+
+### Key decisions
+
+- We kept persisted order timestamps and statistics CSV output in UTC because only receipt presentation needed Rome-local time.
+- We hardcoded current Rome daylight-saving rules in a focused helper because the runtime container may not provide time-zone data.
+- We tested the converter directly at winter, summer, and transition boundaries so receipt formatting does not own DST rule details.

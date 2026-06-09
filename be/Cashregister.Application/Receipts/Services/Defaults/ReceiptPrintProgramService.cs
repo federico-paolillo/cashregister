@@ -15,7 +15,8 @@ namespace Cashregister.Application.Receipts.Services.Defaults;
 ///     Default receipt print program service that builds the order receipt template.
 /// </summary>
 public sealed class ReceiptPrintProgramService(
-    IFetchOrderPrintDataQuery fetchOrderPrintDataQuery
+    IFetchOrderPrintDataQuery fetchOrderPrintDataQuery,
+    RomeTimeConverter romeTimeConverter
 ) : IReceiptPrintProgramService
 {
     public async Task<Result<ImmutableArray<PrintProgram>>> BuildAsync(Identifier orderId)
@@ -32,7 +33,7 @@ public sealed class ReceiptPrintProgramService(
         return Result.Ok(Build(orderPrintData));
     }
 
-    private static ImmutableArray<PrintProgram> Build(OrderPrintData order)
+    private ImmutableArray<PrintProgram> Build(OrderPrintData order)
     {
         var programs = ImmutableArray.CreateBuilder<PrintProgram>();
 
@@ -54,7 +55,7 @@ public sealed class ReceiptPrintProgramService(
         return programs.ToImmutable();
     }
 
-    private static PrintProgram BuildOverview(OrderPrintData order)
+    private PrintProgram BuildOverview(OrderPrintData order)
     {
         var builder = new PrintProgramBuilder()
             .FontSize(1)
@@ -83,7 +84,7 @@ public sealed class ReceiptPrintProgramService(
             .Build();
     }
 
-    private static PrintProgram BuildItemReceipt(OrderPrintData order, OrderPrintDataItem item)
+    private PrintProgram BuildItemReceipt(OrderPrintData order, OrderPrintDataItem item)
     {
         return new PrintProgramBuilder()
             .Align(Alignment.Left)
@@ -97,12 +98,11 @@ public sealed class ReceiptPrintProgramService(
             .Build();
     }
 
-    private static string FormatDate(TimeStamp date)
+    private string FormatDate(TimeStamp date)
     {
-        return DateTimeOffset
-            .FromUnixTimeSeconds(date.Value)
-            .UtcDateTime
-            .ToString("yyyy-MM-dd HH:mm:ss 'UTC'", CultureInfo.InvariantCulture);
+        return romeTimeConverter
+            .ToRomeTime(date)
+            .ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
     }
 
     private static string FormatPrice(Cents cents)
